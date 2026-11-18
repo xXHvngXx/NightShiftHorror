@@ -22,6 +22,17 @@ public static partial class Props
     static Color Shade(Color c, bool lit, float k = 0.16f)
         => lit ? c : new Color((byte)(c.R * k), (byte)(c.G * k), (byte)(c.B * k), c.A);
 
+    static Color LerpCol(Color a, Color b, float t)
+    {
+        t = Math.Clamp(t, 0f, 1f);
+        return new Color(
+            (byte)(a.R + (b.R - a.R) * t),
+            (byte)(a.G + (b.G - a.G) * t),
+            (byte)(a.B + (b.B - a.B) * t),
+            (byte)(a.A + (b.A - a.A) * t)
+        );
+    }
+
     static void Box(float x, float y, float z, float w, float h, float l, Color c)
         => Raylib.DrawCube(new Vector3(x, y, z), w, h, l, c);
 
@@ -124,6 +135,9 @@ public static partial class Props
         Box(0, by + 0.30f, 0, 0.50f, 0.60f, 0.28f, shirt);
         Ellipsoid(0, by + 0.63f, 0, 0.062f, 0.06f, 0.062f, skin, 8, 10);
 
+        Arm(new Vector3(-0.32f, by + 0.56f, 0), armL, shirt, skin);
+        Arm(new Vector3(0.32f, by + 0.56f, 0), armR, shirt, skin);
+
         float neckPivotY = by + 0.66f;
         Rlgl.PushMatrix();
         Rlgl.Translatef(0, neckPivotY, 0);
@@ -133,6 +147,7 @@ public static partial class Props
 
         DrawHead(isFemale, hair, skin, faceId, eyeGaze);
 
+
         if (hood)
         {
             Box(0, 0.18f, -0.05f, 0.36f, 0.38f, 0.32f, shirt);
@@ -140,9 +155,6 @@ public static partial class Props
         }
 
         Rlgl.PopMatrix();
-
-        Arm(new Vector3(-0.32f, by + 0.56f, 0), armL, shirt, skin);
-        Arm(new Vector3(0.32f, by + 0.56f, 0), armR, shirt, skin);
     }
 
     public static void DrawPerson(Vector3 pos, float yawDeg, Color shirt, Color hair,
@@ -174,7 +186,7 @@ public static partial class Props
         Color shoe = Col(20, 20, 24);
         const float hip = 0.57f;
 
-        var gaze = ComputeGazeTarget(pos + new Vector3(0, hip + 0.81f, 0), yawDeg, viewerPos, 0.85f);
+        var gaze = ComputeGazeTarget(pos + new Vector3(0, hip + 0.81f, 0), yawDeg, viewerPos, 0.92f);
 
         Rlgl.PushMatrix();
         Rlgl.Translatef(pos.X, pos.Y, pos.Z);
@@ -235,7 +247,7 @@ public static partial class Props
         Box(x + 0.065f, 0.825f, z, 0.03f, 0.05f, 0.015f, c);
     }
 
-    public static void DrawCafe(float time, Vector3? viewerPos = null)
+    public static void DrawCafe(float time, Vector3? viewerPos = null, string speaker = "")
     {
         Color wood = Col(95, 62, 40);
         Color woodDark = Col(40, 30, 25);
@@ -328,9 +340,37 @@ public static partial class Props
         float b0 = 0.012f * MathF.Sin(time * 2.4f);
         float b1 = 0.012f * MathF.Sin(time * 2.0f + 1.7f);
         float b2 = 0.012f * MathF.Sin(time * 2.8f + 3.1f);
-        DrawSeatedPerson(new Vector3(0, b0, 1.05f), 180, Col(195, 85, 45), Col(30, 28, 32), viewerPos, FaceId.Friend1);
-        DrawSeatedPerson(new Vector3(-1.25f, b1, 0.05f), 90, Col(55, 115, 165), Col(45, 35, 30), viewerPos, FaceId.Friend2);
-        DrawSeatedPerson(new Vector3(1.25f, b2, 0.05f), -90, Col(65, 145, 95), Col(35, 30, 28), viewerPos, FaceId.Friend3);
+
+        Vector3 dungPos = new(0, b0, 1.05f);
+        Vector3 hungPos = new(-1.25f, b1, 0.05f);
+        Vector3 denPos = new(1.25f, b2, 0.05f);
+
+        Vector3 dungHead = dungPos + new Vector3(0, 1.38f, 0);
+        Vector3 hungHead = hungPos + new Vector3(0, 1.38f, 0);
+        Vector3 denHead = denPos + new Vector3(0, 1.38f, 0);
+
+        Vector3? dungLook = speaker switch
+        {
+            "Hưng" => hungHead,
+            "Đen" => denHead,
+            _ => viewerPos
+        };
+        Vector3? hungLook = speaker switch
+        {
+            "Dũng" => dungHead,
+            "Đen" => denHead,
+            _ => viewerPos
+        };
+        Vector3? denLook = speaker switch
+        {
+            "Dũng" => dungHead,
+            "Hưng" => hungHead,
+            _ => viewerPos
+        };
+
+        DrawSeatedPerson(dungPos, 180, Col(195, 85, 45), Col(30, 28, 32), dungLook, FaceId.Friend1);
+        DrawSeatedPerson(hungPos, 90, Col(55, 115, 165), Col(45, 35, 30), hungLook, FaceId.Friend2);
+        DrawSeatedPerson(denPos, -90, Col(65, 145, 95), Col(35, 30, 28), denLook, FaceId.Friend3);
 
         Box(-4.33f, 1.55f, 0.2f, 0.04f, 1.8f, 3.6f, Col(170, 210, 230, 45));
         Raylib.DrawCylinder(new Vector3(-0.25f, 0.78f, -0.25f), 0.05f, 0.045f, 0.14f, 12, Col(220, 240, 250, 60));
@@ -365,79 +405,213 @@ public static partial class Props
 
     static void Gondola(float cx, float cz, float len, bool lit, int seed)
     {
-        Color frame = Shade(Col(60, 64, 72), lit, 0.3f);
-        Color board = Shade(Col(190, 194, 200), lit, 0.25f);
-        Color lip = Shade(Col(250, 210, 60), lit, 0.3f);
-        Color header = seed == 0 ? Col(30, 140, 80) : Col(235, 130, 40);
+        Color frame = Shade(Col(32, 34, 40), lit, 0.3f);
+        Color board = Shade(Col(195, 198, 205), lit, 0.25f);
+        Color lip = Shade(Col(245, 195, 50), lit, 0.3f);
+        Color header = seed == 0 ? Col(215, 55, 45) : Col(235, 130, 40);
 
-        Box(cx, 0.06f, cz, 0.55f, 0.12f, len, Shade(Col(40, 42, 48), lit, 0.3f));
-        Box(cx, 1.0f, cz, 0.05f, 2.0f, len, frame);
-        Box(cx, 1.95f, cz, 0.56f, 0.10f, len, Shade(header, lit, 0.3f));
-        Box(cx, 1.0f, cz - len / 2, 0.55f, 2.0f, 0.05f, frame);
-        Box(cx, 1.0f, cz + len / 2, 0.55f, 2.0f, 0.05f, frame);
+        Box(cx, 0.06f, cz, 0.58f, 0.12f, len, frame);
+        Box(cx, 0.92f, cz, 0.05f, 1.84f, len, frame);
+        Box(cx, 1.80f, cz, 0.58f, 0.10f, len, Shade(header, lit, 0.3f));
+        Box(cx, 0.92f, cz - len / 2, 0.58f, 1.84f, 0.05f, frame);
+        Box(cx, 0.92f, cz + len / 2, 0.58f, 1.84f, 0.05f, frame);
 
         for (int l = 0; l < 4; l++)
         {
-            float by = 0.32f + l * 0.42f;
+            float by = 0.28f + l * 0.38f;
             for (int sd = -1; sd <= 1; sd += 2)
             {
-                Box(cx + sd * 0.14f, by, cz, 0.26f, 0.03f, len, board);
-                Box(cx + sd * 0.268f, by + 0.04f, cz, 0.012f, 0.07f, len, lip);
+                Box(cx + sd * 0.15f, by, cz, 0.26f, 0.03f, len, board);
+                Box(cx + sd * 0.278f, by + 0.04f, cz, 0.012f, 0.07f, len, lip);
 
                 int n = (int)((len - 0.3f) / 0.21f);
                 for (int i = 0; i <= n; i++)
                 {
                     int hs = Hash(l + seed * 7, sd + 2, i);
                     if (hs % 9 == 0) continue;
-                    Product(cx + sd * 0.15f, by + 0.015f, cz - len / 2 + 0.17f + i * 0.21f, hs, lit);
+                    Product(cx + sd * 0.16f, by + 0.015f, cz - len / 2 + 0.17f + i * 0.21f, hs, lit);
                 }
             }
         }
     }
 
-    static void Fridge(float cx, float cz, bool lit)
+    static void RollingSnackRack(float cx, float cz, float yawDeg, bool lit)
     {
-        float front = cz + 0.35f;
-        Color silver = Shade(Col(185, 190, 198), lit, 0.35f);
+        Color blackMetal = Shade(Col(24, 26, 30), lit, 0.35f);
+        Rlgl.PushMatrix();
+        Rlgl.Translatef(cx, 0f, cz);
+        Rlgl.Rotatef(yawDeg, 0, 1, 0);
 
-        Box(cx, 1.2f, cz, 2.6f, 2.4f, 0.7f, Shade(Col(35, 45, 55), lit, 0.4f));
-        Box(cx, 1.2f, front - 0.005f, 2.3f, 2.0f, 0.02f, lit ? Col(130, 200, 235) : Col(30, 50, 65));
-        Box(cx, 2.3f, front + 0.04f, 2.3f, 0.06f, 0.04f, lit ? Col(235, 248, 255) : Col(60, 90, 110));
-        Box(cx, 0.1f, front + 0.01f, 2.3f, 0.16f, 0.02f, Shade(Col(25, 28, 32), lit, 0.5f));
+        foreach (float wx in new[] { -0.34f, 0.34f })
+            foreach (float wz in new[] { -0.22f, 0.22f })
+                Raylib.DrawCylinder(new Vector3(wx, 0f, wz), 0.045f, 0.045f, 0.06f, 8, blackMetal);
+
+        Box(0f, 0.86f, 0f, 0.04f, 1.60f, 0.52f, blackMetal);
+        Box(0f, 0.86f, -0.26f, 0.78f, 1.60f, 0.04f, blackMetal);
+        Box(0f, 0.86f, 0.26f, 0.78f, 1.60f, 0.04f, blackMetal);
+        Box(0f, 1.68f, 0f, 0.80f, 0.08f, 0.56f, Shade(Col(215, 45, 45), lit, 0.35f));
+
+        for (int shelf = 0; shelf < 5; shelf++)
+        {
+            float sy = 0.22f + shelf * 0.29f;
+            Box(0f, sy, 0f, 0.76f, 0.025f, 0.50f, blackMetal);
+            for (int sd = -1; sd <= 1; sd += 2)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Color bagCol = Shade(Palette[(shelf * 2 + i + (sd > 0 ? 1 : 0)) % Palette.Length], lit, 0.35f);
+                    float bx = -0.27f + i * 0.18f;
+                    Box(bx, sy + 0.12f, sd * 0.13f, 0.14f, 0.20f, 0.12f, bagCol);
+                    Box(bx, sy + 0.13f, sd * 0.192f, 0.10f, 0.06f, 0.004f, Shade(Col(250, 245, 220), lit, 0.35f));
+                }
+            }
+        }
+
+        Rlgl.PopMatrix();
+    }
+
+    static void LeftWoodIslandCounter(bool lit)
+    {
+        Color blackFrame = Shade(Col(22, 24, 28), lit, 0.35f);
+        Color warmWood = Shade(Col(162, 102, 56), lit, 0.32f);
+        Color counterTop = Shade(Col(215, 212, 205), lit, 0.32f);
+        Color steelGray = Shade(Col(145, 150, 158), lit, 0.35f);
+
+        Box(-4.35f, 0.48f, 0.5f, 1.30f, 0.96f, 3.60f, blackFrame);
+        Box(-4.35f, 0.99f, 0.5f, 1.38f, 0.06f, 3.68f, counterTop);
+
+        for (int p = 0; p < 5; p++)
+        {
+            float pz = -0.85f + p * 0.68f;
+            Box(-3.69f, 0.48f, pz, 0.02f, 0.78f, 0.58f, warmWood);
+        }
+
+        Box(-3.68f, 0.62f, -0.25f, 0.03f, 0.36f, 0.54f, steelGray);
+        Box(-3.66f, 0.64f, -0.25f, 0.01f, 0.24f, 0.36f, Col(25, 28, 34));
+
+        float caseZ = 1.65f;
+        Box(-4.25f, 1.66f, caseZ, 0.76f, 0.08f, 0.96f, blackFrame);
+        foreach (float dx in new[] { -0.35f, 0.35f })
+            foreach (float dz in new[] { -0.45f, 0.45f })
+                Box(-4.25f + dx, 1.34f, caseZ + dz, 0.035f, 0.64f, 0.035f, blackFrame);
+
+        for (int t = 0; t < 2; t++)
+        {
+            float ty = 1.18f + t * 0.22f;
+            Box(-4.25f, ty, caseZ, 0.68f, 0.02f, 0.88f, steelGray);
+            for (int b = -2; b <= 2; b++)
+                Raylib.DrawSphere(new Vector3(-4.25f, ty + 0.045f, caseZ + b * 0.16f), 0.055f,
+                    Shade(Col(228, 165, 78), lit, 0.35f));
+        }
+
+        for (int c = 0; c < 4; c++)
+            Raylib.DrawCylinder(new Vector3(-4.20f, 1.02f, 0.75f - c * 0.18f), 0.045f, 0.04f, 0.16f, 10,
+                Shade(Col(240, 240, 235), lit, 0.35f));
+        Box(-4.35f, 1.32f, -0.45f, 0.56f, 0.60f, 0.90f, blackFrame);
+    }
+
+    static void LeftBeverageFountainWall(bool lit)
+    {
+        Color blackBase = Shade(Col(22, 24, 28), lit, 0.35f);
+        Color warmWood = Shade(Col(162, 102, 56), lit, 0.32f);
+        Color counterTop = Shade(Col(215, 212, 205), lit, 0.32f);
+
+        Box(-6.85f, 0.48f, -0.2f, 1.15f, 0.96f, 6.2f, blackBase);
+        Box(-6.85f, 0.99f, -0.2f, 1.22f, 0.06f, 6.3f, counterTop);
+        for (int p = 0; p < 8; p++)
+            Box(-6.26f, 0.48f, -2.75f + p * 0.72f, 0.02f, 0.78f, 0.62f, warmWood);
+
+        for (int m = 0; m < 4; m++)
+        {
+            float mz = -2.2f + m * 1.35f;
+            Box(-6.75f, 1.44f, mz, 0.64f, 0.84f, 1.05f, Shade(Col(35, 38, 44), lit, 0.4f));
+            Box(-6.41f, 1.44f, mz, 0.03f, 0.52f, 0.88f, lit ? Palette[(m + 2) % Palette.Length] : Col(35, 45, 65));
+        }
+
+        Color[] bannerColors =
+        [
+            Col(32, 95, 215),
+            Col(235, 145, 42),
+            Col(38, 120, 225),
+            Col(48, 155, 78)
+        ];
+        for (int b = 0; b < 4; b++)
+        {
+            float bz = -2.2f + b * 1.48f;
+            Box(-7.36f, 2.52f, bz, 0.05f, 1.05f, 1.40f, Shade(bannerColors[b], lit, 0.35f));
+            Box(-7.33f, 2.52f, bz, 0.01f, 0.38f, 0.78f, Shade(Col(248, 246, 238), lit, 0.35f));
+        }
+    }
+
+    static void BeverageCoolerUnit(float cx, float cz, float yawDeg, bool lit, bool isRedCocaCola = false)
+    {
+        Rlgl.PushMatrix();
+        Rlgl.Translatef(cx, 0f, cz);
+        Rlgl.Rotatef(yawDeg, 0, 1, 0);
+
+        float front = 0.35f;
+        Color silver = Shade(Col(185, 190, 198), lit, 0.35f);
+        Color bodyCol = isRedCocaCola ? Shade(Col(198, 28, 32), lit, 0.38f) : Shade(Col(28, 34, 42), lit, 0.4f);
+
+        Box(0f, 1.25f, 0f, 2.5f, 2.5f, 0.7f, bodyCol);
+        Box(0f, 1.25f, front - 0.005f, 2.25f, 2.08f, 0.02f, lit ? Col(125, 198, 238) : Col(28, 48, 64));
+        Box(0f, 2.36f, front + 0.04f, 2.25f, 0.06f, 0.04f, lit ? Col(235, 248, 255) : Col(60, 90, 110));
+        Box(0f, 2.62f, front + 0.02f, 2.48f, 0.10f, 0.06f, lit ? Col(45, 105, 255) : Col(18, 35, 85));
 
         for (int l = 0; l < 4; l++)
         {
             float y = 0.45f + l * 0.5f;
-            Box(cx, y, front + 0.06f, 2.3f, 0.03f, 0.22f, silver);
-            for (int i = 0; i < 15; i++)
+            Box(0f, y, front + 0.06f, 2.25f, 0.03f, 0.22f, silver);
+            for (int i = 0; i < 14; i++)
             {
-                float x = cx - 1.05f + i * 0.15f;
+                float x = -0.98f + i * 0.15f;
                 Color c = Shade(Palette[Hash(l, i, 5) % 8], lit, 0.5f);
                 Box(x, y + 0.155f, front + 0.07f, 0.07f, 0.26f, 0.07f, c);
                 Box(x, y + 0.305f, front + 0.07f, 0.04f, 0.03f, 0.04f, Shade(Col(240, 240, 240), lit, 0.5f));
             }
         }
 
-        foreach (float dx in new[] { -1.15f, -0.383f, 0.383f, 1.15f })
-            Box(cx + dx, 1.2f, front + 0.13f, 0.04f, 2.0f, 0.04f, silver);
-        foreach (float dx in new[] { -0.55f, 0.2f, 0.95f })
-            Box(cx + dx, 1.2f, front + 0.16f, 0.03f, 0.7f, 0.03f, silver);
+        foreach (float dx in new[] { -1.11f, -0.37f, 0.37f, 1.11f })
+            Box(dx, 1.25f, front + 0.13f, 0.04f, 2.08f, 0.04f, silver);
+
+        Rlgl.PopMatrix();
     }
 
-    static void WallRack(float cx, bool lit)
+    static void MiniBlueCooler(float cx, float cz, bool lit)
     {
-        float w = 2.6f;
+        Color blueBody = Shade(Col(22, 88, 190), lit, 0.35f);
+        Box(cx, 0.65f, cz, 0.72f, 1.30f, 0.68f, blueBody);
+        Box(cx, 0.68f, cz + 0.345f, 0.60f, 1.05f, 0.015f, lit ? Col(140, 210, 245) : Col(35, 55, 75));
+        for (int s = 0; s < 3; s++)
+        {
+            float sy = 0.32f + s * 0.32f;
+            for (int b = -2; b <= 2; b++)
+                Raylib.DrawCylinder(new Vector3(cx + b * 0.10f, sy, cz + 0.26f), 0.03f, 0.03f, 0.16f, 8,
+                    Shade(Palette[(s + b + 4) % Palette.Length], lit, 0.45f));
+        }
+    }
+
+    static void WallRack(float cx, float wallZ, bool lit, bool hasWelcomeSign = false)
+    {
+        float w = 2.8f;
         Color wood = Shade(Col(70, 50, 38), lit, 0.3f);
-        Box(cx, 1.5f, -4.88f, w, 1.5f, 0.02f, Shade(Col(35, 32, 38), lit, 0.4f));
+        Box(cx, 1.45f, wallZ + 0.12f, w, 1.6f, 0.02f, Shade(Col(35, 32, 38), lit, 0.4f));
+
+        if (hasWelcomeSign)
+        {
+            Box(cx, 2.58f, wallZ + 0.14f, 2.2f, 0.34f, 0.04f, Shade(Col(218, 92, 38), lit, 0.35f));
+            Box(cx, 2.58f, wallZ + 0.165f, 1.5f, 0.10f, 0.01f, Shade(Col(250, 246, 238), lit, 0.35f));
+        }
+
         for (int l = 0; l < 4; l++)
         {
-            float y = 0.9f + l * 0.4f;
-            Box(cx, y, -4.78f, w, 0.03f, 0.24f, wood);
-            for (int i = 0; i < 12; i++)
+            float y = 0.82f + l * 0.40f;
+            Box(cx, y, wallZ + 0.22f, w, 0.03f, 0.24f, wood);
+            for (int i = 0; i < 13; i++)
             {
                 int hs = Hash(l, i, 77);
                 if (hs % 7 == 0) continue;
-                Box(cx - w / 2 + 0.15f + i * 0.2f, y + 0.1f, -4.78f, 0.15f, 0.17f + (hs % 3) * 0.015f, 0.14f,
+                Box(cx - w / 2 + 0.15f + i * 0.2f, y + 0.1f, wallZ + 0.22f, 0.15f, 0.17f + (hs % 3) * 0.015f, 0.14f,
                     Shade(Palette[hs % 8], lit, 0.3f));
             }
         }
@@ -474,8 +648,8 @@ public static partial class Props
 
     static void CeilingLight(float x, float z, bool lit)
     {
-        Box(x, 3.465f, z, 2.3f, 0.07f, 0.45f, Shade(Col(70, 70, 76), lit, 0.4f));
-        if (lit) Box(x, 3.43f, z, 2.2f, 0.02f, 0.35f, Col(250, 250, 245));
+        Box(x, 3.665f, z, 1.9f, 0.07f, 0.52f, Shade(Col(120, 122, 128), lit, 0.4f));
+        if (lit) Box(x, 3.63f, z, 1.8f, 0.02f, 0.42f, Col(252, 252, 248));
     }
 
     static void StreetLamp(float x, float z)
@@ -484,81 +658,97 @@ public static partial class Props
         Raylib.DrawCylinder(new Vector3(x, 0, z), 0.06f, 0.08f, 3.4f, 8, metal);
         Box(x - 0.4f, 3.4f, z, 0.9f, 0.06f, 0.08f, metal);
         Box(x - 0.8f, 3.36f, z, 0.4f, 0.08f, 0.22f, Col(255, 225, 150));
+
+        Box(x, 1.55f, z - 0.082f, 0.24f, 0.32f, 0.01f, Col(240, 225, 165));
+        Box(x, 1.66f, z - 0.088f, 0.18f, 0.03f, 0.004f, Col(190, 40, 40));
+        Box(x, 1.54f, z - 0.088f, 0.16f, 0.14f, 0.004f, Col(45, 45, 50));
     }
 
-    public static void DrawStore(bool lit, bool doorLocked, float time, string clockTime, bool phoneRinging)
+    public static void DrawStore(bool lit, bool doorLocked, float time, string clockTime, bool phoneRinging, float daylight = 0f)
     {
-        Color wallColor = Shade(Col(105, 102, 110), lit, 0.2f);
-        Color trimDark = Shade(Col(45, 45, 52), lit, 0.3f);
-        Color green = Shade(Col(30, 140, 80), lit, 0.3f);
-        Color orange = Shade(Col(235, 130, 40), lit, 0.3f);
+        const float minX = -7.5f, maxX = 7.5f;
+        const float minZ = -6.5f, maxZ = 7.5f;
+        const float storeW = maxX - minX;
+        const float storeL = maxZ - minZ;
 
-        Raylib.DrawPlane(Vector3.Zero, new Vector2(10, 10), Shade(Col(40, 42, 48), lit, 0.3f));
-        for (int i = -5; i < 5; i++)
-            for (int j = -5; j < 5; j++)
+        Color wallColor = Shade(Col(198, 184, 166), lit, 0.22f);
+        Color trimDark = Shade(Col(55, 58, 66), lit, 0.3f);
+
+        Raylib.DrawPlane(new Vector3(0, 0, 0.5f), new Vector2(storeW, storeL), Shade(Col(150, 142, 132), lit, 0.28f));
+        for (int i = -7; i <= 7; i++)
+            for (int j = -6; j <= 7; j++)
             {
-                Color t = (((i + j) & 1) == 0) ? Col(150, 152, 160) : Col(110, 114, 124);
-                Box(i + 0.5f, 0.006f, j + 0.5f, 0.96f, 0.012f, 0.96f, Shade(t, lit, 0.12f));
+                Color t = (((i + j) & 1) == 0) ? Col(218, 206, 192) : Col(205, 192, 176);
+                Box(i, 0.006f, j, 0.96f, 0.012f, 0.96f, Shade(t, lit, 0.16f));
             }
-        Box(0, 0.012f, 4.35f, 1.6f, 0.02f, 0.9f, Shade(Col(35, 35, 40), lit, 0.3f));
+        Box(0, 0.012f, maxZ - 0.65f, 2.1f, 0.02f, 0.95f, Shade(Col(32, 34, 38), lit, 0.3f));
 
-        Raylib.DrawPlane(new Vector3(0, -0.02f, 10), new Vector2(24, 12), Col(24, 25, 30));
-        Box(0, -0.005f, 6.2f, 24f, 0.03f, 2.4f, Col(70, 72, 78));
-        Box(0, 0.005f, 7.45f, 24f, 0.05f, 0.12f, Col(110, 110, 115));
-        for (int x = -10; x <= 10; x += 3) Box(x, -0.015f, 10.5f, 1.4f, 0.006f, 0.12f, Col(200, 190, 120));
-        StreetLamp(-3.6f, 7.0f);
+        Raylib.DrawPlane(new Vector3(0, -0.02f, 12.5f), new Vector2(28, 12), LerpCol(Col(24, 25, 30), Col(72, 78, 90), daylight));
+        Box(0, -0.005f, 8.7f, 28f, 0.03f, 2.4f, LerpCol(Col(70, 72, 78), Col(135, 140, 148), daylight));
+        Box(0, 0.005f, 9.95f, 28f, 0.05f, 0.12f, LerpCol(Col(110, 110, 115), Col(175, 178, 185), daylight));
+        for (int x = -12; x <= 12; x += 3) Box(x, -0.015f, 13.0f, 1.4f, 0.006f, 0.12f, Col(200, 190, 120));
+        StreetLamp(-2.1f, 9.1f);
 
-        Box(0, 3.6f, 0, 10f, 0.2f, 10f, Shade(Col(80, 80, 88), lit, 0.18f));
-        CeilingLight(-1.5f, -1.5f, lit);
-        CeilingLight(2.2f, -0.5f, lit);
-        CeilingLight(-0.5f, 2.8f, lit);
+        Box(0, 3.8f, 0.5f, storeW, 0.2f, storeL, Shade(Col(228, 228, 232), lit, 0.20f));
+        Box(0, 3.48f, -1.2f, storeW - 0.2f, 0.36f, 0.24f, Shade(Col(168, 122, 68), lit, 0.26f));
+        Box(-0.35f, 3.16f, 0.6f, 0.04f, 0.28f, 0.04f, Col(28, 30, 34));
+        Box(-0.35f, 2.94f, 0.6f, 0.44f, 0.28f, 0.06f, Shade(Col(24, 26, 30), lit, 0.4f));
+        Box(-0.35f, 2.94f, 0.635f, 0.38f, 0.22f, 0.008f, lit ? Col(115, 175, 225) : Col(25, 45, 65));
 
-        Box(0, 1.8f, -5f, 10f, 3.6f, 0.2f, wallColor);
-        Box(-5f, 1.8f, 0, 0.2f, 3.6f, 10f, wallColor);
-        Box(5f, 1.8f, 0, 0.2f, 3.6f, 10f, wallColor);
-        Box(-3.1f, 1.8f, 5f, 3.8f, 3.6f, 0.2f, wallColor);
-        Box(3.1f, 1.8f, 5f, 3.8f, 3.6f, 0.2f, wallColor);
-        Box(0f, 3.1f, 5f, 2.4f, 1.0f, 0.2f, wallColor);
+        foreach (float lx in new[] { -4.6f, -1.5f, 1.6f, 4.7f })
+            foreach (float lz in new[] { -4.2f, -1.2f, 1.8f, 4.8f })
+                CeilingLight(lx, lz, lit);
 
-        Box(0, 2.55f, -4.89f, 9.8f, 0.16f, 0.02f, green);
-        Box(0, 2.38f, -4.89f, 9.8f, 0.05f, 0.02f, orange);
-        Box(-4.89f, 2.55f, 0, 0.02f, 0.16f, 9.8f, green);
-        Box(-4.89f, 2.38f, 0, 0.02f, 0.05f, 9.8f, orange);
-        Box(4.89f, 2.55f, 0, 0.02f, 0.16f, 9.8f, green);
-        Box(4.89f, 2.38f, 0, 0.02f, 0.05f, 9.8f, orange);
-        Box(-3.1f, 2.55f, 4.89f, 3.8f, 0.16f, 0.02f, green);
-        Box(3.1f, 2.55f, 4.89f, 3.8f, 0.16f, 0.02f, green);
-        Box(0, 0.07f, -4.89f, 9.8f, 0.14f, 0.02f, trimDark);
-        Box(-4.89f, 0.07f, 0, 0.02f, 0.14f, 9.8f, trimDark);
-        Box(4.89f, 0.07f, 0, 0.02f, 0.14f, 9.8f, trimDark);
+        Box(0, 1.9f, minZ, storeW, 3.8f, 0.2f, wallColor);
+        Box(minX, 1.9f, 0.5f, 0.2f, 3.8f, storeL, wallColor);
+        Box(maxX, 1.9f, 0.5f, 0.2f, 3.8f, storeL, wallColor);
+        Box(-4.35f, 1.9f, maxZ, 6.3f, 3.8f, 0.2f, wallColor);
+        Box(4.35f, 1.9f, maxZ, 6.3f, 3.8f, 0.2f, wallColor);
+        Box(0f, 3.2f, maxZ, 2.4f, 1.2f, 0.2f, wallColor);
+
+        Box(0, 0.07f, minZ + 0.11f, storeW - 0.2f, 0.14f, 0.02f, trimDark);
+        Box(minX + 0.11f, 0.07f, 0.5f, 0.02f, 0.14f, storeL - 0.2f, trimDark);
+        Box(maxX - 0.11f, 0.07f, 0.5f, 0.02f, 0.14f, storeL - 0.2f, trimDark);
 
         Color alu = Shade(Col(170, 175, 185), lit, 0.35f);
-        Box(-1.2f, 1.3f, 5f, 0.10f, 2.6f, 0.14f, alu);
-        Box(1.2f, 1.3f, 5f, 0.10f, 2.6f, 0.14f, alu);
-        Box(0, 0.06f, 5f, 2.4f, 0.12f, 0.14f, alu);
-        Box(0, 2.6f, 5f, 2.4f, 0.10f, 0.14f, alu);
-        Box(0, 1.3f, 5f, 0.06f, 2.6f, 0.10f, alu);
+        Box(-1.2f, 1.3f, maxZ, 0.10f, 2.6f, 0.14f, alu);
+        Box(1.2f, 1.3f, maxZ, 0.10f, 2.6f, 0.14f, alu);
+        Box(0, 0.06f, maxZ, 2.4f, 0.12f, 0.14f, alu);
+        Box(0, 2.6f, maxZ, 2.4f, 0.10f, 0.14f, alu);
+        Box(0, 1.3f, maxZ, 0.06f, 2.6f, 0.10f, alu);
         foreach (float hx in new[] { -0.2f, 0.2f })
         {
-            Box(hx, 1.1f, 5.08f, 0.04f, 0.6f, 0.04f, alu);
-            Box(hx, 1.1f, 4.92f, 0.04f, 0.6f, 0.04f, alu);
+            Box(hx, 1.1f, maxZ + 0.08f, 0.04f, 0.6f, 0.04f, alu);
+            Box(hx, 1.1f, maxZ - 0.08f, 0.04f, 0.6f, 0.04f, alu);
         }
-        Box(0, 1.15f, 4.93f, 0.10f, 0.04f, 0.06f, doorLocked ? Col(210, 50, 50) : Col(70, 200, 90));
-        Box(0.65f, 2.0f, 4.92f, 0.45f, 0.22f, 0.02f, doorLocked ? Col(190, 40, 40) : Col(50, 170, 80));
-        Box(0.65f, 2.0f, 4.905f, 0.30f, 0.04f, 0.02f, Col(245, 245, 245));
+        Box(0, 1.15f, maxZ - 0.07f, 0.10f, 0.04f, 0.06f, doorLocked ? Col(210, 50, 50) : Col(70, 200, 90));
+
+        Box(0.65f, 2.0f, maxZ - 0.09f, 0.48f, 0.24f, 0.015f, Col(205, 38, 38));
+        Box(0.65f, 2.0f, maxZ - 0.102f, 0.32f, 0.04f, 0.008f, Col(245, 245, 245));
+        Box(0.65f, 2.0f, maxZ + 0.09f, 0.48f, 0.24f, 0.015f, Col(32, 165, 82));
+        Box(0.65f, 2.0f, maxZ + 0.102f, 0.32f, 0.04f, 0.008f, Col(245, 245, 245));
+
+        Box(0f, 3.15f, maxZ - 0.115f, 2.25f, 0.56f, 0.02f, Col(195, 36, 36));
+        Box(0f, 3.15f, maxZ - 0.128f, 1.75f, 0.12f, 0.008f, Col(250, 235, 210));
+        Box(0f, 3.15f, maxZ + 0.115f, 2.25f, 0.56f, 0.02f, Col(28, 155, 78));
+        Box(0f, 3.15f, maxZ + 0.128f, 1.75f, 0.12f, 0.008f, Col(250, 235, 210));
 
         Color cWood = Shade(Col(78, 54, 40), lit, 0.3f);
-        Color cTop = Shade(Col(210, 205, 195), lit, 0.3f);
+        Color cTop = Shade(Col(228, 224, 216), lit, 0.3f);
+        Color green = Shade(Col(30, 140, 80), lit, 0.3f);
         Box(-1.4f, 0.48f, -2.15f, 3.4f, 0.96f, 0.75f, cWood);
         Box(-1.4f, 1.01f, -2.15f, 3.48f, 0.06f, 0.83f, cTop);
         Box(-1.4f, 0.6f, -1.77f, 3.0f, 0.07f, 0.02f, green);
-        Box(-2.75f, 0.48f, -3.3f, 0.75f, 0.96f, 3.0f, cWood);
-        Box(-2.75f, 1.01f, -3.3f, 0.83f, 0.06f, 3.08f, cTop);
-        Box(-2.37f, 0.6f, -3.3f, 0.02f, 0.07f, 3.0f, green);
+        Box(-2.75f, 0.48f, -3.55f, 0.75f, 0.96f, 3.5f, cWood);
+        Box(-2.75f, 1.01f, -3.55f, 0.83f, 0.06f, 3.58f, cTop);
+        Box(-2.37f, 0.6f, -3.55f, 0.02f, 0.07f, 3.5f, green);
 
         Box(-1.1f, 1.045f, -2.1f, 0.35f, 0.008f, 0.45f, Shade(Col(245, 245, 240), lit, 0.3f));
         for (int k = 0; k < 5; k++)
             Box(-1.1f, 1.051f, -2.27f + k * 0.075f, 0.26f - (k % 2) * 0.05f, 0.002f, 0.018f, Shade(Col(90, 90, 95), lit, 0.3f));
+
+        Box(-0.62f, 1.055f, -2.12f, 0.28f, 0.026f, 0.36f, Shade(Col(38, 68, 108), lit, 0.35f));
+        Box(-0.62f, 1.070f, -2.12f, 0.22f, 0.003f, 0.12f, Shade(Col(235, 230, 210), lit, 0.35f));
 
         Box(-0.15f, 1.075f, -2.1f, 0.28f, 0.07f, 0.25f, Shade(Col(30, 30, 35), lit, 0.5f));
         Box(-0.15f, 1.125f, -2.1f, 0.26f, 0.035f, 0.07f, Shade(Col(22, 22, 26), lit, 0.5f));
@@ -572,33 +762,55 @@ public static partial class Props
         Box(-2.0f, 1.34f, -2.3f, 0.30f, 0.14f, 0.04f, lit ? Col(120, 230, 160) : Col(40, 80, 60));
         Box(-2.0f, 1.285f, -2.12f, 0.30f, 0.01f, 0.12f, Shade(Col(90, 92, 100), lit, 0.5f));
 
-        Box(-2.75f, 1.39f, -3.75f, 0.45f, 0.70f, 0.45f, Shade(Col(40, 42, 46), lit, 0.5f));
-        Box(-2.75f, 1.55f, -3.52f, 0.30f, 0.14f, 0.02f, lit ? Col(240, 120, 60) : Col(60, 30, 20));
-        Raylib.DrawCylinder(new Vector3(-2.75f, 1.04f, -3.5f), 0.04f, 0.035f, 0.07f, 8, Shade(Col(235, 235, 230), lit, 0.4f));
-        Raylib.DrawSphere(new Vector3(-2.85f, 1.12f, -2.8f), 0.07f, Shade(Col(225, 170, 90), lit, 0.4f));
-        Raylib.DrawSphere(new Vector3(-2.68f, 1.12f, -2.78f), 0.07f, Shade(Col(225, 170, 90), lit, 0.4f));
-        Raylib.DrawSphere(new Vector3(-2.77f, 1.12f, -2.62f), 0.07f, Shade(Col(235, 190, 110), lit, 0.4f));
+        Box(-2.75f, 1.39f, -4.15f, 0.45f, 0.70f, 0.45f, Shade(Col(40, 42, 46), lit, 0.5f));
+        Box(-2.75f, 1.55f, -3.92f, 0.30f, 0.14f, 0.02f, lit ? Col(240, 120, 60) : Col(60, 30, 20));
+        Raylib.DrawCylinder(new Vector3(-2.75f, 1.04f, -3.8f), 0.04f, 0.035f, 0.07f, 8, Shade(Col(235, 235, 230), lit, 0.4f));
+        Raylib.DrawSphere(new Vector3(-2.85f, 1.12f, -3.1f), 0.07f, Shade(Col(225, 170, 90), lit, 0.4f));
+        Raylib.DrawSphere(new Vector3(-2.68f, 1.12f, -3.08f), 0.07f, Shade(Col(225, 170, 90), lit, 0.4f));
+        Raylib.DrawSphere(new Vector3(-2.77f, 1.12f, -2.92f), 0.07f, Shade(Col(235, 190, 110), lit, 0.4f));
 
-        WallRack(-1.2f, lit);
-        WallClock(-1.2f, 2.95f, -4.88f, clockTime, lit);
+        WallRack(-1.3f, minZ, lit, hasWelcomeSign: true);
+        WallRack(-4.5f, minZ, lit, hasWelcomeSign: false);
+        WallRack(2.1f, minZ, lit, hasWelcomeSign: false);
+        WallClock(-1.3f, 3.12f, minZ + 0.12f, clockTime, lit);
 
-        Gondola(2.15f, -0.35f, 4.1f, lit, 0);
-        Gondola(3.75f, -0.35f, 4.1f, lit, 1);
-        Fridge(2.9f, -4.55f, lit);
+        LeftBeverageFountainWall(lit);
+        LeftWoodIslandCounter(lit);
 
-        Box(4.5f, 3.45f, -4.5f, 0.2f, 0.1f, 0.2f, Col(30, 30, 34));
-        Raylib.DrawSphere(new Vector3(4.5f, 3.38f, -4.5f), 0.11f, Shade(Col(20, 20, 24), lit, 0.5f));
+        MiniBlueCooler(0.85f, -2.25f, lit);
+
+        RollingSnackRack(2.25f, 1.65f, -15f, lit);
+
+        Gondola(3.85f, -0.8f, 4.4f, lit, 0);
+        Gondola(5.35f, -0.8f, 4.4f, lit, 1);
+
+        BeverageCoolerUnit(maxX - 0.45f, 4.6f, -90f, lit, isRedCocaCola: true);
+        BeverageCoolerUnit(maxX - 0.45f, 1.8f, -90f, lit, isRedCocaCola: false);
+        BeverageCoolerUnit(maxX - 0.45f, -1.0f, -90f, lit, isRedCocaCola: false);
+        BeverageCoolerUnit(maxX - 0.45f, -3.8f, -90f, lit, isRedCocaCola: false);
+
+        Box(maxX - 0.5f, 3.65f, minZ + 0.5f, 0.2f, 0.1f, 0.2f, Col(30, 30, 34));
+        Raylib.DrawSphere(new Vector3(maxX - 0.5f, 3.58f, minZ + 0.5f), 0.11f, Shade(Col(20, 20, 24), lit, 0.5f));
         if (MathF.Sin(time * 3f) > 0.4f)
-            Raylib.DrawSphere(new Vector3(4.5f, 3.32f, -4.4f), 0.025f, Col(255, 40, 30));
+            Raylib.DrawSphere(new Vector3(maxX - 0.5f, 3.52f, minZ + 0.6f), 0.025f, Col(255, 40, 30));
     }
 
-    public static void DrawStoreGlass(bool doorLocked)
+    public static void DrawStoreGlass(bool doorLocked, float daylight = 0f)
     {
-        Raylib.DrawCube(new Vector3(0f, 1.3f, 5f), 2.4f, 2.6f, 0.06f,
+        const float maxZ = 7.5f;
+
+        Raylib.DrawCube(new Vector3(0f, 1.3f, maxZ), 2.4f, 2.6f, 0.06f,
             doorLocked ? Col(90, 130, 160, 120) : Col(140, 190, 220, 65));
-        Raylib.DrawCube(new Vector3(2.9f, 1.2f, -4.07f), 2.3f, 2.0f, 0.02f, Col(190, 225, 240, 35));
-        Raylib.DrawCube(new Vector3(-2.75f, 1.22f, -2.7f), 0.5f, 0.36f, 0.5f, Col(200, 230, 240, 50));
-        Raylib.DrawSphere(new Vector3(-4.4f, 3.2f, 7.0f), 0.35f, Col(255, 225, 150, 35));
-        Raylib.DrawCylinder(new Vector3(-4.4f, 0.012f, 7.0f), 1.4f, 1.4f, 0.002f, 24, Col(255, 225, 150, 28));
+
+        Raylib.DrawCube(new Vector3(-4.25f, 1.34f, 1.65f), 0.72f, 0.60f, 0.92f, Col(235, 220, 185, 48));
+
+        Raylib.DrawCube(new Vector3(-2.75f, 1.22f, -3.0f), 0.5f, 0.36f, 0.5f, Col(200, 230, 240, 50));
+
+        byte lampAlpha = (byte)Math.Max(0, (int)((1f - daylight) * 35f));
+        if (lampAlpha > 0)
+        {
+            Raylib.DrawSphere(new Vector3(-2.9f, 3.2f, 9.1f), 0.35f, Col(255, 225, 150, lampAlpha));
+            Raylib.DrawCylinder(new Vector3(-2.9f, 0.012f, 9.1f), 1.4f, 1.4f, 0.002f, 24, Col(255, 225, 150, (byte)(lampAlpha * 0.8f)));
+        }
     }
 }
