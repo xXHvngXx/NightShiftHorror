@@ -26,7 +26,7 @@
 
 </div>
 
----
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8a1020,50:3a0a12,100:0b0b12&height=70&section=header" width="100%"/>
 
 ## 👁️ Giới thiệu
 
@@ -42,7 +42,7 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 </tr>
 </table>
 
----
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0b0b12,50:3a0a12,100:8a1020&height=70&section=header" width="100%"/>
 
 ## 💀 Tính năng nổi bật
 
@@ -73,13 +73,14 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 - Camera tự quay và zoom vào người đối diện khi trò chuyện.
 - Đầu camera nhún nhẹ khi di chuyển, viền sáng quanh vật có thể tương tác.
 
----
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8a1020,50:3a0a12,100:0b0b12&height=70&section=header" width="100%"/>
 
 ## 🎮 Điều khiển
 
 | Phím | Hành động |
 |:----:|:----------|
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Di chuyển |
+| <kbd>Shift</kbd> | Chạy nhanh |
 | 🖱️ **Chuột** | Nhìn xung quanh |
 | <kbd>F</kbd> | Tương tác / nói chuyện / hiện nhanh chữ |
 | <kbd>Space</kbd> | Hiện nhanh chữ, tiếp tục hội thoại |
@@ -88,7 +89,7 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 | <kbd>Esc</kbd> | Tạm dừng |
 | <kbd>R</kbd> | Chơi lại (ở màn hình kết thúc) |
 
----
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0b0b12,50:3a0a12,100:8a1020&height=70&section=header" width="100%"/>
 
 ## 🕯️ Diễn biến một đêm
 
@@ -101,7 +102,7 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 
 > ⚠️ **Gợi ý nhỏ:** hãy đọc kỹ nội quy, và đừng tin tất cả những gì bạn nghe thấy.
 
----
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8a1020,50:3a0a12,100:0b0b12&height=70&section=header" width="100%"/>
 
 ## 🛠️ Công nghệ
 
@@ -113,7 +114,7 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 | **IDE** | Visual Studio 2022 |
 | **Nền tảng** | Windows (font hội thoại dùng `Segoe UI` hệ thống) |
 
----
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0b0b12,50:3a0a12,100:8a1020&height=70&section=header" width="100%"/>
 
 ## 🚀 Cài đặt & chạy game
 
@@ -126,97 +127,3 @@ cd NightShiftHorror
 
 # 2. Chạy game
 dotnet run -c Release
-```
-
-### 🖼️ Thêm khuôn mặt nhân vật
-
-Đặt ảnh PNG vào `Assets/Faces/` với **đúng tên** sau:
-
-| Tên file | Nhân vật |
-|:---------|:---------|
-| `old_man.png` | Ông cụ |
-| `girl.png` | Cô gái |
-| `strange_man.png` | Người đàn ông lạ |
-| `yellow_normal.png` | Áo mưa vàng (bình thường) |
-| `yellow_horror.png` | Áo mưa vàng (kinh dị) |
-| `manager.png` | Quản lý |
-| `friend1.png` `friend2.png` `friend3.png` | Nhóm bạn ở quán cà phê |
-
-Đảm bảo ảnh luôn được copy sang thư mục build bằng cách thêm vào `.csproj`:
-
-```xml
-<ItemGroup>
-  <None Update="Assets\**\*">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
-</ItemGroup>
-```
-
-<details>
-<summary><b>🔧 Khắc phục sự cố: mặt nhân vật không hiện</b></summary>
-
-<br/>
-
-Mở cửa sổ Console khi chạy game, mỗi ảnh sẽ in một dòng báo cáo:
-
-| Thông báo | Ý nghĩa |
-|:----------|:--------|
-| `[Faces] OK old_man.png (512x512)` | Nạp thành công |
-| `[Faces] THIẾU ảnh cho ...` | Không tìm thấy file, game dùng mặt dự phòng |
-| `[Faces] LỖI ... là WebP đội lốt .png` | Hãy xuất lại thành PNG thật |
-
-Nếu mặt bị lệch, chỉnh bảng `FaceFits` trong `Props.Faces.cs` (`U0/U1/V0/V1`, `VertShift`, `Vert`).
-
-</details>
-
----
-
-## 📂 Cấu trúc dự án
-
-```text
-NightShiftHorror/
-│
-├── 📁 Assets/
-│   └── 📁 Faces/           # Texture khuôn mặt nhân vật (.png)
-│
-├── 📄 Program.cs           # Vòng lặp game, cảnh, hội thoại, sự kiện, âm thanh tổng hợp
-├── 📄 Props.cs             # Mô hình 3D: người, quán cà phê, cửa hàng tiện lợi
-├── 📄 Props.Faces.cs       # Nạp ảnh mặt, tự khớp tỉ lệ, dán mặt lên đầu 3D
-└── 📄 NightShiftHorror.csproj
-```
-
----
-
-## 🗺️ Lộ trình phát triển
-
-- [x] Quán cà phê và cảnh mở đầu
-- [x] Cửa hàng tiện lợi với đầy đủ vật dụng
-- [x] Khuôn mặt thật trên mô hình 3D, đầu xoay theo người chơi
-- [x] Âm thanh tổng hợp, vignette, rung màn hình
-- [x] Menu tạm dừng
-- [x] Nhiều kết thúc
-- [ ] Làm mặt tối theo ánh sáng khi mất điện
-- [ ] Hiệu ứng jumpscare bằng hình ảnh
-- [ ] Thêm sự kiện và vị khách mới
-- [ ] Lưu tiến trình, tùy chỉnh âm lượng
-- [ ] Bản phát hành đa nền tảng
-
----
-
-## 🤝 Đóng góp
-
-Mọi ý tưởng, báo lỗi và pull request đều được chào đón. Hãy mở một **Issue** để thảo luận trước khi gửi thay đổi lớn.
-
-## 📜 Giấy phép
-
-Chưa chọn giấy phép. Hãy thêm file `LICENSE` trước khi công khai mã nguồn.
-
-<div align="center">
-
-<br/>
-
-*Chúc bạn sống sót đến 05:00.* 🌅
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8a1020,50:3a0a12,100:0b0b12&height=110&section=footer" width="100%" alt=""/>
-
-</div>
