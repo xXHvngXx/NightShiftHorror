@@ -92,14 +92,12 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 
 ## 🕯️ Diễn biến một đêm
 
-```mermaid
-timeline
-    title Một ca trực
-    00:00 : Nhận ca : Đọc tờ quy tắc
-    02:00 : Điện thoại bàn đổ chuông : Có người lạ bước vào
-    03:00 : Giờ khóa cửa
-    05:00 : Hết ca : Nhận tiền công
-```
+| Thời gian | Sự kiện chính | Ghi chú |
+| :---: | :--- | :--- |
+| **00:00** | Bắt đầu ca trực | Đọc kỹ tờ quy tắc đặt trên quầy |
+| **02:00** | Điện thoại bàn đổ chuông | Có vị khách lạ bước vào cửa hàng |
+| **03:00** | Thời điểm khóa cửa | Tuyệt đối không để ai ra vào |
+| **05:00** | Kết thúc ca trực | Nhận tiền công và hoàn thành ca |
 
 > ⚠️ **Gợi ý nhỏ:** hãy đọc kỹ nội quy, và đừng tin tất cả những gì bạn nghe thấy.
 
