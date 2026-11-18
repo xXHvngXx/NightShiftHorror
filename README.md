@@ -96,9 +96,7 @@ Toàn bộ thế giới 3D, nhân vật, âm thanh và giao diện đều đư�
 timeline
     title Một ca trực
     00:00 : Nhận ca : Đọc tờ quy tắc
-    00:30 : Vị khách đầu tiên
-    02:00 : Điện thoại bàn đổ chuông
-    02:20 : Có người lạ bước vào
+    02:00 : Điện thoại bàn đổ chuông : Có người lạ bước vào
     03:00 : Giờ khóa cửa
     05:00 : Hết ca : Nhận tiền công
 ```
