@@ -12,6 +12,8 @@ partial class Program
     static Sound scareSound;
     static Sound ambientHumSound;
     static Sound heartbeatSound;
+    static Sound motorbikeEngineSound;
+    static Sound motorbikeHornSound;
 
     static void InitAudio()
     {
@@ -24,6 +26,8 @@ partial class Program
         scareSound = CreateScareSound();
         ambientHumSound = CreateAmbientHumSound();
         heartbeatSound = CreateHeartbeatSound();
+        motorbikeEngineSound = CreateMotorbikeEngineSound();
+        motorbikeHornSound = CreateMotorbikeHornSound();
 
         Raylib.SetSoundVolume(footstepSound, 0.75f);
         Raylib.SetSoundVolume(voiceStaticSound, 0.35f);
@@ -33,6 +37,9 @@ partial class Program
         Raylib.SetSoundVolume(scareSound, 0.85f);
         Raylib.SetSoundVolume(ambientHumSound, 0.22f);
         Raylib.SetSoundVolume(heartbeatSound, 0.65f);
+        Raylib.SetSoundVolume(motorbikeEngineSound, 0.35f);
+        Raylib.SetSoundVolume(motorbikeHornSound, 0.55f);
+
     }
 
     static void UnloadAudio()
@@ -46,6 +53,8 @@ partial class Program
         Raylib.UnloadSound(scareSound);
         Raylib.UnloadSound(ambientHumSound);
         Raylib.UnloadSound(heartbeatSound);
+        Raylib.UnloadSound(motorbikeEngineSound);
+        Raylib.UnloadSound(motorbikeHornSound);
     }
 
     static Sound CreateFootstepSound()
@@ -284,5 +293,47 @@ partial class Program
         Sound sound = Raylib.LoadSoundFromWave(wave);
         Raylib.UnloadWave(wave);
         return sound;
+    }
+
+    static Sound CreateMotorbikeEngineSound()
+    {
+        const int sampleRate = 22050;
+        const float duration = 1.0f;
+        int sampleCount = (int)(sampleRate * duration);
+        short[] samples = new short[sampleCount];
+        Random rand = new(55);
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            float t = (float)i / sampleRate;
+            // Tiếng nổ máy 4 thì trầm ấm + tiếng ống xả
+            float pulse = MathF.Sin(2f * MathF.PI * 28f * t);
+            float harmonic = MathF.Sin(2f * MathF.PI * 56f * t) * 0.45f
+                           + MathF.Sin(2f * MathF.PI * 84f * t) * 0.25f;
+            float exhaust = ((float)rand.NextDouble() * 2f - 1f) * 0.14f;
+            float wave = (pulse * 0.65f + harmonic + exhaust) * 0.55f;
+            samples[i] = (short)(Math.Clamp(wave, -1f, 1f) * short.MaxValue);
+        }
+
+        return BuildSoundFromPcm(samples, sampleRate);
+    }
+
+    static Sound CreateMotorbikeHornSound()
+    {
+        const int sampleRate = 22050;
+        const float duration = 0.24f;
+        int sampleCount = (int)(sampleRate * duration);
+        short[] samples = new short[sampleCount];
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            float t = (float)i / sampleRate;
+            float env = MathF.Min(1f, t * 40f) * MathF.Min(1f, (duration - t) * 35f);
+            float tone = MathF.Sign(MathF.Sin(2f * MathF.PI * 410f * t)) * 0.35f
+                       + MathF.Sin(2f * MathF.PI * 515f * t) * 0.35f;
+            samples[i] = (short)(tone * env * short.MaxValue * 0.7f);
+        }
+
+        return BuildSoundFromPcm(samples, sampleRate);
     }
 }

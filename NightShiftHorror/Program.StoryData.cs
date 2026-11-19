@@ -246,6 +246,7 @@ partial class Program
         dialogueStage = 0;
         subChoiceMode = "";
         Raylib.StopSound(cafeAmbience);
+        Raylib.StopSound(motorbikeEngineSound);
         Raylib.StopSound(ambientHumSound);
         Raylib.DisableCursor();
     }

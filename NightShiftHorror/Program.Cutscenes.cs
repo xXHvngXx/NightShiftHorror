@@ -74,6 +74,7 @@ partial class Program
                 isCafeCutscene = true;
                 cafeCutsceneTimer = 0f;
                 isTalking = false;
+                StopDialogueVoice();
                 return;
             }
         }
@@ -217,12 +218,8 @@ partial class Program
                 if (fadeAlpha >= 1.0f)
                 {
                     Raylib.StopSound(cafeAmbience);
-                    gameScene = 1;
                     isFadingOutCafe = false;
-                    fadeAlpha = 0f;
-                    introIndex = 0;
-                    camera.FovY = NormalFov;
-                    StartDialogue("Tú", introMonologue[0], 2);
+                    StartMotorbikeScene();
                 }
             }
             else
@@ -400,6 +397,7 @@ partial class Program
                 isWorkCutscene = true;
                 workCutsceneTimer = 0f;
                 isTalking = false;
+                StopDialogueVoice();
             }
         }
 
@@ -522,6 +520,7 @@ partial class Program
         dawnCutsceneTimer = 0f;
         dawnProgress = 0f;
         isTalking = false;
+        StopDialogueVoice();
         isTalkingToNpc = false;
         isDoorLocked = false;
         lightsOn = true;

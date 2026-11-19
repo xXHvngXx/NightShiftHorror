@@ -183,6 +183,12 @@ partial class Program
                 continue;
             }
 
+            if (gameScene == 3)
+            {
+                UpdateAndDrawMotorbikeScene(dt);
+                continue;
+            }
+
             UpdateAndDrawStoreGameplay(dt);
         }
 

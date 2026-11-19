@@ -51,6 +51,7 @@ partial class Program
         isTalkingToNpc = talkingToNpc;
         subChoiceMode = mode;
         npcShouldLeaveAfterDialogue = leaveAfter;
+        PlayDialogueVoice(speaker, text);
     }
 
     static void UpdateTypewriter(float deltaTime, float basePitch)
@@ -63,7 +64,7 @@ partial class Program
         if (currentIndex > lastSoundCharIndex && currentIndex % 2 == 0)
         {
             char c = fullText[Math.Min(currentIndex, fullText.Length - 1)];
-            if (!char.IsWhiteSpace(c))
+            if (!hasActiveVoiceClip && !char.IsWhiteSpace(c))
             {
                 Raylib.SetSoundPitch(voiceStaticSound, basePitch + (float)rng.NextDouble() * 0.1f);
                 Raylib.PlaySound(voiceStaticSound);
@@ -676,6 +677,7 @@ partial class Program
                         recordingOn = (selectedOption == 0);
                         subChoiceMode = "";
                         isTalking = false;
+                        StopDialogueVoice();
                         dialogueStage = 0;
                         Raylib.GetMouseDelta();
                     }
@@ -695,6 +697,7 @@ partial class Program
                         else
                         {
                             isTalking = false;
+                            StopDialogueVoice();
                             dialogueStage = 0;
                             Raylib.GetMouseDelta();
 
@@ -828,6 +831,7 @@ partial class Program
                         if (selectedOption == 0)
                         {
                             isTalking = false;
+                            StopDialogueVoice();
                             isTalkingToNpc = false;
                             dialogueStage = 0;
                             isDoorLocked = false;
@@ -855,6 +859,7 @@ partial class Program
                     subChoiceMode = "";
                     npcShouldLeaveAfterDialogue = false;
                     isTalking = false;
+                    StopDialogueVoice();
                     isTalkingToNpc = false;
                     dialogueStage = 0;
                     Raylib.GetMouseDelta();
