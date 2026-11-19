@@ -222,9 +222,11 @@ partial class Program
         Raylib.StopSound(ambientHumSound);
         if (cameraShakeTimer > 0f) cameraShakeTimer = Math.Max(0f, cameraShakeTimer - dt);
 
-        if (Raylib.IsKeyPressed(KeyboardKey.R))
+        if (Raylib.IsKeyPressed(KeyboardKey.Enter) ||
+            Raylib.IsKeyPressed(KeyboardKey.Space) ||
+            Raylib.IsKeyPressed(KeyboardKey.R))
         {
-            ResetGame();
+            ReturnToHome();
         }
 
         int shakeX = cameraShakeTimer > 0f ? rng.Next(-10, 11) : 0;
@@ -247,7 +249,7 @@ partial class Program
             currentY += 10;
         }
 
-        DrawViText("Bấm [R] để chơi lại từ đầu", 140, ScreenHeight - 90, 22, Color.Gray);
+        DrawViText("Nhấn [Enter/Space/R] để quay lại màn hình chính", 140, ScreenHeight - 90, 22, Color.Gray);
         Raylib.EndDrawing();
     }
 }

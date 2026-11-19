@@ -43,7 +43,7 @@ partial class Program
     static bool calledRealDung = false;
     static int greetedCount = 0;
 
-    static int gameScene = -1;
+    static int gameScene = -2;
     static int cafeIndex = 0;
     static int cafeSubStep = 0;
     static bool isFadingOutCafe = false;
@@ -118,7 +118,7 @@ partial class Program
         Raylib.SetExitKey(KeyboardKey.Null);
         Raylib.InitAudioDevice();
         Raylib.SetTargetFPS(60);
-        Raylib.DisableCursor();
+        Raylib.EnableCursor();
 
         sceneTarget = Raylib.LoadRenderTexture(ScreenWidth, ScreenHeight);
         Raylib.SetTextureFilter(sceneTarget.Texture, TextureFilter.Bilinear);
@@ -142,7 +142,7 @@ partial class Program
         {
             float dt = Raylib.GetFrameTime();
 
-            if (!gameEnded && Raylib.IsKeyPressed(KeyboardKey.Escape))
+            if (!gameEnded && gameScene != -2 && Raylib.IsKeyPressed(KeyboardKey.Escape))
             {
                 isPaused = !isPaused;
                 pauseSelection = 0;
@@ -162,6 +162,12 @@ partial class Program
             if (isPaused)
             {
                 if (UpdateAndDrawPauseMenu()) break;
+                continue;
+            }
+
+            if (gameScene == -2)
+            {
+                if (DrawHomeScreen(dt)) break;
                 continue;
             }
 
