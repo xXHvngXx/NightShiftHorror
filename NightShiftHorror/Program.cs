@@ -3,8 +3,8 @@ using Raylib_cs;
 
 partial class Program
 {
-    const int ScreenWidth = 1280;
-    const int ScreenHeight = 720;
+    static int ScreenWidth = 1280;
+    static int ScreenHeight = 720;
     const float NormalFov = 65.0f;
     const float TalkNpcFov = 58.0f;
     const float StepInterval = 0.46f;
@@ -113,8 +113,24 @@ partial class Program
 
     static void Main()
     {
-        Raylib.InitWindow(ScreenWidth, ScreenHeight, "Ca Trực Đêm - Night Shift Horror");
+        Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow);
+        Raylib.InitWindow(1280, 720, "Ca Trực Đêm - Night Shift Horror");
+
+        int monitor = Raylib.GetCurrentMonitor();
+        int monW = Raylib.GetMonitorWidth(monitor);
+        int monH = Raylib.GetMonitorHeight(monitor);
+        if (monW > 0 && monH > 0)
+        {
+            ScreenWidth = monW;
+            ScreenHeight = monH;
+        }
+        Raylib.SetWindowPosition(0, 0);
+        Raylib.SetWindowSize(ScreenWidth, ScreenHeight);
+
+        LoadCustomModels();
         DisableIme();
+
+
         Raylib.SetExitKey(KeyboardKey.Null);
         Raylib.InitAudioDevice();
         Raylib.SetTargetFPS(60);
@@ -141,6 +157,13 @@ partial class Program
         while (!Raylib.WindowShouldClose())
         {
             float dt = Raylib.GetFrameTime();
+
+            bool altEnter = (Raylib.IsKeyDown(KeyboardKey.LeftAlt) || Raylib.IsKeyDown(KeyboardKey.RightAlt))
+                && Raylib.IsKeyPressed(KeyboardKey.Enter);
+            if (Raylib.IsKeyPressed(KeyboardKey.F11) || altEnter)
+            {
+                Raylib.ToggleBorderlessWindowed();
+            }
 
             if (!gameEnded && gameScene != -2 && Raylib.IsKeyPressed(KeyboardKey.Escape))
             {
@@ -204,6 +227,7 @@ partial class Program
         Raylib.UnloadFont(viFont);
         UnloadAudio();
         Raylib.CloseAudioDevice();
+        UnloadCustomModels();
         Raylib.CloseWindow();
     }
 

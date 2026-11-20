@@ -195,6 +195,9 @@ partial class Program
         greetedCount = 0;
 
         phoneNotifStep = 0;
+        phoneChatThreads.Clear();
+        activeChatThreadId = "mom";
+        phonePostReplySpawned = false;
         phoneStepTimer = 0.7f;
         phoneChoiceStage = 0;
         phoneSelectedOption = 0;

@@ -12,6 +12,7 @@ partial class Program
         );
         camera.Position = eyePos;
         camera.Target = eyePos + lookDir;
+        camera.Up = Vector3.UnitY;
     }
 
     static void SmoothLookAtPoint(Vector3 eyePos, Vector3 targetPos, float dt, float speed = 6.5f)
@@ -138,7 +139,13 @@ partial class Program
             if (storyStep == 7 && !isDoorLocked && sharedLocation && !spoofAlertShown && clockMinutes >= 1614f)
             {
                 spoofAlertShown = true;
-                Raylib.PlaySound(phoneVibrateSound);
+                ShowTopNotificationBanner(
+                    "Zalo",
+                    "Dũng",
+                    "Ê, tao chạy ngang đường Số 9 ghé qua chỗ mày nè, ra mở cửa tao coi.",
+                    new Color(24, 119, 242, 255),
+                    4.5f
+                );
                 SpawnNpc(
                     new Vector3(0.45f, 0f, 9.6f),
                     new Vector3(0.45f, 0f, 9.6f),
@@ -309,10 +316,14 @@ partial class Program
             {
                 playerPos.Z = 6.9f;
             }
-            playerPos.X = Math.Clamp(playerPos.X, -6.9f, 6.9f);
-            playerPos.Z = Math.Clamp(playerPos.Z, -5.9f, maxZ);
+            playerPos.X = Math.Clamp(playerPos.X, -9.8f, 9.8f);
+            playerPos.Z = Math.Clamp(playerPos.Z, -6.5f, maxZ);
 
-            foreach (var box in solidObjects)
+            var storeColliders = solidObjects
+                .Where(b => b.Min.X > -3.4f && b.Max.X < 1.5f && b.Min.Z > -6.0f && b.Max.Z < 0.0f)
+                .Concat(customModelColliders);
+
+            foreach (var box in storeColliders)
             {
                 float closestX = Math.Clamp(playerPos.X, box.Min.X, box.Max.X);
                 float closestZ = Math.Clamp(playerPos.Z, box.Min.Z, box.Max.Z);
@@ -454,7 +465,7 @@ partial class Program
             npcEyeGaze = Vector2.Lerp(npcEyeGaze, targetGaze.EyeGaze, headSmooth);
         }
 
-        DrawStoreFrame(anyCutscene, interactPrompt);
+        DrawStoreFrame(dt, anyCutscene, interactPrompt);
     }
 
     static void HandleStoreInteraction()
@@ -900,7 +911,7 @@ partial class Program
         }
     }
 
-    static void DrawStoreFrame(bool anyCutscene, string interactPrompt)
+    static void DrawStoreFrame(float dt, bool anyCutscene, string interactPrompt)
     {
         Raylib.BeginDrawing();
         float currentDaylight = isDawnCutscene ? dawnProgress : (storyStep >= 10 ? 1.0f : 0.0f);
@@ -911,6 +922,7 @@ partial class Program
         RenderFoggyScene(() =>
         {
             Props.DrawStore(lightsOn, isDoorLocked, (float)Raylib.GetTime(), currentTime, storyStep == 4 && !isTalking, currentDaylight);
+            DrawStoreShelves(lightsOn);
 
             if (isWorkCutscene)
             {
@@ -999,6 +1011,8 @@ partial class Program
         {
             DrawDialogueBox();
         }
+
+        UpdateAndDrawTopNotificationBanner(dt);
 
         if (fadeAlpha > 0f)
         {

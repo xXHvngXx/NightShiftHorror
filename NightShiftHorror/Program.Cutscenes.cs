@@ -3,12 +3,161 @@ using Raylib_cs;
 
 partial class Program
 {
+    sealed class PhoneMessageItem
+    {
+        public string Sender { get; set; } = "";
+        public string Time { get; set; } = "";
+        public string Body { get; set; } = "";
+        public bool IsMe { get; set; }
+    }
+
+    sealed class PhoneChatThread
+    {
+        public string Id { get; set; } = "";
+        public string ContactName { get; set; } = "";
+        public string AppName { get; set; } = "Messages";
+        public Color BadgeColor { get; set; } = new(10, 132, 255, 255);
+        public bool Unread { get; set; }
+        public List<PhoneMessageItem> Messages { get; set; } = [];
+    }
+
+    static readonly List<PhoneChatThread> phoneChatThreads = [];
+    static string activeChatThreadId = "mom";
+
     static int phoneNotifStep = 0;
-    static float phoneStepTimer = 0.7f;
+    static float phoneStepTimer = 0.85f;
     static int phoneChoiceStage = 0;
     static int phoneSelectedOption = 0;
     static float phoneEndHoldTimer = 0f;
     static string phoneSentReply = "";
+    static bool phonePostReplySpawned = false;
+
+    static string bannerApp = "";
+    static string bannerSender = "";
+    static string bannerBody = "";
+    static Color bannerBadgeColor = new(34, 197, 94, 255);
+    static float bannerTimer = 0f;
+    static float bannerSlide = 0f;
+
+    static void InitPhoneThreads()
+    {
+        phoneChatThreads.Clear();
+        phoneChatThreads.Add(new PhoneChatThread
+        {
+            Id = "mom",
+            ContactName = "Mẹ",
+            AppName = "Messages",
+            BadgeColor = new Color(52, 199, 89, 255),
+            Unread = false,
+            Messages = []
+        });
+        activeChatThreadId = "mom";
+    }
+
+    static void AppendThreadMessage(string threadId, string contactName, string appName, Color badgeColor,
+                                    string sender, string time, string body, bool isMe, bool showBanner, float bannerDuration = 5.0f)
+    {
+        var thread = phoneChatThreads.Find(t => t.Id == threadId);
+        if (thread == null)
+        {
+            thread = new PhoneChatThread
+            {
+                Id = threadId,
+                ContactName = contactName,
+                AppName = appName,
+                BadgeColor = badgeColor,
+                Unread = true
+            };
+            phoneChatThreads.Add(thread);
+        }
+
+        thread.Messages.Add(new PhoneMessageItem
+        {
+            Sender = sender,
+            Time = time,
+            Body = body,
+            IsMe = isMe
+        });
+
+        bool isOtherThread = threadId != activeChatThreadId;
+        if (isOtherThread)
+        {
+            thread.Unread = true;
+            if (showBanner)
+            {
+                ShowTopNotificationBanner(appName, sender, body, badgeColor, bannerDuration);
+            }
+        }
+        else
+        {
+            thread.Unread = false;
+            if (!isMe)
+            {
+                Raylib.SetSoundPitch(voiceStaticSound, 1.55f);
+                Raylib.PlaySound(voiceStaticSound);
+            }
+        }
+    }
+
+    static void ShowTopNotificationBanner(string app, string sender, string body, Color badgeColor, float duration = 5.0f)
+    {
+        bannerApp = app;
+        bannerSender = sender;
+        bannerBody = body;
+        bannerBadgeColor = badgeColor;
+        bannerTimer = duration;
+        Raylib.PlaySound(notificationSound);
+    }
+
+    static void UpdateAndDrawTopNotificationBanner(float dt)
+    {
+        if (bannerTimer > 0f)
+        {
+            bannerTimer -= dt;
+            bannerSlide += (1f - bannerSlide) * Math.Min(1f, dt * 5.2f);
+        }
+        else
+        {
+            bannerSlide += (0f - bannerSlide) * Math.Min(1f, dt * 4.5f);
+        }
+
+        if (bannerSlide <= 0.01f) return;
+
+        int bannerW = Math.Min(540, ScreenWidth - 48);
+        List<string> lines = WrapViText(bannerBody, bannerW - 96, 17);
+        int bannerH = 44 + Math.Max(1, lines.Count) * 21;
+        int bannerX = (ScreenWidth - bannerW) / 2;
+        int bannerY = (int)(-bannerH - 16 + bannerSlide * (bannerH + 34));
+
+        Rectangle shadowRect = new(bannerX + 2, bannerY + 6, bannerW, bannerH);
+        Raylib.DrawRectangleRounded(shadowRect, 0.28f, 12, new Color(0, 0, 0, 125));
+
+        Rectangle cardRect = new(bannerX, bannerY, bannerW, bannerH);
+        Raylib.DrawRectangleRounded(cardRect, 0.28f, 12, new Color(26, 28, 36, 244));
+        Raylib.DrawRectangleRoundedLinesEx(cardRect, 0.28f, 12, 1.5f, new Color(92, 98, 114, 210));
+
+        int iconSize = 40;
+        int iconX = bannerX + 14;
+        int iconY = bannerY + (bannerH - iconSize) / 2;
+        Rectangle iconRect = new(iconX, iconY, iconSize, iconSize);
+        Raylib.DrawRectangleRounded(iconRect, 0.32f, 8, bannerBadgeColor);
+
+        string badgeChar = bannerApp.Length > 0 ? bannerApp[..1].ToUpper() : "M";
+        int charW = (int)Raylib.MeasureTextEx(viFont, badgeChar, 21, 1f).X;
+        DrawViText(badgeChar, iconX + (iconSize - charW) / 2, iconY + 9, 21, Color.White);
+
+        int textX = iconX + iconSize + 14;
+        DrawViText($"{bannerSender}  •  {bannerApp}", textX, bannerY + 11, 17, new Color(245, 247, 252, 255));
+
+        string timeTag = "bây giờ";
+        int timeW = (int)Raylib.MeasureTextEx(viFont, timeTag, 15, 1f).X;
+        DrawViText(timeTag, bannerX + bannerW - timeW - 16, bannerY + 12, 15, new Color(165, 172, 185, 220));
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            DrawViText(lines[i], textX, bannerY + 34 + i * 21, 17, new Color(210, 215, 226, 240));
+        }
+    }
 
     static void DrawPhoneIntroScene(float dt)
     {
@@ -17,16 +166,52 @@ partial class Program
             Raylib.PlaySound(ambientHumSound);
         }
 
+        if (phoneNotifStep == 0 && phoneChoiceStage == 0 && phoneChatThreads.Count == 0)
+        {
+            InitPhoneThreads();
+            phonePostReplySpawned = false;
+            bannerTimer = 0f;
+            bannerSlide = 0f;
+        }
+
+        string[] momMessages =
+        [
+            "Con ăn cơm chưa?",
+            "Mẹ chuyển 500.000 rồi đó, đừng có nhịn nghen.",
+            "Tháng này hơi khó khăn, con tiết kiệm chút."
+        ];
+
         if (phoneChoiceStage == 0)
         {
             phoneStepTimer -= dt;
             if (phoneStepTimer <= 0f || Raylib.IsKeyPressed(KeyboardKey.Enter) || Raylib.IsKeyPressed(KeyboardKey.Space))
             {
-                if (phoneNotifStep < initialPhoneMessages.Length)
+                if (phoneNotifStep < momMessages.Length)
                 {
                     phoneNotifStep++;
-                    Raylib.PlaySound(phoneVibrateSound);
-                    phoneStepTimer = 1.45f;
+                    phoneStepTimer = 2.15f;
+
+                    AppendThreadMessage(
+                        "mom", "Mẹ", "Messages", new Color(52, 199, 89, 255),
+                        "Mẹ", "17:41", momMessages[phoneNotifStep - 1], false, false
+                    );
+
+                    if (phoneNotifStep == 2)
+                    {
+                        AppendThreadMessage(
+                            "bank", "Biến động số dư", "Ngân hàng", new Color(220, 68, 68, 255),
+                            "Biến động số dư", "17:41", "Tài khoản +500.000đ. Số dư hiện tại: 187.400đ.",
+                            false, true, 4.8f
+                        );
+                    }
+                    else if (phoneNotifStep == 3)
+                    {
+                        AppendThreadMessage(
+                            "colan", "Cô Lan (Chủ trọ)", "Zalo", new Color(24, 119, 242, 255),
+                            "Cô Lan (Chủ trọ)", "17:41", "Tú ơi, tháng này tiền trọ 2 triệu 8 nghen. Trước mùng 5 hen.",
+                            false, true, 5.0f
+                        );
+                    }
                 }
                 else
                 {
@@ -36,6 +221,43 @@ partial class Program
         }
         else if (phoneChoiceStage == 1)
         {
+            string[] replies =
+            [
+                "Dạ con ăn rồi mẹ. Mẹ giữ tiền đi, con còn.",
+                "Dạ mẹ. Con cảm ơn mẹ."
+            ];
+
+            int winW = 470;
+            int winH = Math.Min(700, ScreenHeight - 130);
+            int winX = (ScreenWidth - winW) / 2;
+            int winY = (ScreenHeight - winH) / 2 + 18;
+            int replyAreaY = winY + winH - 166;
+            Vector2 mousePos = Raylib.GetMousePosition();
+
+            for (int i = 0; i < replies.Length; i++)
+            {
+                Rectangle optRect = new(winX + 20, replyAreaY + 34 + i * 44, winW - 40, 38);
+                if (Raylib.CheckCollisionPointRec(mousePos, optRect))
+                {
+                    if (phoneSelectedOption != i)
+                    {
+                        phoneSelectedOption = i;
+                        Raylib.SetSoundPitch(voiceStaticSound, 1.25f);
+                        Raylib.PlaySound(voiceStaticSound);
+                    }
+                    if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+                    {
+                        lieToMom = (i == 0);
+                        phoneSentReply = replies[i];
+                        AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Bạn", "17:42", phoneSentReply, true, false);
+                        Raylib.SetSoundPitch(voiceStaticSound, 1.45f);
+                        Raylib.PlaySound(voiceStaticSound);
+                        phoneChoiceStage = 2;
+                        phoneEndHoldTimer = 4.6f;
+                    }
+                }
+            }
+
             if (Raylib.IsKeyPressed(KeyboardKey.Down) || Raylib.IsKeyPressed(KeyboardKey.S) ||
                 Raylib.IsKeyPressed(KeyboardKey.Up) || Raylib.IsKeyPressed(KeyboardKey.W))
             {
@@ -45,27 +267,34 @@ partial class Program
             }
             else if (Raylib.IsKeyPressed(KeyboardKey.Enter))
             {
-                if (phoneSelectedOption == 0)
-                {
-                    lieToMom = true;
-                    phoneSentReply = "Dạ con ăn rồi mẹ. Mẹ giữ tiền đi, con còn.";
-                }
-                else
-                {
-                    lieToMom = false;
-                    phoneSentReply = "Dạ mẹ. Con cảm ơn mẹ.";
-                }
+                lieToMom = (phoneSelectedOption == 0);
+                phoneSentReply = replies[phoneSelectedOption];
+                AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Bạn", "17:42", phoneSentReply, true, false);
                 Raylib.SetSoundPitch(voiceStaticSound, 1.45f);
                 Raylib.PlaySound(voiceStaticSound);
                 phoneChoiceStage = 2;
-                phoneEndHoldTimer = 2.0f;
+                phoneEndHoldTimer = 4.6f;
             }
         }
         else if (phoneChoiceStage == 2)
         {
             phoneEndHoldTimer -= dt;
+            if (!phonePostReplySpawned && phoneEndHoldTimer <= 3.4f)
+            {
+                phonePostReplySpawned = true;
+                string momAck = lieToMom ? "Ừ ráng ăn uống đầy đủ nha con." : "Ừ ngoan, ráng giữ sức khỏe nha con.";
+                AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Mẹ", "17:42", momAck, false, false);
+                AppendThreadMessage(
+                    "cafe_group", "Hội Cà Phê Chiều Thứ Sáu", "Zalo", new Color(24, 119, 242, 255),
+                    "Dũng", "17:42", "Ê Tú, đi cà phê hông? Đen bao.",
+                    false, true, 4.5f
+                );
+            }
+
             if (phoneEndHoldTimer <= 0f)
             {
+                bannerTimer = 0f;
+                bannerSlide = 0f;
                 Raylib.StopSound(ambientHumSound);
                 gameScene = 0;
                 cafeIndex = 0;
@@ -80,52 +309,120 @@ partial class Program
         }
 
         Raylib.BeginDrawing();
-        Raylib.ClearBackground(new Color(8, 9, 13, 255));
+        Raylib.ClearBackground(new Color(10, 12, 17, 255));
         DrawVignette(55);
 
-        int phoneW = 430;
-        int phoneH = 650;
-        int phoneX = (ScreenWidth - phoneW) / 2;
-        int phoneY = (ScreenHeight - phoneH) / 2;
+        int w = 470;
+        int h = Math.Min(700, ScreenHeight - 130);
+        int x = (ScreenWidth - w) / 2;
+        int y = (ScreenHeight - h) / 2 + 18;
+        int topBarH = 52;
+        int bottomBarH = 54;
 
-        Raylib.DrawRectangle(phoneX - 8, phoneY - 8, phoneW + 16, phoneH + 16, new Color(26, 28, 34, 255));
-        Raylib.DrawRectangleLines(phoneX - 8, phoneY - 8, phoneW + 16, phoneH + 16, new Color(75, 80, 92, 255));
-        Raylib.DrawRectangle(phoneX, phoneY, phoneW, phoneH, new Color(15, 17, 22, 255));
+        Rectangle outerShadow = new(x + 4, y + 10, w, h);
+        Raylib.DrawRectangleRounded(outerShadow, 0.045f, 12, new Color(0, 0, 0, 140));
 
-        DrawViText("17:42", phoneX + 22, phoneY + 14, 18, Color.RayWhite);
-        DrawViText("4G  |  Pin 38%", phoneX + phoneW - 135, phoneY + 14, 17, new Color(220, 120, 95, 255));
-        Raylib.DrawLine(phoneX + 16, phoneY + 42, phoneX + phoneW - 16, phoneY + 42, new Color(45, 48, 58, 255));
+        Rectangle winRect = new(x, y, w, h);
+        Raylib.DrawRectangleRounded(winRect, 0.045f, 12, new Color(252, 252, 254, 255));
 
-        int cardY = phoneY + 56;
+        Rectangle headerRect = new(x, y, w, topBarH);
+        Raylib.DrawRectangleRounded(headerRect, 0.045f, 12, new Color(240, 241, 245, 255));
+        Raylib.DrawRectangle(x, y + topBarH - 12, w, 12, new Color(240, 241, 245, 255));
+        Raylib.DrawLine(x, y + topBarH, x + w, y + topBarH, new Color(216, 218, 224, 255));
+
+        Raylib.DrawCircle(x + 22, y + topBarH / 2, 6, new Color(255, 95, 86, 255));
+        Raylib.DrawCircle(x + 42, y + topBarH / 2, 6, new Color(255, 189, 46, 255));
+        Raylib.DrawCircle(x + 62, y + topBarH / 2, 6, new Color(39, 201, 63, 255));
+
+        string headerTitle = "Messages  ▸  Mẹ";
+        int headerW = (int)Raylib.MeasureTextEx(viFont, headerTitle, 20, 1f).X;
+        DrawViText(headerTitle, x + (w - headerW) / 2, y + 16, 20, new Color(45, 48, 56, 255));
+
+        string timeLabel = "Hôm nay 17:41";
+        int timeLabelW = (int)Raylib.MeasureTextEx(viFont, timeLabel, 15, 1f).X;
+        DrawViText(timeLabel, x + (w - timeLabelW) / 2, y + topBarH + 14, 15, new Color(142, 146, 156, 255));
+
+        int msgY = y + topBarH + 42;
+        int maxBubbleW = w - 135;
+
         for (int i = 0; i < phoneNotifStep; i++)
         {
-            var msg = initialPhoneMessages[i];
-            List<string> lines = WrapViText(msg.Body, phoneW - 64, 18);
-            int cardH = 38 + lines.Count * 22;
+            List<string> lines = WrapViText(momMessages[i], maxBubbleW - 28, 19);
+            int textW = 0;
+            foreach (string line in lines)
+            {
+                textW = Math.Max(textW, (int)Raylib.MeasureTextEx(viFont, line, 19, 1f).X);
+            }
 
-            Color borderCol = i == 1 ? new Color(190, 75, 75, 255) : new Color(65, 70, 82, 255);
-            Raylib.DrawRectangle(phoneX + 18, cardY, phoneW - 36, cardH, new Color(26, 29, 37, 245));
-            Raylib.DrawRectangleLines(phoneX + 18, cardY, phoneW - 36, cardH, borderCol);
-
-            Color titleCol = i == 1 ? new Color(245, 110, 110, 255) : (i == 2 ? Color.SkyBlue : Color.RayWhite);
-            DrawViText($"{msg.App} • {msg.Sender}", phoneX + 30, cardY + 8, 17, titleCol);
-            DrawViText(msg.Time, phoneX + phoneW - 68, cardY + 8, 16, Color.Gray);
+            int bubbleW = Math.Max(74, textW + 30);
+            int bubbleH = 18 + lines.Count * 24;
+            Rectangle bubbleRect = new(x + 22, msgY, bubbleW, bubbleH);
+            Raylib.DrawRectangleRounded(bubbleRect, 0.36f, 10, new Color(230, 231, 236, 255));
 
             for (int l = 0; l < lines.Count; l++)
             {
-                Color bodyCol = i == 1 ? Color.Yellow : Color.RayWhite;
-                DrawViText(lines[l], phoneX + 30, cardY + 30 + l * 22, 18, bodyCol);
+                DrawViText(lines[l], x + 37, msgY + 9 + l * 24, 19, new Color(25, 27, 32, 255));
             }
 
-            cardY += cardH + 10;
+            msgY += bubbleH + 10;
+        }
+
+        if (phoneChoiceStage == 0 && phoneNotifStep < momMessages.Length)
+        {
+            Rectangle typingRect = new(x + 22, msgY, 72, 36);
+            Raylib.DrawRectangleRounded(typingRect, 0.45f, 10, new Color(230, 231, 236, 255));
+            float t = (float)Raylib.GetTime() * 6f;
+            for (int d = 0; d < 3; d++)
+            {
+                float wave = MathF.Sin(t - d * 0.9f);
+                byte alpha = (byte)(125 + Math.Max(0f, wave) * 115);
+                int dotY = msgY + 18 - (int)(Math.Max(0f, wave) * 3f);
+                Raylib.DrawCircle(x + 42 + d * 15, dotY, 4, new Color((byte)110, (byte)114, (byte)124, alpha));
+            }
+        }
+
+        if (phoneChoiceStage == 2)
+        {
+            msgY += 6;
+            List<string> sentLines = WrapViText(phoneSentReply, maxBubbleW - 28, 19);
+            int sentTextW = 0;
+            foreach (string line in sentLines)
+            {
+                sentTextW = Math.Max(sentTextW, (int)Raylib.MeasureTextEx(viFont, line, 19, 1f).X);
+            }
+
+            int sentW = Math.Max(84, sentTextW + 30);
+            int sentH = 18 + sentLines.Count * 24;
+            int sentX = x + w - 22 - sentW;
+            Rectangle sentRect = new(sentX, msgY, sentW, sentH);
+            Raylib.DrawRectangleRounded(sentRect, 0.36f, 10, new Color(10, 132, 255, 255));
+
+            for (int l = 0; l < sentLines.Count; l++)
+            {
+                DrawViText(sentLines[l], sentX + 15, msgY + 9 + l * 24, 19, Color.White);
+            }
+            msgY += sentH + 6;
+            string delivered = "Đã gửi";
+            int delivW = (int)Raylib.MeasureTextEx(viFont, delivered, 14, 1f).X;
+            DrawViText(delivered, x + w - 26 - delivW, msgY, 14, new Color(142, 146, 156, 255));
+
+            if (phonePostReplySpawned)
+            {
+                msgY += 24;
+                string momAck = lieToMom ? "Ừ ráng ăn uống đầy đủ nha con." : "Ừ ngoan, ráng giữ sức khỏe nha con.";
+                int ackW = (int)Raylib.MeasureTextEx(viFont, momAck, 19, 1f).X + 30;
+                Rectangle ackRect = new(x + 22, msgY, ackW, 42);
+                Raylib.DrawRectangleRounded(ackRect, 0.36f, 10, new Color(230, 231, 236, 255));
+                DrawViText(momAck, x + 37, msgY + 11, 19, new Color(25, 27, 32, 255));
+            }
         }
 
         if (phoneChoiceStage == 1)
         {
-            int replyBoxY = phoneY + phoneH - 155;
-            Raylib.DrawRectangle(phoneX + 18, replyBoxY, phoneW - 36, 136, new Color(20, 23, 30, 255));
-            Raylib.DrawRectangleLines(phoneX + 18, replyBoxY, phoneW - 36, 136, Color.Gray);
-            DrawViText("Trả lời tin nhắn Mẹ:", phoneX + 30, replyBoxY + 10, 18, Color.RayWhite);
+            int replyAreaY = y + h - 166;
+            Raylib.DrawRectangle(x + 12, replyAreaY, w - 24, 152, new Color(243, 244, 248, 255));
+            Raylib.DrawLine(x + 12, replyAreaY, x + w - 12, replyAreaY, new Color(216, 218, 224, 255));
+            DrawViText("Chọn câu trả lời:", x + 24, replyAreaY + 8, 16, new Color(115, 120, 130, 255));
 
             string[] replies =
             [
@@ -136,22 +433,29 @@ partial class Program
             for (int i = 0; i < replies.Length; i++)
             {
                 bool sel = i == phoneSelectedOption;
-                Color col = sel ? Color.Yellow : new Color(185, 160, 70, 255);
-                DrawViText((sel ? "> " : "  ") + replies[i], phoneX + 28, replyBoxY + 42 + i * 32, 18, col);
+                Rectangle optRect = new(x + 20, replyAreaY + 34 + i * 44, w - 40, 38);
+                Color bg = sel ? new Color(10, 132, 255, 255) : new Color(228, 230, 236, 255);
+                Color fg = sel ? Color.White : new Color(32, 35, 42, 255);
+                Raylib.DrawRectangleRounded(optRect, 0.35f, 8, bg);
+                DrawViText(replies[i], x + 34, replyAreaY + 43 + i * 44, 18, fg);
             }
-            DrawViText("[Lên/Xuống] Chọn   [Enter] Gửi", phoneX + 30, replyBoxY + 108, 16, Color.Gray);
-        }
-        else if (phoneChoiceStage == 2)
-        {
-            int sentBoxY = phoneY + phoneH - 115;
-            Raylib.DrawRectangle(phoneX + 46, sentBoxY, phoneW - 64, 52, new Color(32, 74, 128, 255));
-            DrawViText("Bạn: " + phoneSentReply, phoneX + 58, sentBoxY + 15, 18, Color.RayWhite);
-            DrawViText("Số dư khả dụng: 187.400đ", phoneX + 115, phoneY + phoneH - 42, 19, Color.Yellow);
+
+            DrawViText("[Lên/Xuống] hoặc Click để chọn  •  [Enter] Gửi", x + 24, y + h - 24, 15, new Color(130, 134, 144, 255));
         }
         else
         {
-            DrawViText("[Space / Enter] Xem tiếp", phoneX + 125, phoneY + phoneH - 34, 17, Color.Gray);
+            int footerY = y + h - bottomBarH;
+            Raylib.DrawLine(x, footerY, x + w, footerY, new Color(218, 220, 226, 255));
+            Rectangle inputBox = new(x + 18, footerY + 10, w - 36, 34);
+            Raylib.DrawRectangleRounded(inputBox, 0.5f, 8, Color.White);
+            Raylib.DrawRectangleRoundedLinesEx(inputBox, 0.5f, 8, 1.2f, new Color(205, 208, 216, 255));
+            string placeholder = phoneChoiceStage == 0 ? "Message   (Nhấn Space / Enter để tua nhanh)" : "Message";
+            DrawViText(placeholder, x + 34, footerY + 18, 17, new Color(160, 164, 172, 255));
         }
+
+        Raylib.DrawRectangleRoundedLinesEx(winRect, 0.045f, 12, 1.5f, new Color(185, 188, 198, 255));
+
+        UpdateAndDrawTopNotificationBanner(dt);
 
         Raylib.EndDrawing();
     }

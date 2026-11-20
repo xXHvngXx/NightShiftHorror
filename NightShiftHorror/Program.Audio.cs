@@ -8,6 +8,7 @@ partial class Program
     static Sound voiceStaticSound;
     static Sound phoneRingSound;
     static Sound phoneVibrateSound;
+    static Sound notificationSound;
     static Sound knockSound;
     static Sound scareSound;
     static Sound ambientHumSound;
@@ -22,6 +23,8 @@ partial class Program
         voiceStaticSound = CreateStaticBlipSound();
         phoneRingSound = CreatePhoneRingSound();
         phoneVibrateSound = CreatePhoneVibrateSound();
+        string notifPath = Path.Combine("Assets", "Audio", "fears-to-fathom-notification-sound.mp3");
+        notificationSound = File.Exists(notifPath) ? Raylib.LoadSound(notifPath) : CreatePhoneVibrateSound();
         knockSound = CreateKnockSound();
         scareSound = CreateScareSound();
         ambientHumSound = CreateAmbientHumSound();
@@ -33,13 +36,13 @@ partial class Program
         Raylib.SetSoundVolume(voiceStaticSound, 0.35f);
         Raylib.SetSoundVolume(phoneRingSound, 0.55f);
         Raylib.SetSoundVolume(phoneVibrateSound, 0.45f);
+        Raylib.SetSoundVolume(notificationSound, 0.85f);
         Raylib.SetSoundVolume(knockSound, 0.85f);
         Raylib.SetSoundVolume(scareSound, 0.85f);
         Raylib.SetSoundVolume(ambientHumSound, 0.22f);
         Raylib.SetSoundVolume(heartbeatSound, 0.65f);
         Raylib.SetSoundVolume(motorbikeEngineSound, 0.35f);
         Raylib.SetSoundVolume(motorbikeHornSound, 0.55f);
-
     }
 
     static void UnloadAudio()
@@ -49,6 +52,7 @@ partial class Program
         Raylib.UnloadSound(voiceStaticSound);
         Raylib.UnloadSound(phoneRingSound);
         Raylib.UnloadSound(phoneVibrateSound);
+        Raylib.UnloadSound(notificationSound);
         Raylib.UnloadSound(knockSound);
         Raylib.UnloadSound(scareSound);
         Raylib.UnloadSound(ambientHumSound);
@@ -306,7 +310,6 @@ partial class Program
         for (int i = 0; i < sampleCount; i++)
         {
             float t = (float)i / sampleRate;
-            // Tiếng nổ máy 4 thì trầm ấm + tiếng ống xả
             float pulse = MathF.Sin(2f * MathF.PI * 28f * t);
             float harmonic = MathF.Sin(2f * MathF.PI * 56f * t) * 0.45f
                            + MathF.Sin(2f * MathF.PI * 84f * t) * 0.25f;

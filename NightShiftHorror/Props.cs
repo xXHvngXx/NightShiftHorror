@@ -780,37 +780,38 @@ public static partial class Props
         Color counterTop = Shade(Col(235, 232, 225), lit, 0.32f);
         Color steelGray = Shade(Col(145, 150, 158), lit, 0.35f);
 
-        Box(-4.35f, 0.48f, 0.5f, 1.30f, 0.96f, 3.60f, blackFrame);
-        TexBox(-4.35f, 0.99f, 0.5f, 1.38f, 0.06f, 3.68f, stoneTopTex, 1.2f, counterTop);
+        const float cx = -7.35f;
+        Box(cx, 0.48f, 0.5f, 1.30f, 0.96f, 3.60f, blackFrame);
+        TexBox(cx, 0.99f, 0.5f, 1.38f, 0.06f, 3.68f, stoneTopTex, 1.2f, counterTop);
 
         for (int p = 0; p < 5; p++)
         {
             float pz = -0.85f + p * 0.68f;
-            TexBox(-3.69f, 0.48f, pz, 0.02f, 0.78f, 0.58f, woodTex, 0.9f, warmWood);
+            TexBox(cx + 0.66f, 0.48f, pz, 0.02f, 0.78f, 0.58f, woodTex, 0.9f, warmWood);
         }
 
-        Box(-3.68f, 0.62f, -0.25f, 0.03f, 0.36f, 0.54f, steelGray);
-        Box(-3.66f, 0.64f, -0.25f, 0.01f, 0.24f, 0.36f, Col(25, 28, 34));
+        Box(cx + 0.67f, 0.62f, -0.25f, 0.03f, 0.36f, 0.54f, steelGray);
+        Box(cx + 0.69f, 0.64f, -0.25f, 0.01f, 0.24f, 0.36f, Col(25, 28, 34));
 
         float caseZ = 1.65f;
-        Box(-4.25f, 1.66f, caseZ, 0.76f, 0.08f, 0.96f, blackFrame);
+        Box(cx + 0.10f, 1.66f, caseZ, 0.76f, 0.08f, 0.96f, blackFrame);
         foreach (float dx in new[] { -0.35f, 0.35f })
             foreach (float dz in new[] { -0.45f, 0.45f })
-                Box(-4.25f + dx, 1.34f, caseZ + dz, 0.035f, 0.64f, 0.035f, blackFrame);
+                Box(cx + 0.10f + dx, 1.34f, caseZ + dz, 0.035f, 0.64f, 0.035f, blackFrame);
 
         for (int t = 0; t < 2; t++)
         {
             float ty = 1.18f + t * 0.22f;
-            Box(-4.25f, ty, caseZ, 0.68f, 0.02f, 0.88f, steelGray);
+            Box(cx + 0.10f, ty, caseZ, 0.68f, 0.02f, 0.88f, steelGray);
             for (int b = -2; b <= 2; b++)
-                Raylib.DrawSphere(new Vector3(-4.25f, ty + 0.045f, caseZ + b * 0.16f), 0.055f,
+                Raylib.DrawSphere(new Vector3(cx + 0.10f, ty + 0.045f, caseZ + b * 0.16f), 0.055f,
                     Shade(Col(228, 165, 78), lit, 0.35f));
         }
 
         for (int c = 0; c < 4; c++)
-            Raylib.DrawCylinder(new Vector3(-4.20f, 1.02f, 0.75f - c * 0.18f), 0.045f, 0.04f, 0.16f, 10,
+            Raylib.DrawCylinder(new Vector3(cx + 0.15f, 1.02f, 0.75f - c * 0.18f), 0.045f, 0.04f, 0.16f, 10,
                 Shade(Col(240, 240, 235), lit, 0.35f));
-        Box(-4.35f, 1.32f, -0.45f, 0.56f, 0.60f, 0.90f, blackFrame);
+        Box(cx, 1.32f, -0.45f, 0.56f, 0.60f, 0.90f, blackFrame);
     }
 
     static void LeftBeverageFountainWall(bool lit)
@@ -822,16 +823,17 @@ public static partial class Props
         Color warmWood = Shade(Col(235, 185, 130), lit, 0.34f);
         Color counterTop = Shade(Col(235, 232, 225), lit, 0.32f);
 
-        Box(-6.85f, 0.48f, -0.2f, 1.15f, 0.96f, 6.2f, blackBase);
-        TexBox(-6.85f, 0.99f, -0.2f, 1.22f, 0.06f, 6.3f, stoneTopTex, 1.2f, counterTop);
+        const float wx = -9.85f;
+        Box(wx, 0.48f, -0.2f, 1.15f, 0.96f, 6.2f, blackBase);
+        TexBox(wx, 0.99f, -0.2f, 1.22f, 0.06f, 6.3f, stoneTopTex, 1.2f, counterTop);
         for (int p = 0; p < 8; p++)
-            TexBox(-6.26f, 0.48f, -2.75f + p * 0.72f, 0.02f, 0.78f, 0.62f, woodTex, 0.9f, warmWood);
+            TexBox(wx + 0.59f, 0.48f, -2.75f + p * 0.72f, 0.02f, 0.78f, 0.62f, woodTex, 0.9f, warmWood);
 
         for (int m = 0; m < 4; m++)
         {
             float mz = -2.2f + m * 1.35f;
-            Box(-6.75f, 1.44f, mz, 0.64f, 0.84f, 1.05f, Shade(Col(35, 38, 44), lit, 0.4f));
-            Box(-6.41f, 1.44f, mz, 0.03f, 0.52f, 0.88f, lit ? Palette[(m + 2) % Palette.Length] : Col(35, 45, 65));
+            Box(wx + 0.10f, 1.44f, mz, 0.64f, 0.84f, 1.05f, Shade(Col(35, 38, 44), lit, 0.4f));
+            Box(wx + 0.44f, 1.44f, mz, 0.03f, 0.52f, 0.88f, lit ? Palette[(m + 2) % Palette.Length] : Col(35, 45, 65));
         }
 
         Color[] bannerColors =
@@ -844,8 +846,8 @@ public static partial class Props
         for (int b = 0; b < 4; b++)
         {
             float bz = -2.2f + b * 1.48f;
-            Box(-7.36f, 2.52f, bz, 0.05f, 1.05f, 1.40f, Shade(bannerColors[b], lit, 0.35f));
-            Box(-7.33f, 2.52f, bz, 0.01f, 0.38f, 0.78f, Shade(Col(248, 246, 238), lit, 0.35f));
+            Box(-10.36f, 2.52f, bz, 0.05f, 1.05f, 1.40f, Shade(bannerColors[b], lit, 0.35f));
+            Box(-10.33f, 2.52f, bz, 0.01f, 0.38f, 0.78f, Shade(Col(248, 246, 238), lit, 0.35f));
         }
     }
 
@@ -976,10 +978,11 @@ public static partial class Props
 
     public static void DrawStore(bool lit, bool doorLocked, float time, string clockTime, bool phoneRinging, float daylight = 0f)
     {
-        const float minX = -7.5f, maxX = 7.5f;
-        const float minZ = -6.5f, maxZ = 7.5f;
+        const float minX = -10.5f, maxX = 10.5f;
+        const float minZ = -7.2f, maxZ = 7.5f;
         const float storeW = maxX - minX;
         const float storeL = maxZ - minZ;
+        const float centerZ = (minZ + maxZ) * 0.5f;
 
         Texture2D storeFloorTex = GetWorldTex("Floor/Horror_Floor_12-512x512.png");
         Texture2D innerWallTex = GetWorldTex("Wall/Horror_Wall_01-512x512.png");
@@ -996,38 +999,38 @@ public static partial class Props
         Color facadeTint = Shade(Col(215, 205, 192), lit, 0.24f);
         Color trimDark = Shade(Col(55, 58, 66), lit, 0.3f);
 
-        DrawTexturedFloor(new Vector3(0, 0.002f, 0.5f), storeW, storeL, storeFloorTex, 1.5f, floorTint);
+        DrawTexturedFloor(new Vector3(0, 0.002f, centerZ), storeW, storeL, storeFloorTex, 1.5f, floorTint);
         Box(0, 0.012f, maxZ - 0.65f, 2.1f, 0.02f, 0.95f, Shade(Col(32, 34, 38), lit, 0.3f));
 
         Color roadTint = LerpCol(Col(85, 90, 102), Col(185, 195, 212), daylight);
         Color sidewalkTint = LerpCol(Col(135, 140, 150), Col(220, 225, 235), daylight);
-        DrawTexturedFloor(new Vector3(0, -0.02f, 12.5f), 28f, 12f, roadTex, 2.6f, roadTint);
-        TexBox(0, -0.005f, 8.7f, 28f, 0.03f, 2.4f, sidewalkTex, 1.8f, sidewalkTint);
-        TexBox(0, 0.005f, 9.95f, 28f, 0.05f, 0.12f, sidewalkTex, 1.0f, LerpCol(Col(160, 162, 170), Col(230, 232, 240), daylight));
-        for (int x = -12; x <= 12; x += 3) Box(x, -0.015f, 13.0f, 1.4f, 0.006f, 0.12f, Col(200, 190, 120));
+        DrawTexturedFloor(new Vector3(0, -0.02f, 12.5f), 32f, 12f, roadTex, 2.6f, roadTint);
+        TexBox(0, -0.005f, 8.7f, 32f, 0.03f, 2.4f, sidewalkTex, 1.8f, sidewalkTint);
+        TexBox(0, 0.005f, 9.95f, 32f, 0.05f, 0.12f, sidewalkTex, 1.0f, LerpCol(Col(160, 162, 170), Col(230, 232, 240), daylight));
+        for (int x = -14; x <= 14; x += 3) Box(x, -0.015f, 13.0f, 1.4f, 0.006f, 0.12f, Col(200, 190, 120));
         StreetLamp(-2.1f, 9.1f);
 
-        TexBox(0, 3.8f, 0.5f, storeW, 0.2f, storeL, ceilingTex, 2.2f, Shade(Col(235, 235, 240), lit, 0.20f));
+        TexBox(0, 3.8f, centerZ, storeW, 0.2f, storeL, ceilingTex, 2.2f, Shade(Col(235, 235, 240), lit, 0.20f));
         TexBox(0, 3.48f, -1.2f, storeW - 0.2f, 0.36f, 0.24f, counterWood, 1.5f, Shade(Col(220, 175, 115), lit, 0.26f));
         Box(-0.35f, 3.16f, 0.6f, 0.04f, 0.28f, 0.04f, Col(28, 30, 34));
         Box(-0.35f, 2.94f, 0.6f, 0.44f, 0.28f, 0.06f, Shade(Col(24, 26, 30), lit, 0.4f));
         Box(-0.35f, 2.94f, 0.635f, 0.38f, 0.22f, 0.008f, lit ? Col(115, 175, 225) : Col(25, 45, 65));
 
-        foreach (float lx in new[] { -4.6f, -1.5f, 1.6f, 4.7f })
-            foreach (float lz in new[] { -4.2f, -1.2f, 1.8f, 4.8f })
+        foreach (float lx in new[] { -7.6f, -3.8f, 0.0f, 3.8f, 7.6f })
+            foreach (float lz in new[] { -4.6f, -1.4f, 1.8f, 5.0f })
                 CeilingLight(lx, lz, lit);
 
         TexBox(0, 1.9f, minZ, storeW, 3.8f, 0.2f, innerWallTex, 2.2f, innerWallTint);
-        TexBox(minX, 1.9f, 0.5f, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
-        TexBox(maxX, 1.9f, 0.5f, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
+        TexBox(minX, 1.9f, centerZ, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
+        TexBox(maxX, 1.9f, centerZ, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
 
-        TexBox(-4.35f, 1.9f, maxZ, 6.3f, 3.8f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
-        TexBox(4.35f, 1.9f, maxZ, 6.3f, 3.8f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
+        TexBox(-5.85f, 1.9f, maxZ, 9.3f, 3.8f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
+        TexBox(5.85f, 1.9f, maxZ, 9.3f, 3.8f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
         TexBox(0f, 3.2f, maxZ, 2.4f, 1.2f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
 
         Box(0, 0.07f, minZ + 0.11f, storeW - 0.2f, 0.14f, 0.02f, trimDark);
-        Box(minX + 0.11f, 0.07f, 0.5f, 0.02f, 0.14f, storeL - 0.2f, trimDark);
-        Box(maxX - 0.11f, 0.07f, 0.5f, 0.02f, 0.14f, storeL - 0.2f, trimDark);
+        Box(minX + 0.11f, 0.07f, centerZ, 0.02f, 0.14f, storeL - 0.2f, trimDark);
+        Box(maxX - 0.11f, 0.07f, centerZ, 0.02f, 0.14f, storeL - 0.2f, trimDark);
 
         Color alu = Shade(Col(205, 210, 220), lit, 0.35f);
         TexBox(-1.2f, 1.3f, maxZ, 0.10f, 2.6f, 0.14f, metalTex, 1.0f, alu);
@@ -1089,8 +1092,9 @@ public static partial class Props
         Raylib.DrawSphere(new Vector3(-2.77f, 1.12f, -2.92f), 0.07f, Shade(Col(235, 190, 110), lit, 0.4f));
 
         WallRack(-1.3f, minZ, lit, hasWelcomeSign: true);
-        WallRack(-4.5f, minZ, lit, hasWelcomeSign: false);
-        WallRack(2.1f, minZ, lit, hasWelcomeSign: false);
+        WallRack(-5.2f, minZ, lit, hasWelcomeSign: false);
+        WallRack(2.5f, minZ, lit, hasWelcomeSign: false);
+        WallRack(6.3f, minZ, lit, hasWelcomeSign: false);
         WallClock(-1.3f, 3.12f, minZ + 0.12f, clockTime, lit);
 
         LeftBeverageFountainWall(lit);
@@ -1098,10 +1102,8 @@ public static partial class Props
 
         MiniBlueCooler(0.85f, -2.25f, lit);
 
-        RollingSnackRack(2.25f, 1.65f, -15f, lit);
-
-        Gondola(3.85f, -0.8f, 4.4f, lit, 0);
-        Gondola(5.35f, -0.8f, 4.4f, lit, 1);
+        // Đặt kệ snack gọn ở góc phải gần cửa ra vào, cách xa dãy kệ hàng
+        RollingSnackRack(1.70f, 4.90f, -20f, lit);
 
         BeverageCoolerUnit(maxX - 0.45f, 4.6f, -90f, lit, isRedCocaCola: true);
         BeverageCoolerUnit(maxX - 0.45f, 1.8f, -90f, lit, isRedCocaCola: false);
@@ -1121,7 +1123,7 @@ public static partial class Props
         Raylib.DrawCube(new Vector3(0f, 1.3f, maxZ), 2.4f, 2.6f, 0.06f,
             doorLocked ? Col(90, 130, 160, 120) : Col(140, 190, 220, 65));
 
-        Raylib.DrawCube(new Vector3(-4.25f, 1.34f, 1.65f), 0.72f, 0.60f, 0.92f, Col(235, 220, 185, 48));
+        Raylib.DrawCube(new Vector3(-7.25f, 1.34f, 1.65f), 0.72f, 0.60f, 0.92f, Col(235, 220, 185, 48));
 
         Raylib.DrawCube(new Vector3(-2.75f, 1.22f, -3.0f), 0.5f, 0.36f, 0.5f, Col(200, 230, 240, 50));
 
