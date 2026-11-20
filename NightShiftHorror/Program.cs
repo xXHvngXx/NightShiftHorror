@@ -57,8 +57,8 @@ partial class Program
     static readonly string[] pauseOptions = ["Tiếp tục ca trực", "Chơi lại từ đầu", "Thoát trò chơi"];
 
     static int storyStep = -1;
-    static float clockMinutes = 1428f;
-    static string currentTime = "23:48";
+    static float clockMinutes = 1128f;
+    static string currentTime = "18:48";
     static string currentObjective = "Nói chuyện với Quản lý để nhận bàn giao ca";
     static bool isDoorLocked = false;
     static bool lightsOn = true;

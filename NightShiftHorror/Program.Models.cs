@@ -207,6 +207,10 @@ partial class Program
         int cols = Math.Max(4, (int)(shelfLength / 0.22f));
         float shadeK = lit ? 1.0f : 0.28f;
 
+        if (!shelfStockInitialized) InitShiftWorkState();
+        int shelfIdx = Math.Clamp(seed - 1, 0, ShelfCount - 1);
+        int slotIdx = 0;
+
         for (int t = 0; t < tierHeights.Length; t++)
         {
             float yBase = position.Y + tierHeights[t];
@@ -215,9 +219,10 @@ partial class Program
                 float localDepth = side * (shelfDepth * 0.26f);
                 for (int c = 0; c < cols; c++)
                 {
-                    int hash = (seed * 31 + t * 17 + c * 13 + (side + 2) * 7) & 0x7FFFFFFF;
-                    if (hash % 5 == 0) continue;
+                    int currentSlot = slotIdx++;
+                    if (currentSlot < SlotsPerShelf && !shelfSlotFilled[shelfIdx, currentSlot]) continue;
 
+                    int hash = (seed * 31 + t * 17 + c * 13 + (side + 2) * 7) & 0x7FFFFFFF;
                     float u = (c + 0.5f) / cols - 0.5f;
                     float localAlong = u * shelfLength;
 

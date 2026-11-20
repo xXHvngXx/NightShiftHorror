@@ -254,7 +254,7 @@ partial class Program
         {
             DrawViText("CREDITS", menuX, menuStartY - 50, 26, new Color(252, 68, 112, 255));
             DrawViText("Game Design & Code", menuX, menuStartY, 17, new Color(245, 212, 66, 230));
-            DrawViText("Phạm Minh Hưng & Team", menuX, menuStartY + 22, 19, Color.RayWhite);
+            DrawViText("Minh Hưng & Tiến Dũng", menuX, menuStartY + 22, 19, Color.RayWhite);
 
             DrawViText("Engine & Audio", menuX, menuStartY + 62, 17, new Color(245, 212, 66, 230));
             DrawViText("C# (.NET 9.0) • Raylib-cs", menuX, menuStartY + 84, 19, Color.RayWhite);

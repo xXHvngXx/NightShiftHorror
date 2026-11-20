@@ -193,14 +193,14 @@ partial class Program
 
                     AppendThreadMessage(
                         "mom", "Mẹ", "Messages", new Color(52, 199, 89, 255),
-                        "Mẹ", "17:41", momMessages[phoneNotifStep - 1], false, false
+                        "Mẹ", "17:15", momMessages[phoneNotifStep - 1], false, false
                     );
 
                     if (phoneNotifStep == 2)
                     {
                         AppendThreadMessage(
                             "bank", "Biến động số dư", "Ngân hàng", new Color(220, 68, 68, 255),
-                            "Biến động số dư", "17:41", "Tài khoản +500.000đ. Số dư hiện tại: 187.400đ.",
+                            "Biến động số dư", "17:15", "Tài khoản +500.000đ. Số dư hiện tại: 187.400đ.",
                             false, true, 4.8f
                         );
                     }
@@ -208,7 +208,7 @@ partial class Program
                     {
                         AppendThreadMessage(
                             "colan", "Cô Lan (Chủ trọ)", "Zalo", new Color(24, 119, 242, 255),
-                            "Cô Lan (Chủ trọ)", "17:41", "Tú ơi, tháng này tiền trọ 2 triệu 8 nghen. Trước mùng 5 hen.",
+                            "Cô Lan (Chủ trọ)", "17:15", "Tú ơi, tháng này tiền trọ 2 triệu 8 nghen. Trước mùng 5 hen.",
                             false, true, 5.0f
                         );
                     }
@@ -249,7 +249,7 @@ partial class Program
                     {
                         lieToMom = (i == 0);
                         phoneSentReply = replies[i];
-                        AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Bạn", "17:42", phoneSentReply, true, false);
+                        AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Bạn", "17:16", phoneSentReply, true, false);
                         Raylib.SetSoundPitch(voiceStaticSound, 1.45f);
                         Raylib.PlaySound(voiceStaticSound);
                         phoneChoiceStage = 2;
@@ -269,7 +269,7 @@ partial class Program
             {
                 lieToMom = (phoneSelectedOption == 0);
                 phoneSentReply = replies[phoneSelectedOption];
-                AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Bạn", "17:42", phoneSentReply, true, false);
+                AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Bạn", "17:16", phoneSentReply, true, false);
                 Raylib.SetSoundPitch(voiceStaticSound, 1.45f);
                 Raylib.PlaySound(voiceStaticSound);
                 phoneChoiceStage = 2;
@@ -283,10 +283,10 @@ partial class Program
             {
                 phonePostReplySpawned = true;
                 string momAck = lieToMom ? "Ừ ráng ăn uống đầy đủ nha con." : "Ừ ngoan, ráng giữ sức khỏe nha con.";
-                AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Mẹ", "17:42", momAck, false, false);
+                AppendThreadMessage("mom", "Mẹ", "Messages", new Color(52, 199, 89, 255), "Mẹ", "17:16", momAck, false, false);
                 AppendThreadMessage(
                     "cafe_group", "Hội Cà Phê Chiều Thứ Sáu", "Zalo", new Color(24, 119, 242, 255),
-                    "Dũng", "17:42", "Ê Tú, đi cà phê hông? Đen bao.",
+                    "Dũng", "17:16", "Ê Tú, đi cà phê hông? Đen bao.",
                     false, true, 4.5f
                 );
             }
@@ -338,7 +338,7 @@ partial class Program
         int headerW = (int)Raylib.MeasureTextEx(viFont, headerTitle, 20, 1f).X;
         DrawViText(headerTitle, x + (w - headerW) / 2, y + 16, 20, new Color(45, 48, 56, 255));
 
-        string timeLabel = "Hôm nay 17:41";
+        string timeLabel = "Hôm nay 17:15";
         int timeLabelW = (int)Raylib.MeasureTextEx(viFont, timeLabel, 15, 1f).X;
         DrawViText(timeLabel, x + (w - timeLabelW) / 2, y + topBarH + 14, 15, new Color(142, 146, 156, 255));
 
@@ -588,7 +588,7 @@ partial class Program
                                 Raylib.PlaySound(phoneRingSound);
                                 StartDialogue(
                                     "Quản lý",
-                                    "Alo? À, sinh viên hả? Được, được. Mười một giờ rưỡi em tới nghen, anh dặn kỹ rồi giao ca luôn. Không cần mang giấy tờ gì đâu.",
+                                    "Alo? À, sinh viên hả? Được, được. Bảy giờ tối em tới nghen, ca tối tới khuya luôn, anh dặn kỹ rồi giao ca. Không cần mang giấy tờ gì đâu.",
                                     2
                                 );
                             }
@@ -601,7 +601,7 @@ partial class Program
                         Raylib.PlaySound(phoneRingSound);
                         StartDialogue(
                             "Quản lý",
-                            "Alo? À, sinh viên hả? Được, được. Mười một giờ rưỡi em tới nghen, anh dặn kỹ rồi giao ca luôn. Không cần mang giấy tờ gì đâu.",
+                            "Alo? À, sinh viên hả? Được, được. Bảy giờ tối em tới nghen, ca tối tới khuya luôn, anh dặn kỹ rồi giao ca. Không cần mang giấy tờ gì đâu.",
                             2
                         );
                     }
@@ -638,7 +638,7 @@ partial class Program
             Raylib.DrawRectangle(0, ScreenHeight - barH, ScreenWidth, barH, Color.Black);
 
             string caption = cafeCutsceneTimer < 3.0f
-                ? "18:05 - Quán cà phê lounge quen thuộc chiều thứ Sáu"
+                ? "17:40 - Quán cà phê lounge quen thuộc chiều thứ Sáu"
                 : (cafeCutsceneTimer < 5.8f
                     ? "Không gian ấm ánh đèn vàng giữa tiếng trò chuyện râm ran của khách"
                     : "Bàn góc sảnh - Hội bạn thân đang tụ tập cuối tuần");
@@ -686,9 +686,9 @@ partial class Program
                 fadeAlpha = 1.0f;
                 gameScene = 2;
                 storyStep = -1;
-                clockMinutes = 1428f;
-                currentTime = "23:48";
-                currentObjective = "Nói chuyện với Quản lý ở quầy thu ngân (có thể xem áp phích ngoài cột đèn)";
+                clockMinutes = 1128f;
+                currentTime = "18:48";
+                currentObjective = "Nói chuyện với Quản lý ở quầy thu ngân để nhận ca tối";
                 SpawnNpc(
                     new Vector3(-1.1f, 0f, -1.1f),
                     new Vector3(-1.1f, 0f, -1.1f),
@@ -908,7 +908,7 @@ partial class Program
             {
                 StartDialogue(
                     "Quản lý",
-                    "Làm tốt lắm Tú, đây là phong bì 500 nghìn tiền công đêm nay. Em ký xác nhận vào tờ giấy này rồi tối mai 12 giờ lại qua trực tiếp nhé.",
+                    "Làm tốt lắm Tú, đây là phong bì 500 nghìn tiền công đêm nay. Em ký xác nhận vào tờ giấy này rồi tối mai 7 giờ tối lại qua trực tiếp nhé.",
                     1,
                     [
                         "Cầm tiền và ký tên vào tờ giấy",
@@ -922,7 +922,7 @@ partial class Program
             {
                 StartDialogue(
                     "Quản lý",
-                    "Làm tốt lắm Tú, đây là phong bì 500 nghìn tiền công đêm nay của em. Giờ em về nghỉ ngơi đi, tối mai 12 giờ lại qua trực tiếp nhé.",
+                    "Làm tốt lắm Tú, đây là phong bì 500 nghìn tiền công đêm nay của em. Giờ em về nghỉ ngơi đi, tối mai 7 giờ tối lại qua trực tiếp nhé.",
                     2,
                     talkingToNpc: true
                 );

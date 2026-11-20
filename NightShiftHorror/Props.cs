@@ -225,7 +225,6 @@ public static partial class Props
         Rlgl.PopMatrix();
     }
 
-    // Nhân viên phục vụ bưng khay đi chậm rãi trên lối đi
     static void DrawCafeWaiter(Vector3 pos, float yawDeg, float walkPhase, bool isFemale, Color apronColor)
     {
         Color shirt = Col(238, 236, 232);
@@ -238,10 +237,8 @@ public static partial class Props
         Rlgl.Translatef(pos.X, pos.Y, pos.Z);
         Rlgl.Rotatef(yawDeg, 0, 1, 0);
 
-        // Tạp dề phục vụ ngang hông
         Box(0f, 0.72f, 0.15f, 0.42f, 0.52f, 0.03f, apronColor);
 
-        // Khay phục vụ cầm trước ngực + 2 ly nước
         float sway = MathF.Sin(walkPhase) * 0.012f;
         Raylib.DrawCylinder(new Vector3(0.16f, 1.06f + sway, 0.34f), 0.17f, 0.16f, 0.02f, 16, Col(45, 32, 24));
         Raylib.DrawCylinder(new Vector3(0.11f, 1.08f + sway, 0.32f), 0.038f, 0.034f, 0.09f, 10, Col(242, 242, 238));
@@ -250,7 +247,6 @@ public static partial class Props
         Rlgl.PopMatrix();
     }
 
-    // Tính vị trí & góc xoay nhân viên đi tuần hoàn dọc theo chuỗi điểm lộ trình (closed loop)
     static (Vector3 Pos, float YawDeg, float Phase) EvalLoopWalker(Vector3[] waypoints, float time, float speed)
     {
         int n = waypoints.Length;
@@ -296,7 +292,6 @@ public static partial class Props
         Rlgl.PopMatrix();
     }
 
-    // Ghế bành bo tròn bọc nỉ sang trọng (như trong ảnh mẫu)
     static void DrawTubArmchair(Vector3 pos, float yawDeg, Color fabric)
     {
         Color darkFabric = LerpCol(fabric, Color.Black, 0.28f);
@@ -307,16 +302,13 @@ public static partial class Props
         Rlgl.Translatef(pos.X, pos.Y, pos.Z);
         Rlgl.Rotatef(yawDeg, 0, 1, 0);
 
-        // 4 chân gỗ thấp
         foreach (float lx in new[] { -0.26f, 0.26f })
             foreach (float lz in new[] { -0.26f, 0.24f })
                 Box(lx, 0.07f, lz, 0.06f, 0.14f, 0.06f, legCol);
 
-        // Thân ghế bo tròn + nệm ngồi
         Raylib.DrawCylinder(new Vector3(0f, 0.14f, -0.02f), 0.37f, 0.35f, 0.24f, 20, darkFabric);
         Raylib.DrawCylinder(new Vector3(0f, 0.38f, 0.01f), 0.33f, 0.33f, 0.10f, 20, cushionCol);
 
-        // Lưng ghế & tay vịn vòng cung bao quanh 210 độ
         for (int i = -6; i <= 6; i++)
         {
             float ang = i * 16f;
@@ -336,7 +328,6 @@ public static partial class Props
         Rlgl.PopMatrix();
     }
 
-    // Ghế sofa băng dài (xanh navy hoặc nâu trầm)
     static void DrawLoungeSofa(Vector3 pos, float yawDeg, float width, Color fabric)
     {
         Color darkFabric = LerpCol(fabric, Color.Black, 0.28f);
@@ -352,14 +343,11 @@ public static partial class Props
             foreach (float lz in new[] { -0.32f, 0.32f })
                 Box(lx, 0.06f, lz, 0.07f, 0.12f, 0.07f, legCol);
 
-        // Đế sofa & tựa lưng
         Box(0f, 0.24f, 0f, width, 0.24f, 0.78f, darkFabric);
         Box(0f, 0.56f, -0.30f, width, 0.46f, 0.18f, fabric);
-        // Tay vịn 2 bên
         Box(-hw + 0.08f, 0.44f, 0.04f, 0.16f, 0.36f, 0.72f, fabric);
         Box(hw - 0.08f, 0.44f, 0.04f, 0.16f, 0.36f, 0.72f, fabric);
 
-        // Các múi đệm ngồi & gối tựa lưng
         int seats = Math.Max(2, (int)MathF.Round(width / 0.68f));
         float innerW = width - 0.34f;
         float padW = (innerW / seats) - 0.02f;
@@ -373,7 +361,6 @@ public static partial class Props
         Rlgl.PopMatrix();
     }
 
-    // Bàn cà phê mặt đá sáng, chân trụ đen
     static void DrawLoungeTable(float x, float z, float w, float l, Texture2D topTex)
     {
         Color blackIron = Col(22, 24, 28);
@@ -381,12 +368,10 @@ public static partial class Props
         Box(x, 0.36f, z, 0.10f, 0.68f, 0.10f, blackIron);
         TexBox(x, 0.72f, z, w, 0.05f, l, topTex, 1.1f, Col(242, 232, 216));
 
-        // Hộp giấy ăn & gạt tàn nhỏ trên bàn
         Box(x + 0.10f, 0.79f, z - 0.06f, 0.09f, 0.09f, 0.09f, Col(235, 228, 215));
         Raylib.DrawCylinder(new Vector3(x - 0.12f, 0.745f, z + 0.08f), 0.045f, 0.045f, 0.025f, 12, Col(210, 210, 215));
     }
 
-    // Cụm 3 đèn lồng chụp tròn treo giật cấp tỏa sáng vàng ấm
     static void DrumLightCluster(float x, float z)
     {
         (float dx, float dz, float y, float r, float h)[] drums =
@@ -408,7 +393,6 @@ public static partial class Props
         }
     }
 
-    // Cột vuông ốp nan gỗ dọc giữa quán
     static void SlattedPillar(float x, float z, float height)
     {
         Box(x, height * 0.5f, z, 0.72f, height, 0.72f, Col(42, 24, 16));
@@ -423,7 +407,6 @@ public static partial class Props
         }
     }
 
-    // Kệ vách ngăn ô vuông gỗ bày cây xanh nhỏ
     static void CubeDividerShelf(float x, float z, float yawDeg, int cols, int rows)
     {
         Color wood = Col(125, 76, 44);
@@ -486,10 +469,8 @@ public static partial class Props
         Texture2D marbleTopTex = GetWorldTex("Stone/Horror_Stone_02-512x512.png");
         Texture2D gardenStoneTex = GetWorldTex("Stone/Horror_Stone_04-512x512.png");
 
-        // 1. Sàn gỗ tối bóng rộng rãi (19m x 18m)
         DrawTexturedFloor(new Vector3(0f, 0.002f, 1.5f), 19f, 18f, floorWoodTex, 1.8f, Col(145, 112, 86));
 
-        // 2. Trần cao màu trầm + hệ dầm gỗ & 6 cụm đèn lồng chụp tròn ấm áp
         Box(0f, 3.90f, 1.5f, 19f, 0.20f, 18f, Col(24, 21, 19));
         for (float bz = -4.5f; bz <= 8.5f; bz += 4.2f)
             Box(0f, 3.68f, bz, 19f, 0.24f, 0.34f, Col(34, 26, 20));
@@ -503,19 +484,16 @@ public static partial class Props
         DrumLightCluster(4.0f, 5.4f);
         DrumLightCluster(-4.8f, 6.2f);
 
-        // 3. Tường bao quanh sảnh cà phê
         Color wallTint = Col(140, 112, 92);
         TexBox(0f, 1.95f, -7.5f, 19f, 3.9f, 0.25f, wallBrickTex, 2.0f, wallTint);
         TexBox(-9.5f, 1.95f, 1.5f, 0.25f, 3.9f, 18f, wallBrickTex, 2.0f, wallTint);
         TexBox(9.5f, 1.95f, 1.5f, 0.25f, 3.9f, 18f, wallBrickTex, 2.0f, wallTint);
 
-        // Vách kính phía sau nhìn ra sân vườn cây xanh (Z = 10.2)
         Box(0f, 3.45f, 10.2f, 19f, 0.9f, 0.25f, Col(30, 24, 20));
         for (float gx = -9.0f; gx <= 9.0f; gx += 3.0f)
             Box(gx, 1.5f, 10.2f, 0.12f, 3.0f, 0.16f, Col(32, 26, 22));
         Box(0f, 1.5f, 10.2f, 18.8f, 3.0f, 0.04f, Col(140, 185, 165, 38));
 
-        // Khu vườn ngoài kính + 2 trụ đèn đứng phát sáng vàng cam hai bên lối cửa
         DrawTexturedFloor(new Vector3(0f, -0.02f, 12.8f), 22f, 5.5f, gardenStoneTex, 2.0f, Col(45, 58, 48));
         for (float px = -8.2f; px <= 8.2f; px += 1.6f)
             Plant(px, 11.4f + (MathF.Abs(px) % 1.2f), 1.45f);
@@ -527,25 +505,21 @@ public static partial class Props
             Raylib.DrawSphere(new Vector3(lx, 1.22f, 9.75f), 0.22f, Col(255, 205, 115, 55));
         }
 
-        // 4. Quầy bar pha chế sáng đèn ở góc trái phía xa
         Box(-7.4f, 1.95f, 8.2f, 4.2f, 3.9f, 3.6f, Col(245, 228, 195));
         TexBox(-7.1f, 0.52f, 6.4f, 4.4f, 1.04f, 0.72f, floorWoodTex, 1.2f, Col(185, 125, 78));
         TexBox(-7.1f, 1.06f, 6.4f, 4.5f, 0.06f, 0.80f, marbleTopTex, 1.2f, Col(245, 238, 225));
         Plant(-8.5f, 5.8f, 1.35f);
 
-        // 5. Cột ốp nan gỗ dọc trung tâm & hệ kệ ô vuông bày cây xanh phân khu (chừa lối đi rộng >= 1.8m)
         SlattedPillar(-2.1f, 3.7f, 3.8f);
         CubeDividerShelf(-5.4f, 5.1f, 0f, 5, 5);
         CubeDividerShelf(4.4f, 6.8f, -10f, 5, 5);
         CubeDividerShelf(7.4f, 3.2f, -90f, 4, 5);
 
-        // 6. Các bộ bàn ghế lounge bố trí giãn cách thoáng đãng + NPC khách ngồi trò chuyện
         Color brownArmchair = Col(108, 72, 46);
         Color tanArmchair = Col(148, 108, 74);
         Color navySofa = Col(36, 54, 86);
         Color darkBrownSofa = Col(78, 52, 36);
 
-        // --- Cụm 1: Sofa xanh navy bên phải (X = 4.5, Z = 1.6) - cách bàn Tú hơn 3m ---
         DrawLoungeTable(4.5f, 1.6f, 1.35f, 0.85f, marbleTopTex);
         DrawLoungeSofa(new Vector3(4.5f, 0f, 0.50f), 0f, 2.15f, navySofa);
         DrawLoungeSofa(new Vector3(4.5f, 0f, 2.70f), 180f, 2.15f, navySofa);
@@ -559,13 +533,11 @@ public static partial class Props
         DrawSeatedPerson(g2Pos, 0f, Col(55, 75, 110), Col(28, 28, 32), g3Pos + new Vector3(0, 1.38f, 0), isFemale: false);
         DrawSeatedPerson(g3Pos, 180f, Col(145, 70, 75), Col(45, 32, 26), g1Pos + new Vector3(0, 1.38f, 0), isFemale: true);
 
-        // --- Cụm 2: Sofa xanh navy góc sau bên phải (X = 5.4, Z = 4.9) ---
         DrawLoungeTable(5.4f, 4.9f, 1.25f, 0.80f, marbleTopTex);
         DrawLoungeSofa(new Vector3(5.4f, 0f, 3.90f), 0f, 1.95f, navySofa);
         DrawLoungeSofa(new Vector3(5.4f, 0f, 5.85f), 180f, 1.95f, navySofa);
         DrawSeatedPerson(new Vector3(5.00f, 0f, 3.98f), 0f, Col(85, 115, 95), Col(30, 30, 34), new Vector3(5.4f, 1.38f, 5.75f));
 
-        // --- Cụm 3: Sofa & ghế bành nâu bên trái (X = -5.5, Z = 1.4) ---
         DrawLoungeTable(-5.5f, 1.4f, 1.25f, 0.85f, marbleTopTex);
         DrawLoungeSofa(new Vector3(-5.5f, 0f, 2.50f), 180f, 2.05f, darkBrownSofa);
         DrawTubArmchair(new Vector3(-6.05f, 0f, 0.35f), 20f, brownArmchair);
@@ -579,14 +551,12 @@ public static partial class Props
         DrawSeatedPerson(g5Pos, 180f, Col(185, 165, 140), Col(48, 34, 26), g6Pos + new Vector3(0, 1.38f, 0), isFemale: true);
         DrawSeatedPerson(g6Pos, 20f, Col(68, 92, 118), Col(28, 28, 32), g4Pos + new Vector3(0, 1.38f, 0), isFemale: false);
 
-        // --- Cụm 4: Bàn ghế bành khu vườn phía sau (X = 0.5, Z = 6.9) ---
         DrawLoungeTable(0.5f, 6.9f, 1.15f, 0.85f, marbleTopTex);
         DrawTubArmchair(new Vector3(-0.45f, 0f, 6.9f), 90f, tanArmchair);
         DrawTubArmchair(new Vector3(1.45f, 0f, 6.9f), -90f, brownArmchair);
         DrawSeatedPerson(new Vector3(-0.45f, 0f, 6.9f), 90f, Col(135, 95, 115), Col(38, 28, 24), new Vector3(1.45f, 1.38f, 6.9f), isFemale: true);
         DrawSeatedPerson(new Vector3(1.45f, 0f, 6.9f), -90f, Col(75, 85, 95), Col(30, 30, 34), new Vector3(-0.45f, 1.38f, 6.9f), isFemale: false);
 
-        // --- Cụm 5 & 6: Hai bộ bàn ghế ở khu vực phía trước tạo chiều sâu ---
         DrawLoungeTable(4.8f, -3.1f, 1.15f, 0.80f, marbleTopTex);
         DrawTubArmchair(new Vector3(3.90f, 0f, -3.1f), 90f, brownArmchair);
         DrawTubArmchair(new Vector3(5.70f, 0f, -3.1f), -90f, tanArmchair);
@@ -597,7 +567,6 @@ public static partial class Props
         DrawTubArmchair(new Vector3(-3.90f, 0f, -3.1f), -90f, brownArmchair);
         DrawSeatedPerson(new Vector3(-5.70f, 0f, -3.1f), 90f, Col(160, 110, 75), Col(40, 30, 25), new Vector3(-3.90f, 1.38f, -3.1f), isFemale: true);
 
-        // 7. Hai nhân viên phục vụ bưng khay đi chậm rãi trên hành lang rộng, không va chạm vật thể
         Vector3[] waiterLoop1 =
         [
             new Vector3(-3.35f, 0f,  5.00f),
@@ -619,10 +588,8 @@ public static partial class Props
         var w2 = EvalLoopWalker(waiterLoop2, time + 6.5f, 0.64f);
         DrawCafeWaiter(w2.Pos, w2.YawDeg, w2.Phase, isFemale: false, Col(38, 42, 48));
 
-        // 8. Bàn trung tâm của nhóm Tú - Dũng - Hưng - Đen (giữ nguyên tọa độ chuẩn để khớp góc camera!)
         DrawLoungeTable(0f, 0f, 1.65f, 1.20f, marbleTopTex);
 
-        // Đồ uống & điện thoại trên bàn nhóm Tú
         Box(0, 0.752f, -0.35f, 0.10f, 0.016f, 0.19f, Col(240, 215, 110));
         Box(0, 0.761f, -0.35f, 0.085f, 0.002f, 0.17f, Col(70, 100, 150));
         Mug(0.24f, 0.28f, Col(235, 235, 230));
@@ -633,7 +600,6 @@ public static partial class Props
         Box(0.36f, 0.785f, -0.15f, 0.12f, 0.05f, 0.09f, Col(240, 200, 130));
         Box(0.36f, 0.820f, -0.15f, 0.12f, 0.02f, 0.09f, Col(110, 60, 40));
 
-        // Ghế bành sang trọng cho Tú, Dũng, Hưng, Đen
         DrawTubArmchair(new Vector3(0f, 0f, -1.15f), 0f, brownArmchair);
         DrawTubArmchair(new Vector3(0f, 0f, 1.05f), 180f, brownArmchair);
         DrawTubArmchair(new Vector3(-1.25f, 0f, 0.05f), 90f, tanArmchair);
@@ -674,7 +640,6 @@ public static partial class Props
         DrawSeatedPerson(hungPos, 90, Col(55, 115, 165), Col(45, 35, 30), hungLook, FaceId.Friend2);
         DrawSeatedPerson(denPos, -90, Col(65, 145, 95), Col(35, 30, 28), denLook, FaceId.Friend3);
 
-        // Ly thủy tinh trong suốt đặt sau cùng để alpha blending chuẩn
         Raylib.DrawCylinder(new Vector3(-0.26f, 0.745f, -0.25f), 0.05f, 0.045f, 0.14f, 12, Col(220, 240, 250, 60));
     }
 
@@ -823,15 +788,16 @@ public static partial class Props
         Color warmWood = Shade(Col(235, 185, 130), lit, 0.34f);
         Color counterTop = Shade(Col(235, 232, 225), lit, 0.32f);
 
+        // Lùi dãy quầy nước về Z = 0.6f (từ Z: -2.5 -> +3.7) để mở lối vào cửa WC ở Z: -6.55 -> -5.45
         const float wx = -9.85f;
-        Box(wx, 0.48f, -0.2f, 1.15f, 0.96f, 6.2f, blackBase);
-        TexBox(wx, 0.99f, -0.2f, 1.22f, 0.06f, 6.3f, stoneTopTex, 1.2f, counterTop);
+        Box(wx, 0.48f, 0.6f, 1.15f, 0.96f, 6.2f, blackBase);
+        TexBox(wx, 0.99f, 0.6f, 1.22f, 0.06f, 6.3f, stoneTopTex, 1.2f, counterTop);
         for (int p = 0; p < 8; p++)
-            TexBox(wx + 0.59f, 0.48f, -2.75f + p * 0.72f, 0.02f, 0.78f, 0.62f, woodTex, 0.9f, warmWood);
+            TexBox(wx + 0.59f, 0.48f, -1.95f + p * 0.72f, 0.02f, 0.78f, 0.62f, woodTex, 0.9f, warmWood);
 
         for (int m = 0; m < 4; m++)
         {
-            float mz = -2.2f + m * 1.35f;
+            float mz = -1.4f + m * 1.35f;
             Box(wx + 0.10f, 1.44f, mz, 0.64f, 0.84f, 1.05f, Shade(Col(35, 38, 44), lit, 0.4f));
             Box(wx + 0.44f, 1.44f, mz, 0.03f, 0.52f, 0.88f, lit ? Palette[(m + 2) % Palette.Length] : Col(35, 45, 65));
         }
@@ -845,7 +811,7 @@ public static partial class Props
         ];
         for (int b = 0; b < 4; b++)
         {
-            float bz = -2.2f + b * 1.48f;
+            float bz = -1.4f + b * 1.48f;
             Box(-10.36f, 2.52f, bz, 0.05f, 1.05f, 1.40f, Shade(bannerColors[b], lit, 0.35f));
             Box(-10.33f, 2.52f, bz, 0.01f, 0.38f, 0.78f, Shade(Col(248, 246, 238), lit, 0.35f));
         }
@@ -976,6 +942,171 @@ public static partial class Props
         Box(x, 1.54f, z - 0.088f, 0.16f, 0.14f, 0.004f, Col(45, 45, 50));
     }
 
+    static void DrawTuMotorbike(Vector3 pos, float yawDeg, bool lit)
+    {
+        Color body = Shade(Col(168, 34, 40), lit, 0.36f);
+        Color bodyDark = Shade(Col(118, 22, 28), lit, 0.36f);
+        Color plastic = Shade(Col(24, 26, 30), lit, 0.45f);
+        Color chrome = Shade(Col(176, 181, 190), lit, 0.38f);
+        Color rubber = Shade(Col(14, 14, 16), lit, 0.50f);
+        Color tyre = Shade(Col(18, 18, 20), lit, 0.50f);
+        Color rim = Shade(Col(150, 155, 166), lit, 0.38f);
+
+        Rlgl.PushMatrix();
+        Rlgl.Translatef(pos.X, pos.Y, pos.Z);
+        Rlgl.Rotatef(yawDeg, 0f, 1f, 0f);
+        Rlgl.Rotatef(6f, 0f, 0f, 1f);
+
+        Vector3 frontAxle = new(0f, 0.205f, 1.04f);
+        Vector3 rearAxle = new(0f, 0.205f, -0.58f);
+        foreach (Vector3 axle in new[] { frontAxle, rearAxle })
+        {
+            Raylib.DrawCylinderEx(axle + new Vector3(-0.055f, 0f, 0f), axle + new Vector3(0.055f, 0f, 0f), 0.205f, 0.205f, 18, tyre);
+            Raylib.DrawCylinderEx(axle + new Vector3(-0.059f, 0f, 0f), axle + new Vector3(0.059f, 0f, 0f), 0.135f, 0.135f, 16, rim);
+            Raylib.DrawCylinderEx(axle + new Vector3(-0.063f, 0f, 0f), axle + new Vector3(0.063f, 0f, 0f), 0.040f, 0.040f, 10, Shade(Col(96, 100, 110), lit, 0.42f));
+            for (int k = 0; k < 5; k++)
+            {
+                float ang = k * (MathF.PI * 2f / 5f);
+                Vector3 rimPt = axle + new Vector3(0f, MathF.Cos(ang) * 0.135f, MathF.Sin(ang) * 0.135f);
+                Raylib.DrawCylinderEx(axle + new Vector3(0.061f, 0f, 0f), rimPt + new Vector3(0.061f, 0f, 0f), 0.006f, 0.006f, 4, chrome);
+                Raylib.DrawCylinderEx(axle + new Vector3(-0.061f, 0f, 0f), rimPt + new Vector3(-0.061f, 0f, 0f), 0.006f, 0.006f, 4, chrome);
+            }
+        }
+
+        Raylib.DrawCylinderEx(new Vector3(0.12f, 0.28f, -0.05f), new Vector3(0.26f, 0.01f, -0.12f), 0.014f, 0.012f, 6, chrome);
+        Raylib.DrawCylinderEx(new Vector3(-0.14f, 0.24f, 0.10f), new Vector3(-0.17f, 0.36f, -0.68f), 0.042f, 0.052f, 10, plastic);
+        Raylib.DrawCylinderEx(new Vector3(-0.17f, 0.36f, -0.68f), new Vector3(-0.175f, 0.37f, -0.73f), 0.025f, 0.025f, 8, chrome);
+
+        Box(0f, 0.54f, -0.32f, 0.34f, 0.32f, 0.84f, body);
+        Box(0f, 0.56f, -0.72f, 0.26f, 0.22f, 0.18f, bodyDark);
+        Box(0f, 0.74f, -0.30f, 0.34f, 0.10f, 0.75f, plastic);
+        Box(0f, 0.76f, -0.74f, 0.28f, 0.03f, 0.14f, chrome);
+        Box(0f, 0.30f, 0.38f, 0.56f, 0.05f, 0.74f, plastic);
+
+        Box(0f, 0.62f, -0.81f, 0.20f, 0.08f, 0.03f, Shade(Col(195, 28, 28), lit, 0.40f));
+        Box(0f, 0.44f, -0.80f, 0.18f, 0.13f, 0.02f, Shade(Col(240, 240, 235), lit, 0.35f));
+
+        Box(0f, 0.64f, 0.70f, 0.52f, 0.68f, 0.06f, body);
+        Box(0.28f, 0.52f, 0.52f, 0.04f, 0.46f, 0.42f, bodyDark);
+        Box(-0.28f, 0.52f, 0.52f, 0.04f, 0.46f, 0.42f, bodyDark);
+
+        Raylib.DrawCylinderEx(new Vector3(0f, 1.00f, 0.68f), new Vector3(0f, 0.50f, 0.82f), 0.085f, 0.070f, 12, body);
+        Raylib.DrawCylinderEx(new Vector3(0f, 1.02f, 0.84f), new Vector3(0f, 0.62f, 0.92f), 0.130f, 0.090f, 12, bodyDark);
+        foreach (int s in new[] { 1, -1 })
+        {
+            Raylib.DrawCylinderEx(new Vector3(0.07f * s, 0.96f, 0.68f), new Vector3(0.07f * s, 0.205f, 1.04f), 0.017f, 0.015f, 8, chrome);
+        }
+        Box(0f, 0.455f, 1.04f, 0.13f, 0.02f, 0.34f, body);
+        Box(0f, 0.405f, 1.24f, 0.13f, 0.02f, 0.12f, body);
+        Box(0f, 0.405f, 0.84f, 0.13f, 0.02f, 0.12f, body);
+
+        Box(0f, 1.03f, 0.66f, 0.34f, 0.08f, 0.26f, plastic);
+        Box(0f, 1.04f, 0.90f, 0.40f, 0.14f, 0.28f, body);
+        Box(0f, 1.04f, 1.05f, 0.26f, 0.10f, 0.03f, Shade(Col(195, 205, 215), lit, 0.35f));
+        Box(0f, 1.095f, 0.67f, 0.30f, 0.05f, 0.18f, Shade(Col(16, 18, 22), lit, 0.50f));
+
+        foreach (int s in new[] { 1, -1 })
+        {
+            Raylib.DrawCylinderEx(new Vector3(0f, 1.075f, 0.62f), new Vector3(0.31f * s, 1.075f, 0.55f), 0.013f, 0.012f, 8, chrome);
+            Raylib.DrawCylinderEx(new Vector3(0.32f * s, 1.075f, 0.547f), new Vector3(0.47f * s, 1.075f, 0.505f), 0.0225f, 0.0225f, 10, rubber);
+            Raylib.DrawCylinderEx(new Vector3(0.30f * s, 1.10f, 0.56f), new Vector3(0.52f * s, 1.29f, 0.59f), 0.010f, 0.010f, 6, chrome);
+            Box(0.52f * s, 1.29f, 0.59f, 0.14f, 0.08f, 0.03f, plastic);
+        }
+
+        Rlgl.PopMatrix();
+    }
+
+    static void DrawBackyard(bool lit, float time, float daylight)
+    {
+        Texture2D yardConcreteTex = GetWorldTex("Stone/Horror_Stone_01-512x512.png");
+        Texture2D curbStoneTex = GetWorldTex("Stone/Horror_Stone_04-512x512.png");
+        Texture2D brickWallTex = GetWorldTex("Brick/Horror_Brick_11-512x512.png");
+        Texture2D metalTex = GetWorldTex("Metal/Horror_Metal_10-512x512.png");
+
+        float ambientK = Math.Max(0.24f, daylight * 0.85f + (lit ? 0.38f : 0.10f));
+        Color floorCol = Shade(Col(148, 152, 160), true, ambientK);
+        Color wallCol = Shade(Col(175, 168, 158), true, ambientK);
+        Color steelCol = Shade(Col(62, 68, 76), true, Math.Max(0.32f, ambientK));
+
+        DrawTexturedFloor(new Vector3(6.3f, 0.001f, -14.9f), 9.8f, 7.4f, yardConcreteTex, 2.2f, floorCol);
+        TexBox(9.0f, 0.015f, -11.55f, 1.50f, 0.03f, 0.65f, curbStoneTex, 1.0f, floorCol);
+        Box(6.8f, 0.006f, -14.2f, 0.65f, 0.01f, 0.65f, steelCol);
+
+        TexBox(11.15f, 1.35f, -14.9f, 0.25f, 2.7f, 7.4f, brickWallTex, 2.0f, wallCol);
+        TexBox(1.45f, 1.35f, -14.9f, 0.25f, 2.7f, 7.4f, brickWallTex, 2.0f, wallCol);
+        TexBox(3.8f, 1.65f, -11.2f, 4.8f, 3.3f, 0.25f, brickWallTex, 2.0f, wallCol);
+
+        TexBox(4.50f, 1.35f, -18.6f, 6.20f, 2.7f, 0.25f, brickWallTex, 2.0f, wallCol);
+        TexBox(10.40f, 1.35f, -18.6f, 1.60f, 2.7f, 0.25f, brickWallTex, 2.0f, wallCol);
+        TexBox(8.60f, 2.55f, -18.6f, 2.00f, 0.30f, 0.25f, brickWallTex, 2.0f, wallCol);
+
+        TexBox(7.55f, 1.40f, -18.6f, 0.34f, 2.80f, 0.36f, brickWallTex, 1.6f, wallCol);
+        TexBox(9.65f, 1.40f, -18.6f, 0.34f, 2.80f, 0.36f, brickWallTex, 1.6f, wallCol);
+
+        Box(8.60f, 2.38f, -18.6f, 2.00f, 0.05f, 0.06f, steelCol);
+        Box(8.60f, 1.20f, -18.6f, 2.00f, 0.05f, 0.06f, steelCol);
+        Box(8.60f, 0.08f, -18.6f, 2.00f, 0.06f, 0.06f, steelCol);
+        Box(8.58f, 1.20f, -18.6f, 0.04f, 2.36f, 0.06f, steelCol);
+        Box(8.62f, 1.20f, -18.6f, 0.04f, 2.36f, 0.06f, steelCol);
+        Box(8.60f, 1.12f, -18.55f, 0.16f, 0.08f, 0.05f, Shade(Col(145, 130, 75), true, Math.Max(0.35f, ambientK)));
+        for (float gx = 7.74f; gx <= 9.48f; gx += 0.16f)
+        {
+            if (MathF.Abs(gx - 8.60f) < 0.06f) continue;
+            Box(gx, 1.20f, -18.6f, 0.024f, 2.34f, 0.024f, steelCol);
+        }
+
+        for (float rx = 1.8f; rx <= 10.8f; rx += 0.45f)
+        {
+            if (rx >= 7.45f && rx <= 9.75f) continue;
+            Box(rx, 3.05f, -18.6f, 0.03f, 0.70f, 0.03f, steelCol);
+        }
+        Box(4.50f, 3.35f, -18.6f, 5.8f, 0.04f, 0.04f, steelCol);
+        Box(10.40f, 3.35f, -18.6f, 1.4f, 0.04f, 0.04f, steelCol);
+
+        Color alleyFloorCol = Shade(Col(105, 110, 120), true, Math.Max(0.22f, daylight * 0.8f + 0.14f));
+        Color alleyWallCol = Shade(Col(125, 122, 118), true, Math.Max(0.22f, daylight * 0.8f + 0.14f));
+        DrawTexturedFloor(new Vector3(7.5f, -0.01f, -21.4f), 14.0f, 5.4f, curbStoneTex, 2.0f, alleyFloorCol);
+        TexBox(7.5f, 1.65f, -23.8f, 14.0f, 3.3f, 0.25f, brickWallTex, 2.2f, alleyWallCol);
+        Raylib.DrawCylinder(new Vector3(10.6f, 0f, -22.2f), 0.05f, 0.06f, 3.1f, 8, steelCol);
+        Box(10.25f, 3.05f, -22.2f, 0.75f, 0.05f, 0.06f, steelCol);
+        Box(9.92f, 3.01f, -22.2f, 0.28f, 0.06f, 0.16f, Col(255, 220, 145));
+
+        Color linePaint = Shade(Col(235, 235, 228), true, Math.Max(0.30f, ambientK));
+        Box(3.2f, 0.005f, -15.6f, 0.08f, 0.004f, 2.4f, linePaint);
+        Box(5.2f, 0.005f, -15.6f, 0.08f, 0.004f, 2.4f, linePaint);
+        Box(4.2f, 0.005f, -16.8f, 2.08f, 0.004f, 0.08f, linePaint);
+
+        foreach (float px in new[] { 2.55f, 5.85f })
+            foreach (float pz in new[] { -17.25f, -14.05f })
+                Raylib.DrawCylinder(new Vector3(px, 0f, pz), 0.045f, 0.045f, 2.55f, 10, steelCol);
+
+        Rlgl.PushMatrix();
+        Rlgl.Translatef(4.2f, 2.58f, -15.65f);
+        Rlgl.Rotatef(6f, 1f, 0f, 0f);
+        TexBox(0f, 0f, 0f, 3.65f, 0.06f, 3.55f, metalTex, 1.4f, Shade(Col(58, 92, 132), true, Math.Max(0.32f, ambientK)));
+        Rlgl.PopMatrix();
+
+        DrawTuMotorbike(new Vector3(4.20f, 0f, -15.55f), 162f, lit);
+
+        const float poleX = 6.35f;
+        const float poleZ = -12.15f;
+        Raylib.DrawCylinder(new Vector3(poleX, 0f, poleZ), 0.065f, 0.085f, 3.6f, 10, steelCol);
+        TexBox(poleX - 0.35f, 3.58f, poleZ, 0.85f, 0.06f, 0.08f, metalTex, 0.8f, steelCol);
+        Box(poleX - 0.72f, 3.53f, poleZ, 0.38f, 0.08f, 0.22f, lit ? Col(255, 228, 155) : Col(55, 58, 64));
+
+        Box(9.0f, 2.72f, -11.34f, 0.34f, 0.14f, 0.10f, steelCol);
+        Box(9.0f, 2.72f, -11.38f, 0.26f, 0.09f, 0.03f, lit ? Col(255, 215, 135) : Col(50, 45, 40));
+
+        Box(7.55f, 2.35f, -11.33f, 0.04f, 1.35f, 0.04f, steelCol);
+        Box(6.95f, 3.00f, -11.74f, 1.25f, 0.04f, 0.85f, steelCol);
+
+        if (lit)
+        {
+            Raylib.DrawSphere(new Vector3(poleX - 0.72f, 3.44f, poleZ), 0.32f, Col(255, 225, 145, 42));
+            Raylib.DrawCylinder(new Vector3(poleX - 0.72f, 0.01f, poleZ), 2.1f, 2.1f, 0.002f, 24, Col(255, 225, 150, 24));
+        }
+    }
+
     public static void DrawStore(bool lit, bool doorLocked, float time, string clockTime, bool phoneRinging, float daylight = 0f)
     {
         const float minX = -10.5f, maxX = 10.5f;
@@ -1020,8 +1151,46 @@ public static partial class Props
             foreach (float lz in new[] { -4.6f, -1.4f, 1.8f, 5.0f })
                 CeilingLight(lx, lz, lit);
 
-        TexBox(0, 1.9f, minZ, storeW, 3.8f, 0.2f, innerWallTex, 2.2f, innerWallTint);
-        TexBox(minX, 1.9f, centerZ, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
+        TexBox(-1.075f, 1.9f, minZ, 18.85f, 3.8f, 0.2f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(10.075f, 1.9f, minZ, 0.85f, 3.8f, 0.2f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(9.0f, 3.125f, minZ, 1.30f, 1.35f, 0.2f, innerWallTex, 2.2f, innerWallTint);
+
+        Color alu = Shade(Col(205, 210, 220), lit, 0.35f);
+
+        DrawTexturedFloor(new Vector3(8.35f, 0.002f, -9.2f), 4.3f, 4.0f, storeFloorTex, 1.5f, floorTint);
+        TexBox(8.35f, 3.8f, -9.2f, 4.3f, 0.2f, 4.0f, ceilingTex, 2.2f, Shade(Col(235, 235, 240), lit, 0.20f));
+
+        TexBox(7.30f, 1.9f, -11.2f, 2.20f, 3.8f, 0.2f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(10.05f, 1.9f, -11.2f, 0.90f, 3.8f, 0.2f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(9.00f, 3.15f, -11.2f, 1.20f, 1.30f, 0.2f, innerWallTex, 2.2f, innerWallTint);
+
+        TexBox(8.40f, 1.25f, -11.2f, 0.08f, 2.50f, 0.24f, metalTex, 1.0f, alu);
+        TexBox(9.60f, 1.25f, -11.2f, 0.08f, 2.50f, 0.24f, metalTex, 1.0f, alu);
+        TexBox(9.00f, 2.50f, -11.2f, 1.28f, 0.08f, 0.24f, metalTex, 1.0f, alu);
+        Rlgl.PushMatrix();
+        Rlgl.Translatef(8.44f, 0f, -11.26f);
+        Rlgl.Rotatef(-68f, 0f, 1f, 0f);
+        TexBox(0.56f, 1.23f, 0f, 1.12f, 2.44f, 0.06f, metalTex, 1.2f, Shade(Col(88, 96, 106), lit, 0.35f));
+        Box(0.98f, 1.12f, -0.04f, 0.12f, 0.04f, 0.04f, alu);
+        Rlgl.PopMatrix();
+
+        TexBox(6.2f, 1.9f, -9.2f, 0.2f, 3.8f, 4.0f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(10.5f, 1.9f, -9.2f, 0.2f, 3.8f, 4.0f, innerWallTex, 2.2f, innerWallTint);
+        CeilingLight(8.35f, -9.2f, lit);
+
+        Color carton = Shade(Col(178, 132, 82), lit, 0.35f);
+        Box(7.2f, 0.25f, -10.3f, 0.65f, 0.50f, 0.55f, carton);
+        Box(7.9f, 0.25f, -10.3f, 0.65f, 0.50f, 0.55f, carton);
+        Box(7.55f, 0.75f, -10.3f, 0.65f, 0.50f, 0.55f, carton);
+
+        DrawBackyard(lit, time, daylight);
+
+        // Tường trái cửa hàng theo tọa độ (-X = bên phải khi nhìn từ quầy ra cửa): chừa ô cửa WC Z = -6.55 -> -5.45
+        TexBox(minX, 1.9f, -6.875f, 0.2f, 3.8f, 0.65f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(minX, 1.9f, 1.025f, 0.2f, 3.8f, 12.95f, innerWallTex, 2.2f, innerWallTint);
+        TexBox(minX, 3.025f, -6.00f, 0.2f, 1.55f, 1.10f, innerWallTex, 2.2f, innerWallTint);
+
+        // Tường phải cửa hàng theo tọa độ (+X): liền mạch
         TexBox(maxX, 1.9f, centerZ, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
 
         TexBox(-5.85f, 1.9f, maxZ, 9.3f, 3.8f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
@@ -1029,10 +1198,10 @@ public static partial class Props
         TexBox(0f, 3.2f, maxZ, 2.4f, 1.2f, 0.2f, facadeBrickTex, 1.8f, facadeTint);
 
         Box(0, 0.07f, minZ + 0.11f, storeW - 0.2f, 0.14f, 0.02f, trimDark);
-        Box(minX + 0.11f, 0.07f, centerZ, 0.02f, 0.14f, storeL - 0.2f, trimDark);
+        Box(minX + 0.11f, 0.07f, -6.875f, 0.02f, 0.14f, 0.45f, trimDark);
+        Box(minX + 0.11f, 0.07f, 1.025f, 0.02f, 0.14f, 12.75f, trimDark);
         Box(maxX - 0.11f, 0.07f, centerZ, 0.02f, 0.14f, storeL - 0.2f, trimDark);
 
-        Color alu = Shade(Col(205, 210, 220), lit, 0.35f);
         TexBox(-1.2f, 1.3f, maxZ, 0.10f, 2.6f, 0.14f, metalTex, 1.0f, alu);
         TexBox(1.2f, 1.3f, maxZ, 0.10f, 2.6f, 0.14f, metalTex, 1.0f, alu);
         TexBox(0, 0.06f, maxZ, 2.4f, 0.12f, 0.14f, metalTex, 1.0f, alu);
@@ -1084,6 +1253,9 @@ public static partial class Props
         Box(-2.0f, 1.34f, -2.3f, 0.30f, 0.14f, 0.04f, lit ? Col(120, 230, 160) : Col(40, 80, 60));
         Box(-2.0f, 1.285f, -2.12f, 0.30f, 0.01f, 0.12f, Shade(Col(90, 92, 100), lit, 0.5f));
 
+        Box(-1.56f, 1.055f, -2.05f, 0.22f, 0.025f, 0.24f, Shade(Col(28, 30, 35), lit, 0.4f));
+        Box(-1.56f, 1.070f, -2.05f, 0.14f, 0.004f, 0.16f, lit ? Col(235, 45, 45) : Col(75, 20, 20));
+
         Box(-2.75f, 1.39f, -4.15f, 0.45f, 0.70f, 0.45f, Shade(Col(40, 42, 46), lit, 0.5f));
         Box(-2.75f, 1.55f, -3.92f, 0.30f, 0.14f, 0.02f, lit ? Col(240, 120, 60) : Col(60, 30, 20));
         Raylib.DrawCylinder(new Vector3(-2.75f, 1.04f, -3.8f), 0.04f, 0.035f, 0.07f, 8, Shade(Col(235, 235, 230), lit, 0.4f));
@@ -1102,7 +1274,6 @@ public static partial class Props
 
         MiniBlueCooler(0.85f, -2.25f, lit);
 
-        // Đặt kệ snack gọn ở góc phải gần cửa ra vào, cách xa dãy kệ hàng
         RollingSnackRack(1.70f, 4.90f, -20f, lit);
 
         BeverageCoolerUnit(maxX - 0.45f, 4.6f, -90f, lit, isRedCocaCola: true);
