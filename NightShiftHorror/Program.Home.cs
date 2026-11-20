@@ -4,7 +4,7 @@ using Raylib_cs;
 partial class Program
 {
     static int homeSelection = 0;
-    static float homeOrbitAngle = 0f;
+    static float homePanAngle = 0f;
 
     static bool DrawHomeScreen(float dt)
     {
@@ -14,13 +14,9 @@ partial class Program
         const int ButtonH = 58;
         const int ButtonGap = 14;
 
-        homeOrbitAngle += dt * 0.13f;
-        camera.Position = new Vector3(
-            MathF.Sin(homeOrbitAngle) * 17.5f,
-            4.0f + MathF.Sin(homeOrbitAngle * 0.7f) * 0.45f,
-            MathF.Cos(homeOrbitAngle) * 17.5f
-        );
-        camera.Target = new Vector3(0f, 2.0f, 0f);
+        homePanAngle += dt * 0.25f;
+        camera.Position = new Vector3(0f, 4.0f, 17.5f);
+        camera.Target = new Vector3(MathF.Sin(homePanAngle) * 3.0f, 2.0f, 0f);
         camera.Up = Vector3.UnitY;
         camera.FovY = 52f;
 
@@ -115,7 +111,7 @@ partial class Program
         phoneEndHoldTimer = 0f;
         phoneSentReply = "";
         fadeAlpha = 1f;
-        homeOrbitAngle = 0f;
+        homePanAngle = 0f;
         Raylib.DisableCursor();
         Raylib.GetMouseDelta();
     }
@@ -125,7 +121,7 @@ partial class Program
         ResetGame();
         gameScene = -2;
         homeSelection = 0;
-        homeOrbitAngle = 0f;
+        homePanAngle = 0f;
         Raylib.EnableCursor();
     }
 
