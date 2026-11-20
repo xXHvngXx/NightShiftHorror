@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=190&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=54&fontColor=eef2ff&fontAlignY=38&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.3&descSize=20&descAlignY=60&animation=fadeIn" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=190&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=54&fontColor=eef2ff&fontAlignY=38&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.4&descSize=20&descAlignY=60&animation=fadeIn" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
 
 ### 🌙 &nbsp;Năm tiếng đồng hồ. Một quyển nội quy. Không ai được phép vào sau 3 giờ sáng.&nbsp; 🔮
 
 [![C#](https://img.shields.io/badge/C%23-.NET%209.0-512BD4?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![Raylib](https://img.shields.io/badge/Raylib--cs-8.1.0%203D%20Engine-3B82F6?style=for-the-badge)](https://www.raylib.com/)
-[![Release](https://img.shields.io/badge/Release-v1.3-7C3AED?style=for-the-badge)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.3)
+[![Release](https://img.shields.io/badge/Release-v1.4-7C3AED?style=for-the-badge)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.4)
 [![Genre](https://img.shields.io/badge/Genre-Psychological%20Horror-1E3A8A?style=for-the-badge)]()
 [![Voice](https://img.shields.io/badge/Voice-Vietnamese%20TTS-0EA5E9?style=for-the-badge)]()
 
@@ -18,7 +18,7 @@
 <br/>
 
 [**Giới thiệu**](#-giới-thiệu) •
-[**Tính năng**](#-tính-năng-nổi-bật-v13) •
+[**Tính năng**](#-tính-năng-nổi-bật-v14) •
 [**Điều khiển**](#-điều-khiển) •
 [**Diễn biến**](#-diễn-biến-một-đêm) •
 [**Công nghệ**](#-công-nghệ) •
@@ -32,7 +32,7 @@
 
 **Ca Trực Đêm (Night Shift Horror)** là tựa game kinh dị tâm lý góc nhìn thứ nhất mang đậm bối cảnh đêm sương đường phố Việt Nam. Từ màn hình chính với camera chuyển động nhẹ quanh cửa hàng, chọn phân đoạn chơi, cuộc trò chuyện ở quán cà phê, tương tác điện thoại/thông báo cho đến chuyến xe đêm dọc con đường Số 9 mù sương, bạn bắt đầu ca trực tại cửa hàng tiện lợi từ **00:00 đến 05:00** với một tờ nội quy đặt trên quầy thu ngân. Những vị khách ghé qua nhìn rất bình thường, cho đến khi có điều gì đó không khớp.
 
-Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
+Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm khu vực nhà vệ sinh chi tiết có gương phản chiếu thời gian thực, sân sau, hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
 
 <table>
 <tr>
@@ -45,7 +45,13 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=70&section=header" width="100%"/>
 
-## 💀 Tính năng nổi bật (v1.3)
+## 💀 Tính năng nổi bật (v1.4)
+
+### 🚿 Khu nhà vệ sinh chi tiết, Gương phản chiếu & Sân sau
+- **Không gian nhà vệ sinh & 3 buồng riêng biệt (`Props.WC.cs`)**: Bao gồm cửa chính nhà vệ sinh đóng/mở được, dãy bồn lavabo có vòi nước chảy/rửa tay góc nhìn thứ nhất, 3 buồng vệ sinh rộng rãi hơn với cửa đóng/mở độc lập, bồn cầu và xử lý va chạm giữ người chơi ổn định khi đứng bên trong buồng lúc đóng cửa.
+- **Gương phản chiếu thời gian thực (`RenderTexture2D`)**: Phản chiếu không gian bên trong phòng vệ sinh, dãy buồng và hình ảnh nhân vật người chơi, căn chỉnh gọn mặt tiền để không lem sang khu biển máy nước của tiệm.
+- **Kiểm tra che khuất raycast (`IsRayBlockedByWall`)**: Chặn tương tác `[F]` xuyên qua tường đối với các vật thể phía sau tường, thùng cầu chì ngoài tường, chồng hộp hàng và thùng rác.
+- **Khám phá sân sau**: Dựng xe máy của Tú dưới mái che sân sau, kiểm tra cổng sắt ra hẻm và các vật cản xung quanh.
 
 ### 🏠 Màn hình chính, Chọn Episode & Điện thoại / Thông báo
 - **Màn hình chính động (`Program.Home.cs`)**: Camera chuyển động quanh không gian cửa hàng, hỗ trợ điều hướng menu bằng chuột hoặc bàn phím qua **Episodes** (chọn chapter), **Credits** và **Exit**, cũng như quay về màn hình chính khi cần.
@@ -72,14 +78,14 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 
 ## 🎮 Điều khiển
 
-### 🚶 Trong quán cà phê & Cửa hàng tiện lợi
+### 🚶 Trong quán cà phê, Cửa hàng tiện lợi & Nhà vệ sinh
 
 | Phím | Hành động |
 |:----:|:----------|
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Di chuyển |
 | <kbd>Shift</kbd> | Chạy nhanh |
 | 🖱️ **Chuột** | Quan sát xung quanh |
-| <kbd>F</kbd> | Tương tác / Nói chuyện / Hiện nhanh chữ |
+| <kbd>F</kbd> | Tương tác (cửa, buồng WC, vòi rửa tay, NPC, sổ giao ca, quy tắc...) / Nói chuyện / Hiện nhanh chữ |
 | <kbd>Space</kbd> | Hiện nhanh chữ |
 | <kbd>↑</kbd> <kbd>↓</kbd> | Chọn phương án trả lời |
 | <kbd>Enter</kbd> | Xác nhận / Sang câu tiếp theo |
