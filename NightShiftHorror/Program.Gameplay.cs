@@ -126,7 +126,7 @@ partial class Program
             return;
         }
 
-        bool anyCutscene = isWorkCutscene || isDawnCutscene || IsWcBusy;
+        bool anyCutscene = isWorkCutscene || isDawnCutscene || isReturnHomeCutscene || IsWcBusy;
 
         if (!isTalking && !anyCutscene)
         {
@@ -341,6 +341,11 @@ partial class Program
             Raylib.GetMouseDelta();
             UpdateDawnCutscene(dt);
         }
+        else if (isReturnHomeCutscene)
+        {
+            Raylib.GetMouseDelta();
+            UpdateReturnHomeCutscene(dt);
+        }
         else if (IsWcBusy)
         {
             Raylib.GetMouseDelta();
@@ -380,16 +385,14 @@ partial class Program
 
             if (inWcArea)
             {
-                playerPos.Z = Math.Clamp(playerPos.Z, -6.50f, -2.05f);
+                playerPos.Z = Math.Clamp(playerPos.Z, -6.50f, -1.75f);
                 ApplyWcCollisionAndBounds();
             }
             else
             {
-                // Ranh giới ngoài cùng bao gồm cả sân sau (Z tới -18.0f, dừng ngay trước cổng sắt Z = -18.6f)
                 playerPos.X = Math.Clamp(playerPos.X, -9.8f, 10.6f);
                 playerPos.Z = Math.Clamp(playerPos.Z, -18.0f, maxZ);
 
-                // Chặn mép tường phải theo tọa độ (+X) khu bán hàng (X > 9.8f khi Z > -7.1f)
                 if (playerPos.Z > -7.1f && playerPos.X > 9.8f)
                 {
                     playerPos.X = 9.8f;
@@ -517,6 +520,12 @@ partial class Program
             Vector3 lookDir = Vector3.Normalize(camera.Target - camera.Position);
             Ray eyeRay = new(camera.Position, lookDir);
 
+            // Chặn prompt xuyên tường nếu UpdateShiftWork vừa kích hoạt vật thể phía sau tường
+            if (skullPromptKey != "" && IsRayBlockedByWall(eyeRay, 2.8f))
+            {
+                skullPromptKey = "";
+            }
+
             RayCollision paperHit = Raylib.GetRayCollisionBox(eyeRay, rulesPaperBox);
             RayCollision logbookHit = Raylib.GetRayCollisionBox(eyeRay, logbookBox);
             RayCollision phoneHit = Raylib.GetRayCollisionBox(eyeRay, deskPhoneBox);
@@ -528,50 +537,66 @@ partial class Program
             BoundingBox npcBox = new(npcPos - new Vector3(0.4f, 0f, 0.4f), npcPos + new Vector3(0.4f, 1.85f * npcSpec.HeightScale, 0.4f));
             RayCollision npcHit = npcActive ? Raylib.GetRayCollisionBox(eyeRay, npcBox) : new RayCollision { Hit = false };
 
-            isWcPrompt = skullPromptKey == "" && TryDetectWcInteraction(eyeRay, ref interactPrompt);
-
-            if (!isWcPrompt && npcHit.Hit && npcHit.Distance <= 3.2f && !npcLeaving && storyStep != 7 && !IsRayBlockedByWall(eyeRay, npcHit.Distance))
+            if (skullPromptKey == "")
             {
-                activeInteractId = "npc";
-                interactPrompt = "[F] Nói chuyện";
-            }
-            else if (!isWcPrompt && posterHit.Hit && posterHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, posterHit.Distance))
-            {
-                activeInteractId = "poster";
-                interactPrompt = "[F] Xem tờ áp phích trên cột đèn";
-            }
-            else if (!isWcPrompt && paperHit.Hit && paperHit.Distance <= 2.6f && !IsRayBlockedByWall(eyeRay, paperHit.Distance))
-            {
-                activeInteractId = "rules";
-                interactPrompt = "[F] Đọc tờ quy tắc";
-            }
-            else if (!isWcPrompt && logbookHit.Hit && logbookHit.Distance <= 2.6f && !IsRayBlockedByWall(eyeRay, logbookHit.Distance))
-            {
-                activeInteractId = "logbook";
-                interactPrompt = "[F] Lật xem Sổ giao ca";
-            }
-            else if (!isWcPrompt && phoneHit.Hit && phoneHit.Distance <= 2.6f && storyStep == 4 && !IsRayBlockedByWall(eyeRay, phoneHit.Distance))
-            {
-                activeInteractId = "phone";
-                interactPrompt = "[F] Nghe điện thoại";
-            }
-            else if (!isWcPrompt && doorHit.Hit && doorHit.Distance <= 2.8f && storyStep == 7 && !isDoorLocked && !IsRayBlockedByWall(eyeRay, doorHit.Distance))
-            {
-                activeInteractId = "door";
-                interactPrompt = "[F] Khóa chốt cửa chính";
-            }
-            else if (!isWcPrompt && skullPromptKey == "" && bikeHit.Hit && bikeHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, bikeHit.Distance))
-            {
-                activeInteractId = "motorbike";
-                interactPrompt = "[F] Kiểm tra xe máy của Tú";
-            }
-            else if (!isWcPrompt && skullPromptKey == "" && gateHit.Hit && gateHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, gateHit.Distance))
-            {
-                activeInteractId = "alley_gate";
-                interactPrompt = "[F] Kiểm tra cổng sắt ra hẻm";
+                isWcPrompt = TryDetectWcInteraction(eyeRay, ref interactPrompt);
             }
 
-            if ((skullPromptKey == "" || isWcPrompt) && activeInteractId != "" && Raylib.IsKeyPressed(KeyboardKey.F))
+            if (skullPromptKey == "" && !isWcPrompt)
+            {
+                if (npcHit.Hit && npcHit.Distance <= 3.2f && !npcLeaving && storyStep != 7 && !IsRayBlockedByWall(eyeRay, npcHit.Distance))
+                {
+                    activeInteractId = "npc";
+                    skullPromptKey = "F";
+                    interactPrompt = "Nói chuyện";
+                }
+                else if (posterHit.Hit && posterHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, posterHit.Distance))
+                {
+                    activeInteractId = "poster";
+                    skullPromptKey = "F";
+                    interactPrompt = "Xem tờ áp phích trên cột đèn";
+                }
+                else if (paperHit.Hit && paperHit.Distance <= 2.6f && !IsRayBlockedByWall(eyeRay, paperHit.Distance))
+                {
+                    activeInteractId = "rules";
+                    skullPromptKey = "F";
+                    interactPrompt = "Đọc tờ quy tắc";
+                }
+                else if (logbookHit.Hit && logbookHit.Distance <= 2.6f && !IsRayBlockedByWall(eyeRay, logbookHit.Distance))
+                {
+                    activeInteractId = "logbook";
+                    skullPromptKey = "F";
+                    interactPrompt = "Lật xem Sổ giao ca";
+                }
+                else if (phoneHit.Hit && phoneHit.Distance <= 2.6f && storyStep == 4 && !IsRayBlockedByWall(eyeRay, phoneHit.Distance))
+                {
+                    activeInteractId = "phone";
+                    skullPromptKey = "F";
+                    interactPrompt = "Nghe điện thoại";
+                }
+                else if (doorHit.Hit && doorHit.Distance <= 2.8f && storyStep == 7 && !isDoorLocked && !IsRayBlockedByWall(eyeRay, doorHit.Distance))
+                {
+                    activeInteractId = "door";
+                    skullPromptKey = "F";
+                    interactPrompt = "Khóa chốt cửa chính";
+                }
+                else if (bikeHit.Hit && bikeHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, bikeHit.Distance))
+                {
+                    activeInteractId = "motorbike";
+                    skullPromptKey = "F";
+                    interactPrompt = IsMorningAfterShift
+                        ? "Lên xe chạy về nhà"
+                        : "Kiểm tra xe máy của Tú";
+                }
+                else if (gateHit.Hit && gateHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, gateHit.Distance))
+                {
+                    activeInteractId = "alley_gate";
+                    skullPromptKey = "F";
+                    interactPrompt = "Kiểm tra cổng sắt ra hẻm";
+                }
+            }
+
+            if (activeInteractId != "" && Raylib.IsKeyPressed(KeyboardKey.F))
             {
                 HandleStoreInteraction();
             }
@@ -604,7 +629,7 @@ partial class Program
             npcEyeGaze = Vector2.Lerp(npcEyeGaze, targetGaze.EyeGaze, headSmooth);
         }
 
-        DrawStoreFrame(dt, anyCutscene, interactPrompt, isWcPrompt);
+        DrawStoreFrame(dt, anyCutscene, interactPrompt);
     }
 
     static void HandleStoreInteraction()
@@ -613,11 +638,23 @@ partial class Program
 
         if (activeInteractId == "motorbike")
         {
-            StartDialogue(
-                "Tú",
-                "Chiếc xe số màu đỏ của mình dựng gọn dưới mái che sân sau. Chìa khóa vẫn cất trong túi quần, chỉ mong trực yên ổn tới 5 giờ sáng để nổ máy chạy thẳng về nhà.",
-                2
-            );
+            if (IsMorningAfterShift)
+            {
+                StartDialogue(
+                    "Tú",
+                    "Trời đã sáng rõ, ca đêm cũng khép lại bình an. Mình tra chìa khóa, nổ máy xe chạy thẳng về nhà nghỉ ngơi thôi.",
+                    2,
+                    mode: "return_home_ride"
+                );
+            }
+            else
+            {
+                StartDialogue(
+                    "Tú",
+                    "Chiếc xe số màu đỏ của mình dựng gọn dưới mái che sân sau. Chìa khóa vẫn cất trong túi quần, chỉ mong trực yên ổn tới 5 giờ sáng để nổ máy chạy thẳng về nhà.",
+                    2
+                );
+            }
         }
         else if (activeInteractId == "alley_gate")
         {
@@ -1001,7 +1038,7 @@ partial class Program
                             isTalkingToNpc = false;
                             dialogueStage = 0;
                             isDoorLocked = false;
-                            currentObjective = "Bước ra ngoài cửa hàng để ra về";
+                            currentObjective = "Ra sân sau lấy xe máy hoặc bước ra cửa chính để về nhà";
                             Raylib.GetMouseDelta();
                         }
                         else
@@ -1043,6 +1080,10 @@ partial class Program
                     {
                         currentObjective = "Ca tối (19:00 - 00:00): Đón khách, quét tính tiền & sắp xếp kệ";
                     }
+                    else if (finishedMode == "return_home_ride")
+                    {
+                        StartReturnHomeCutscene();
+                    }
                     else if (shouldNpcLeave && npcActive)
                     {
                         npcTarget = new Vector3(0f, 0f, 14.0f);
@@ -1057,14 +1098,14 @@ partial class Program
                     else if (storyStep == 10)
                     {
                         isDoorLocked = false;
-                        currentObjective = "Bước ra ngoài cửa hàng để ra về";
+                        currentObjective = "Ra sân sau lấy xe máy hoặc bước ra cửa chính để về nhà";
                     }
                 }
             }
         }
     }
 
-    static void DrawStoreFrame(float dt, bool anyCutscene, string interactPrompt, bool isWcPrompt)
+    static void DrawStoreFrame(float dt, bool anyCutscene, string interactPrompt)
     {
         float currentDaylight = isDawnCutscene ? dawnProgress : (storyStep >= 10 ? 1.0f : 0.0f);
         Props.UpdateWashroomMirror(camera, playerPos, camYaw, lightsOn, (float)Raylib.GetTime(),
@@ -1090,24 +1131,6 @@ partial class Program
                 Props.DrawFearsCharacter(npcPos, npcYaw, npcShirtColor, npcHairColor, npcSpec, npcWalkPhase, npcSwing,
                                          npcHeadYaw, npcHeadPitch, npcHeadRoll, npcEyeGaze, npcFaceId);
             Props.DrawStoreGlass(isDoorLocked, currentDaylight);
-
-            if (!isTalking && !anyCutscene && activeInteractId != "")
-            {
-                if (activeInteractId == "rules")
-                    Raylib.DrawCubeWires(new Vector3(-1.1f, 1.07f, -2.1f), 0.38f, 0.05f, 0.48f, Color.Yellow);
-                else if (activeInteractId == "logbook")
-                    Raylib.DrawCubeWires(new Vector3(-0.62f, 1.07f, -2.12f), 0.32f, 0.06f, 0.40f, Color.Yellow);
-                else if (activeInteractId == "phone")
-                    Raylib.DrawCubeWires(new Vector3(-0.15f, 1.13f, -2.1f), 0.32f, 0.18f, 0.28f, Color.Yellow);
-                else if (activeInteractId == "door")
-                    Raylib.DrawCubeWires(new Vector3(0f, 1.3f, 7.5f), 2.44f, 2.64f, 0.12f, Color.Yellow);
-                else if (activeInteractId == "poster")
-                    Raylib.DrawCubeWires(new Vector3(-2.1f, 1.55f, 9.02f), 0.30f, 0.38f, 0.08f, Color.Yellow);
-                else if (activeInteractId == "motorbike")
-                    Raylib.DrawCubeWires(new Vector3(4.20f, 0.68f, -15.45f), 0.92f, 1.36f, 2.02f, Color.Yellow);
-                else if (activeInteractId == "alley_gate")
-                    Raylib.DrawCubeWires(new Vector3(8.60f, 1.25f, -18.60f), 2.04f, 2.50f, 0.20f, Color.Yellow);
-            }
         }, skyColor, LerpColor(new Color(24, 0, 0, 255), new Color(14, 0, 0, 255), currentDaylight).R * 0.1f);
 
         DrawVignette(lightsOn ? (int)(10 * (1f - currentDaylight)) : 75);
@@ -1138,6 +1161,18 @@ partial class Program
             float capW = Raylib.MeasureTextEx(viFont, caption, 22, 1.0f).X;
             DrawViText(caption, (int)((ScreenWidth - capW) / 2), ScreenHeight - 50, 22, Color.RayWhite);
         }
+        else if (isReturnHomeCutscene)
+        {
+            int barH = 74;
+            Raylib.DrawRectangle(0, 0, ScreenWidth, barH, Color.Black);
+            Raylib.DrawRectangle(0, ScreenHeight - barH, ScreenWidth, barH, Color.Black);
+
+            string caption = returnHomeCutsceneTimer < 2.5f
+                ? $"{currentTime} - Tú nổ máy xe số quen thuộc sau một đêm trực dài..."
+                : $"{currentTime} - Ánh nắng sớm len qua con phố, Tú chạy xe về nhà an toàn.";
+            float capW = Raylib.MeasureTextEx(viFont, caption, 22, 1.0f).X;
+            DrawViText(caption, (int)((ScreenWidth - capW) / 2), ScreenHeight - 50, 22, Color.RayWhite);
+        }
         else
         {
             Raylib.DrawRectangle(15, 15, 620, 68, new Color(0, 0, 0, 175));
@@ -1159,20 +1194,16 @@ partial class Program
                 DrawShopperSpeechBubbleHUD();
             }
 
-            bool hasAnyPrompt = skullPromptKey != "" || interactPrompt != "";
+            bool hasAnyPrompt = skullPromptKey != "";
             Raylib.DrawCircle(ScreenWidth / 2, ScreenHeight / 2, hasAnyPrompt ? 5 : 2, hasAnyPrompt ? Color.Yellow : Color.LightGray);
             if (skullPromptKey != "" && !isTalking)
             {
                 DrawSkullmugKeyPrompt();
-                if (isWcPrompt && interactPrompt != "")
+                if (interactPrompt != "")
                 {
                     float pw = Raylib.MeasureTextEx(viFont, interactPrompt, 20, 1f).X;
                     DrawViText(interactPrompt, (int)((ScreenWidth - pw) / 2), ScreenHeight / 2 + 54, 20, Color.RayWhite);
                 }
-            }
-            else if (interactPrompt != "" && !isTalking)
-            {
-                DrawViText(interactPrompt, ScreenWidth / 2 - 95, ScreenHeight / 2 + 16, 22, Color.Yellow);
             }
         }
 
