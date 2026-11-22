@@ -787,19 +787,32 @@ public static partial class Props
         Color blackBase = Shade(Col(22, 24, 28), lit, 0.35f);
         Color warmWood = Shade(Col(235, 185, 130), lit, 0.34f);
         Color counterTop = Shade(Col(235, 232, 225), lit, 0.32f);
+        Color chrome = Shade(Col(195, 200, 208), lit, 0.38f);
 
-        // Lùi dãy quầy nước về Z = 0.6f (từ Z: -2.5 -> +3.7) để mở lối vào cửa WC ở Z: -6.55 -> -5.45
-        const float wx = -9.85f;
+        const float wx = -9.80f;
         Box(wx, 0.48f, 0.6f, 1.15f, 0.96f, 6.2f, blackBase);
-        TexBox(wx, 0.99f, 0.6f, 1.22f, 0.06f, 6.3f, stoneTopTex, 1.2f, counterTop);
+        TexBox(wx, 0.99f, 0.6f, 1.18f, 0.06f, 6.3f, stoneTopTex, 1.2f, counterTop);
         for (int p = 0; p < 8; p++)
-            TexBox(wx + 0.59f, 0.48f, -1.95f + p * 0.72f, 0.02f, 0.78f, 0.62f, woodTex, 0.9f, warmWood);
+            TexBox(wx + 0.585f, 0.48f, -1.95f + p * 0.72f, 0.02f, 0.78f, 0.62f, woodTex, 0.9f, warmWood);
 
         for (int m = 0; m < 4; m++)
         {
             float mz = -1.4f + m * 1.35f;
-            Box(wx + 0.10f, 1.44f, mz, 0.64f, 0.84f, 1.05f, Shade(Col(35, 38, 44), lit, 0.4f));
-            Box(wx + 0.44f, 1.44f, mz, 0.03f, 0.52f, 0.88f, lit ? Palette[(m + 2) % Palette.Length] : Col(35, 45, 65));
+            float bodyCenterX = wx + 0.06f;
+            const float bodyW = 0.64f;
+            float frontFaceX = bodyCenterX + bodyW * 0.5f;
+
+            Box(bodyCenterX, 1.44f, mz, bodyW, 0.84f, 1.05f, Shade(Col(35, 38, 44), lit, 0.4f));
+            Box(frontFaceX + 0.012f, 1.62f, mz, 0.024f, 0.38f, 0.90f, lit ? Palette[(m + 2) % Palette.Length] : Col(35, 45, 65));
+            Box(frontFaceX + 0.008f, 1.22f, mz, 0.018f, 0.34f, 0.88f, Shade(Col(18, 20, 24), lit, 0.5f));
+            Box(frontFaceX + 0.08f, 1.045f, mz, 0.16f, 0.03f, 0.90f, chrome);
+
+            for (int n = -1; n <= 1; n++)
+            {
+                float nz = mz + n * 0.27f;
+                Raylib.DrawCylinder(new Vector3(frontFaceX + 0.065f, 1.32f, nz), 0.016f, 0.012f, 0.065f, 10, chrome);
+                Box(frontFaceX + 0.085f, 1.28f, nz, 0.012f, 0.07f, 0.035f, blackBase);
+            }
         }
 
         Color[] bannerColors =
@@ -812,8 +825,8 @@ public static partial class Props
         for (int b = 0; b < 4; b++)
         {
             float bz = -1.4f + b * 1.48f;
-            Box(-10.36f, 2.52f, bz, 0.05f, 1.05f, 1.40f, Shade(bannerColors[b], lit, 0.35f));
-            Box(-10.33f, 2.52f, bz, 0.01f, 0.38f, 0.78f, Shade(Col(248, 246, 238), lit, 0.35f));
+            Box(-10.365f, 2.52f, bz, 0.04f, 1.05f, 1.40f, Shade(bannerColors[b], lit, 0.35f));
+            Box(-10.34f, 2.52f, bz, 0.01f, 0.38f, 0.78f, Shade(Col(248, 246, 238), lit, 0.35f));
         }
     }
 
@@ -1185,12 +1198,12 @@ public static partial class Props
 
         DrawBackyard(lit, time, daylight);
 
-        // Tường trái cửa hàng theo tọa độ (-X = bên phải khi nhìn từ quầy ra cửa): chừa ô cửa WC Z = -6.55 -> -5.45
+        // Tường trái cửa hàng (-X): chừa ô cửa WC Z = -6.55 -> -5.45, cao 2.25m
         TexBox(minX, 1.9f, -6.875f, 0.2f, 3.8f, 0.65f, innerWallTex, 2.2f, innerWallTint);
         TexBox(minX, 1.9f, 1.025f, 0.2f, 3.8f, 12.95f, innerWallTex, 2.2f, innerWallTint);
         TexBox(minX, 3.025f, -6.00f, 0.2f, 1.55f, 1.10f, innerWallTex, 2.2f, innerWallTint);
 
-        // Tường phải cửa hàng theo tọa độ (+X): liền mạch
+        // Tường phải cửa hàng (+X): liền mạch
         TexBox(maxX, 1.9f, centerZ, 0.2f, 3.8f, storeL, innerWallTex, 2.2f, innerWallTint);
 
         TexBox(-5.85f, 1.9f, maxZ, 9.3f, 3.8f, 0.2f, facadeBrickTex, 1.8f, facadeTint);

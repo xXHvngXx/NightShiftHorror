@@ -197,7 +197,7 @@ partial class Program
 
         UpdateRegularShopper(dt);
 
-        if (isTalking || isWorkCutscene || isDawnCutscene) return;
+        if (isTalking || isWorkCutscene || isDawnCutscene || IsWcBusy) return;
 
         if (heldItem != HeldItemType.None && Raylib.IsKeyPressed(KeyboardKey.Q))
         {
@@ -211,6 +211,12 @@ partial class Program
 
         Vector3 lookDir = Vector3.Normalize(camera.Target - camera.Position);
         Ray eyeRay = new(camera.Position, lookDir);
+
+        // Ưu tiên kiểm tra tương tác khu nhà vệ sinh (cửa, vòi rửa tay, buồng, bồn cầu)
+        if (TryDetectWcInteraction(eyeRay))
+        {
+            return;
+        }
 
         var placements = GetStoreShelfPlacements();
         for (int s = 0; s < placements.Length && s < ShelfCount; s++)
@@ -361,10 +367,10 @@ partial class Program
 
         for (int m = 0; m < 4; m++)
         {
-            float mz = -2.2f + m * 1.35f;
+            float mz = -1.4f + m * 1.35f;
             BoundingBox dispenserBox = new(
-                new Vector3(-10.15f, 1.00f, mz - 0.56f),
-                new Vector3(-9.15f, 1.92f, mz + 0.56f)
+                new Vector3(-10.12f, 1.00f, mz - 0.56f),
+                new Vector3(-9.20f, 1.92f, mz + 0.56f)
             );
             RayCollision dHit = Raylib.GetRayCollisionBox(eyeRay, dispenserBox);
             if (dHit.Hit && dHit.Distance <= 2.65f)
@@ -454,9 +460,9 @@ partial class Program
             }
         }
 
-        BoundingBox indoorBinBox = new(new Vector3(6.40f, 0f, -8.10f), new Vector3(7.10f, 1.05f, -7.40f));
+        BoundingBox indoorBinBox = new(new Vector3(6.35f, 0f, -8.15f), new Vector3(7.15f, 1.15f, -7.35f));
         RayCollision inBinHit = Raylib.GetRayCollisionBox(eyeRay, indoorBinBox);
-        if (inBinHit.Hit && inBinHit.Distance <= 2.6f)
+        if (inBinHit.Hit && inBinHit.Distance <= 2.8f)
         {
             if (heldItem == HeldItemType.None && indoorTrashBags > 0)
             {
@@ -483,9 +489,9 @@ partial class Program
         for (int b = 0; b < 3; b++)
         {
             float bz = -12.6f - b * 1.0f;
-            BoundingBox dumpsterBox = new(new Vector3(9.90f, 0f, bz - 0.42f), new Vector3(10.80f, 1.25f, bz + 0.42f));
+            BoundingBox dumpsterBox = new(new Vector3(9.85f, 0f, bz - 0.45f), new Vector3(10.85f, 1.30f, bz + 0.45f));
             RayCollision dHit = Raylib.GetRayCollisionBox(eyeRay, dumpsterBox);
-            if (dHit.Hit && dHit.Distance <= 2.7f)
+            if (dHit.Hit && dHit.Distance <= 2.9f)
             {
                 if (heldItem == HeldItemType.TrashBag)
                 {
@@ -515,9 +521,9 @@ partial class Program
             }
         }
 
-        BoundingBox breakerBox = new(new Vector3(7.20f, 1.05f, -11.65f), new Vector3(7.90f, 1.85f, -11.20f));
+        BoundingBox breakerBox = new(new Vector3(7.15f, 1.00f, -11.70f), new Vector3(7.95f, 1.90f, -11.15f));
         RayCollision brkHit = Raylib.GetRayCollisionBox(eyeRay, breakerBox);
-        if (brkHit.Hit && brkHit.Distance <= 2.6f)
+        if (brkHit.Hit && brkHit.Distance <= 2.8f)
         {
             if (!breakerDoorOpen)
             {
@@ -706,12 +712,13 @@ partial class Program
             Raylib.DrawCube(new Vector3(-0.82f, 1.13f, -2.06f), 0.006f, 0.09f, 0.13f, new Color(255, 50, 50, 200));
         }
 
+        // Vòi phụ gắn sát mặt trước máy nước ngọt (X = -9.42f, Z = -1.4f + m * 1.35f)
         Color spoutCol = lit ? new Color(195, 202, 212, 255) : new Color(65, 68, 74, 255);
         for (int m = 0; m < 4; m++)
         {
-            float mz = -2.2f + m * 1.35f;
-            Raylib.DrawCube(new Vector3(-9.38f, 1.41f, mz), 0.14f, 0.04f, 0.05f, spoutCol);
-            Raylib.DrawCylinder(new Vector3(-9.33f, 1.35f, mz), 0.016f, 0.016f, 0.06f, 10, spoutCol);
+            float mz = -1.4f + m * 1.35f;
+            Raylib.DrawCube(new Vector3(-9.37f, 1.37f, mz), 0.10f, 0.04f, 0.05f, spoutCol);
+            Raylib.DrawCylinder(new Vector3(-9.33f, 1.31f, mz), 0.016f, 0.016f, 0.06f, 10, spoutCol);
         }
 
         if (scanSweepAnim > 0.01f)
@@ -805,12 +812,12 @@ partial class Program
             Vector3 cupPos;
             if (isPouringJuice && activeDispenserIndex >= 0)
             {
-                float mz = -2.2f + activeDispenserIndex * 1.35f;
-                cupPos = new Vector3(-9.33f, 1.04f, mz);
+                float mz = -1.4f + activeDispenserIndex * 1.35f;
+                cupPos = new Vector3(-9.33f, 1.06f, mz);
 
                 float pulse = 0.010f + 0.0025f * MathF.Sin((float)Raylib.GetTime() * 28f);
                 float streamBottomY = cupPos.Y + Math.Min(0.135f, Math.Max(0.01f, cupFillAmount * 0.135f));
-                float streamH = Math.Max(0.02f, 1.355f - streamBottomY);
+                float streamH = Math.Max(0.02f, 1.315f - streamBottomY);
                 Raylib.DrawCylinder(
                     new Vector3(-9.33f, streamBottomY, mz),
                     pulse * 0.85f,

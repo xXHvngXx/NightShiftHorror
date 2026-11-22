@@ -6,7 +6,7 @@ partial class Program
     const string HomeVersion = "v1.4";
 
     static int homeSelection = 0;
-    static int homeSubMenu = 0;
+    static int homeSubMenu = 0; // 0: Main, 1: Chapters, 2: Credits, 3: Options
     static float homeOrbitAngle = 0f;
     static float homePanAngle = 0f;
     static float homeSubMenuAnim = 0f;
@@ -20,6 +20,15 @@ partial class Program
     static Font homeMenuFont;
     static bool homeFontsLoaded = false;
 
+    // ----- Âm thanh & Nhạc nền Home -----
+    static Music homeBgm;
+    static bool homeBgmLoaded = false;
+    static float masterVolume = 0.85f;
+    static float homeMusicVolume = 0.70f;
+    static float homeSfxVolume = 0.85f;
+    static int homeOptionRow = 0;       // 0: Tổng, 1: Nhạc nền, 2: Hiệu ứng, 3: Quay lại
+    static int draggingSlider = -1;     // -1: không kéo, 0..2: thanh trượt đang kéo
+
     // ----- Trạng thái kiểu VHS / Fears to Fathom -----
     static RenderTexture2D homeSceneTarget;
     static bool homeTargetLoaded = false;
@@ -29,18 +38,17 @@ partial class Program
     static float homeLangOpenAnim = 0f;
     static float homeGlitchTimer = 0f;           // thời gian còn lại của cú giật hình
     static float homeGlitchCooldown = 2.5f;
-    static int homeGlitchTarget = 0;             // 0 tiêu đề, 1 phụ đề, 2..4 mục menu
+    static int homeGlitchTarget = 0;             // 0 tiêu đề, 1 phụ đề, 2..5 mục menu
     static Vector2 homeLastMouse = Vector2.Zero;
     static readonly Random homeRng = new(7);
 
     // =====================================================================
-    //  TIỆN ÍCH CHUNG
+    //  TIỆN ÍCH CHUNG & ÂM THANH
     // =====================================================================
 
     static byte AlphaByte(float value)
         => (byte)Math.Clamp((int)MathF.Round(value), 0, 255);
 
-    // Tạo màu an toàn (tránh nhập nhằng giữa các constructor Color)
     static Color HC(int r, int g, int b, float a = 255f)
         => new Color((byte)r, (byte)g, (byte)b, AlphaByte(a));
 
@@ -57,10 +65,124 @@ partial class Program
         }
     }
 
+    static void ApplyAudioVolumes()
+    {
+        Raylib.SetMasterVolume(Math.Clamp(masterVolume, 0f, 1f));
+        if (homeBgmLoaded)
+        {
+            Raylib.SetMusicVolume(homeBgm, Math.Clamp(homeMusicVolume, 0f, 1f));
+        }
+        Raylib.SetSoundVolume(voiceStaticSound, Math.Clamp(homeSfxVolume, 0f, 1f));
+        Raylib.SetSoundVolume(footstepSound, Math.Clamp(homeSfxVolume, 0f, 1f));
+    }
+
     static void HomeBlip(float pitch = 1.38f)
     {
+        Raylib.SetSoundVolume(voiceStaticSound, Math.Clamp(homeSfxVolume, 0f, 1f));
         Raylib.SetSoundPitch(voiceStaticSound, pitch);
         Raylib.PlaySound(voiceStaticSound);
+    }
+
+    static byte[] BuildFallbackPianoWav()
+    {
+        const int sampleRate = 22050;
+        const int durationSec = 16;
+        int totalSamples = sampleRate * durationSec;
+        short[] pcm = new short[totalSamples];
+
+        // Vòng hợp âm piano u ám (Am - F - Dm - E)
+        float[][] chords =
+        [
+            [220.00f, 261.63f, 329.63f, 440.00f],
+            [174.61f, 220.00f, 261.63f, 349.23f],
+            [146.83f, 174.61f, 220.00f, 293.66f],
+            [164.81f, 207.65f, 246.94f, 329.63f]
+        ];
+
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float t = (float)i / sampleRate;
+            int bar = (int)(t / 4f) % chords.Length;
+            float barT = t % 4f;
+            float[] ch = chords[bar];
+
+            float sample = 0f;
+            for (int n = 0; n < ch.Length; n++)
+            {
+                float noteStart = n * 0.45f;
+                if (barT >= noteStart)
+                {
+                    float nt = barT - noteStart;
+                    float env = MathF.Exp(-nt * 1.15f) * MathF.Min(1f, nt * 28f);
+                    float freq = ch[n];
+                    float tone = MathF.Sin(2f * MathF.PI * freq * nt) * 0.65f
+                               + MathF.Sin(2f * MathF.PI * freq * 2f * nt) * 0.22f
+                               + MathF.Sin(2f * MathF.PI * (freq * 0.5f) * nt) * 0.28f;
+                    sample += tone * env * 0.22f;
+                }
+            }
+
+            // Fade nhẹ đầu/cuối vòng lặp để nối mượt
+            float loopFade = MathF.Min(1f, MathF.Min(t * 2f, (durationSec - t) * 2f));
+            pcm[i] = (short)Math.Clamp(sample * loopFade * 24000f, short.MinValue, short.MaxValue);
+        }
+
+        using MemoryStream ms = new();
+        using BinaryWriter bw = new(ms);
+        int dataSize = pcm.Length * 2;
+        bw.Write("RIFF"u8);
+        bw.Write(36 + dataSize);
+        bw.Write("WAVE"u8);
+        bw.Write("fmt "u8);
+        bw.Write(16);
+        bw.Write((short)1);
+        bw.Write((short)1);
+        bw.Write(sampleRate);
+        bw.Write(sampleRate * 2);
+        bw.Write((short)2);
+        bw.Write((short)16);
+        bw.Write("data"u8);
+        bw.Write(dataSize);
+        for (int i = 0; i < pcm.Length; i++) bw.Write(pcm[i]);
+        return ms.ToArray();
+    }
+
+    static void EnsureHomeBgm()
+    {
+        if (!homeBgmLoaded)
+        {
+            string baseDir = AppContext.BaseDirectory;
+            string[] candidates =
+            [
+                Path.Combine(baseDir, "Assets", "Audio", "Myuu-Misconception-Piano-Version.mp3"),
+                "Assets/Audio/Myuu-Misconception-Piano-Version.mp3",
+                "assets/audio/Myuu-Misconception-Piano-Version.mp3"
+            ];
+
+            string foundPath = candidates.FirstOrDefault(File.Exists) ?? "";
+            if (foundPath != "")
+            {
+                homeBgm = Raylib.LoadMusicStream(foundPath);
+            }
+            else
+            {
+                byte[] wavData = BuildFallbackPianoWav();
+                homeBgm = Raylib.LoadMusicStreamFromMemory(".wav", wavData);
+            }
+
+            homeBgm.Looping = true;
+            homeBgmLoaded = true;
+            ApplyAudioVolumes();
+        }
+
+        if (homeBgmLoaded)
+        {
+            if (!Raylib.IsMusicStreamPlaying(homeBgm))
+            {
+                Raylib.PlayMusicStream(homeBgm);
+            }
+            Raylib.UpdateMusicStream(homeBgm);
+        }
     }
 
     static float HomeGlitchFor(int target)
@@ -83,7 +205,6 @@ partial class Program
 
         int[] codepoints = BuildVietnameseCodepoints();
 
-        // Tiêu đề: chữ đậm hình học (gần Gotham Black) -> Arial Black là gần nhất trên Windows
         string[] titlePaths =
         [
             @"C:\Windows\Fonts\ariblk.ttf",
@@ -97,7 +218,6 @@ partial class Program
             : viFont;
         Raylib.SetTextureFilter(homeTitleFont.Texture, TextureFilter.Bilinear);
 
-        // Phụ đề / nhãn nhỏ: đậm, hỗ trợ đầy đủ tiếng Việt
         string[] headingPaths =
         [
             @"C:\Windows\Fonts\segoeuib.ttf",
@@ -121,7 +241,6 @@ partial class Program
             : viFont;
         Raylib.SetTextureFilter(homeBodyFont.Texture, TextureFilter.Bilinear);
 
-        // Menu: chữ vừa (semibold) trắng, giống menu Play / Options / Credits
         string[] menuPaths =
         [
             @"C:\Windows\Fonts\seguisb.ttf",
@@ -141,11 +260,6 @@ partial class Program
         homeSceneTarget = Raylib.LoadRenderTexture(ScreenWidth, ScreenHeight);
         Raylib.SetTextureFilter(homeSceneTarget.Texture, TextureFilter.Bilinear);
         homeTargetLoaded = true;
-    }
-
-    static void DrawHomeFontText(Font font, string text, float x, float y, float size, float spacing, Color color)
-    {
-        Raylib.DrawTextEx(font, text, new Vector2(x, y), size, spacing, color);
     }
 
     static float SmoothStep01(float x)
@@ -173,7 +287,7 @@ partial class Program
     }
 
     // =====================================================================
-    //  VẼ CHỮ KIỂU VHS: viền màu lệch kênh + giật hình theo dải ngang
+    //  VẼ CHỮ KIỂU VHS
     // =====================================================================
 
     static void DrawVhsTextCore(Font font, string text, float x, float y, float size, float spacing, Color col, float ab)
@@ -195,7 +309,6 @@ partial class Program
             return;
         }
 
-        // Giật hình: chia chữ thành vài dải ngang, mỗi dải lệch sang một bên
         Vector2 m = Raylib.MeasureTextEx(font, text, size, spacing);
         const int bands = 4;
         float bandH = (m.Y + 6f) / bands;
@@ -210,7 +323,6 @@ partial class Program
         }
     }
 
-    // Một mục menu: ô vuông trắng đánh dấu mục đang chọn + chữ trắng
     static void DrawHomeMenuItem(string label, float x, float y, float size, float ease, float press,
                                  float alpha, float glitch, int seed)
     {
@@ -231,8 +343,35 @@ partial class Program
         DrawVhsText(homeMenuFont, label, x + shift, y, size, 0.6f, c, 1.5f, glitch, seed);
     }
 
+    static void DrawHomeVolumeSlider(string label, float value, float x, float y, float barW, bool selected, float alpha)
+    {
+        Color labelCol = selected ? HC(255, 238, 64, 255 * alpha) : HC(232, 238, 248, 225 * alpha);
+        DrawVhsText(homeHeadingFont, label, x, y, 16f, 1.2f, labelCol, 1.1f);
+
+        string pct = $"{(int)MathF.Round(value * 100f)}%";
+        float pctW = Raylib.MeasureTextEx(homeHeadingFont, pct, 16f, 1.0f).X;
+        DrawVhsText(homeHeadingFont, pct, x + barW - pctW, y, 16f, 1.0f, HC(255, 255, 255, 245 * alpha), 1.1f);
+
+        float trackY = y + 25f;
+        const float trackH = 8f;
+        Rectangle track = new(x, trackY, barW, trackH);
+        Raylib.DrawRectangleRec(track, HC(14, 18, 36, 210 * alpha));
+        Raylib.DrawRectangleLinesEx(track, 1.5f, selected ? HC(255, 238, 64, 235 * alpha) : HC(170, 188, 220, 140 * alpha));
+
+        float fillW = barW * Math.Clamp(value, 0f, 1f);
+        if (fillW > 0.5f)
+        {
+            Raylib.DrawRectangleRec(new Rectangle(x, trackY, fillW, trackH),
+                selected ? HC(255, 52, 128, 245 * alpha) : HC(210, 224, 250, 220 * alpha));
+        }
+
+        float knobX = x + fillW;
+        float knobY = trackY + trackH * 0.5f;
+        Raylib.DrawRectangleRec(new Rectangle(knobX - 5f, knobY - 8f, 10f, 16f), HC(255, 255, 255, 255 * alpha));
+    }
+
     // =====================================================================
-    //  Ô CHỌN NGÔN NGỮ (góc phải trên, giống bản gốc)
+    //  Ô CHỌN NGÔN NGỮ
     // =====================================================================
 
     static Rectangle HomeLangRow(Rectangle dd, int i)
@@ -249,7 +388,7 @@ partial class Program
 
         float cx = r.X + r.Width - 30f;
         float cy = r.Y + r.Height * 0.5f;
-        float dir = 1f - 2f * openT;     // 1: mũi tên xuống, -1: mũi tên lên khi mở
+        float dir = 1f - 2f * openT;
         Color lc = HC(220, 232, 255, 240 * alpha);
         Raylib.DrawLineEx(new Vector2(cx - 9f, cy - 4f * dir), new Vector2(cx, cy + 5f * dir), 2f, lc);
         Raylib.DrawLineEx(new Vector2(cx, cy + 5f * dir), new Vector2(cx + 9f, cy - 4f * dir), 2f, lc);
@@ -277,7 +416,6 @@ partial class Program
     //  HIỆU ỨNG VHS TRÊN NỀN 3D
     // =====================================================================
 
-    // Cắt một dải ngang của cảnh và dịch sang bên (mô phỏng lỗi tracking của băng từ)
     static void DrawHomeStrip(Texture2D tex, int y, int h, float dx, Color tint)
     {
         if (h <= 0) return;
@@ -295,14 +433,12 @@ partial class Program
         int W = ScreenWidth, H = ScreenHeight;
         Rectangle src = new(0, 0, tex.Width, -tex.Height);
 
-        // Lệch kênh màu R / G / B (chromatic aberration)
         Raylib.BeginBlendMode(BlendMode.Additive);
         Raylib.DrawTexturePro(tex, src, new Rectangle(-ab, 0, W, H), Vector2.Zero, 0f, HC(255, 0, 0));
         Raylib.DrawTexturePro(tex, src, new Rectangle(0, 0, W, H), Vector2.Zero, 0f, HC(0, 255, 0));
         Raylib.DrawTexturePro(tex, src, new Rectangle(ab, 0, W, H), Vector2.Zero, 0f, HC(0, 0, 255));
         Raylib.EndBlendMode();
 
-        // Mờ nhẹ kiểu băng VHS
         Color haze = HC(255, 255, 255, 38);
         const float sp = 2.6f;
         Raylib.DrawTexturePro(tex, src, new Rectangle(-sp, 0, W, H), Vector2.Zero, 0f, haze);
@@ -310,14 +446,11 @@ partial class Program
         Raylib.DrawTexturePro(tex, src, new Rectangle(0, -sp * 0.7f, W, H), Vector2.Zero, 0f, haze);
         Raylib.DrawTexturePro(tex, src, new Rectangle(0, sp * 0.7f, W, H), Vector2.Zero, 0f, haze);
 
-        // Dải tracking trôi chậm từ trên xuống
         float trackY = (time * 38f) % (H + 160f) - 80f;
         DrawHomeStrip(tex, (int)Math.Clamp(trackY, 0f, H - 1f), 24, MathF.Sin(time * 7.3f) * 5f, HC(255, 255, 255, 235));
 
-        // Dải nhiễu ở mép dưới (head-switching noise)
         DrawHomeStrip(tex, H - 14, 14, MathF.Sin(time * 2.3f) * 9f + homeRng.Next(-3, 4), HC(205, 205, 215, 255));
 
-        // Cú xé hình ngẫu nhiên khi đang glitch
         if (homeGlitchTimer > 0f)
         {
             int gs = (int)(time * 24f);
@@ -332,16 +465,13 @@ partial class Program
     {
         int W = ScreenWidth, H = ScreenHeight;
 
-        // Đường quét ngang
         for (int y = 0; y < H; y += 3)
             Raylib.DrawRectangle(0, y, W, 1, HC(0, 0, 0, 24));
 
-        // Dải sáng lăn dọc màn hình
         int bandY = (int)((time * 52f) % (H + 240f) - 120f);
         Raylib.DrawRectangleGradientV(0, bandY, W, 120, HC(190, 205, 255, 0), HC(190, 205, 255, 10));
         Raylib.DrawRectangleGradientV(0, bandY + 120, W, 120, HC(190, 205, 255, 10), HC(190, 205, 255, 0));
 
-        // Hạt nhiễu
         for (int i = 0; i < 420; i++)
         {
             int nx = homeRng.Next(W);
@@ -356,10 +486,38 @@ partial class Program
     //  MÀN HÌNH CHÍNH
     // =====================================================================
 
+    //============================================
+    static bool autoBootJumpscareDone = false;
+    //============================================
+
     static bool DrawHomeScreen(float dt)
     {
+        //=======================================================
+        //Đổi thành False nếu muốn mở Home bth
+        const bool BootStraightToJumpscare = false;
+
+        if (BootStraightToJumpscare && !autoBootJumpscareDone)
+        {
+            autoBootJumpscareDone = true;
+            EnterJumpscareDevMode();
+        }
+
+        if (Raylib.IsKeyPressed(KeyboardKey.F9))
+        {
+            EnterJumpscareDevMode();
+        }
+
+        if (jumpscareDevSandbox)
+        {
+            UpdateAndDrawJumpscareSandbox(dt);
+            return false;
+        }
+
+        //=========================================
+
         EnsureHomeFonts();
         EnsureHomeTarget();
+        EnsureHomeBgm();
 
         float clampedDt = Math.Clamp(dt, 0.001f, 0.05f);
         float time = (float)Raylib.GetTime();
@@ -400,13 +558,13 @@ partial class Program
             if (homeGlitchCooldown <= 0f)
             {
                 homeGlitchTimer = 0.10f + (float)homeRng.NextDouble() * 0.15f;
-                homeGlitchTarget = homeRng.Next(0, 5);
+                homeGlitchTarget = homeRng.Next(0, 6);
                 homeGlitchCooldown = 1.8f + (float)homeRng.NextDouble() * 3.8f;
             }
         }
         int gseed = (int)(time * 28f);
 
-        // ---------- Bố cục (tỉ lệ lấy theo màn hình menu gốc của Fears to Fathom) ----------
+        // ---------- Bố cục ----------
         string mainTitle = "NIGHT SHIFT HORROR";
         const float titleSpacing = 1.0f;
         float w100 = Raylib.MeasureTextEx(homeTitleFont, mainTitle, 100f, titleSpacing).X;
@@ -420,7 +578,7 @@ partial class Program
         float menuTextX = W * 0.735f;
         float menuSize = H * 0.042f;
         float menuStep = H * 0.0725f;
-        float menuY0 = H * 0.405f;
+        float menuY0 = H * 0.385f;
 
         float epStep = H * 0.098f;
         float epY0 = menuY0 - 6f;
@@ -434,12 +592,15 @@ partial class Program
         float hoverRate = 1f - MathF.Exp(-13.5f * clampedDt);
         float pressRate = 1f - MathF.Exp(-18.0f * clampedDt);
 
-        // ---------- Input: ô ngôn ngữ (xử lý trước để chặn click xuyên) ----------
+        // ---------- Input: ô ngôn ngữ ----------
         bool leftClick = Raylib.IsMouseButtonPressed(MouseButton.Left);
+        bool leftDown = Raylib.IsMouseButtonDown(MouseButton.Left);
         bool rightClick = Raylib.IsMouseButtonPressed(MouseButton.Right);
         bool escPressed = Raylib.IsKeyPressed(KeyboardKey.Escape);
         bool clickConsumed = false;
         bool overDd = Raylib.CheckCollisionPointRec(mousePos, ddRect);
+
+        if (!leftDown) draggingSlider = -1;
 
         if (leftClick)
         {
@@ -478,7 +639,13 @@ partial class Program
         bool hoverEnabled = !homeLangOpen && !overDd;
 
         // ---------- Input: menu ----------
-        string[] mainItems = [HT("Play", "Chơi"), HT("Credits", "Tác giả"), HT("Exit", "Thoát")];
+        string[] mainItems =
+        [
+            HT("Play", "Chơi"),
+            HT("Options", "Cài đặt"),
+            HT("Credits", "Tác giả"),
+            HT("Exit", "Thoát")
+        ];
         (string Title, string Sub, bool Unlocked)[] chapters =
         [
             (HT("Chapter 1", "Tập 1"), "Ca Trực Đêm", true),
@@ -514,6 +681,12 @@ partial class Program
                         }
                         else if (i == 1)
                         {
+                            homeSubMenu = 3;
+                            homeOptionRow = 0;
+                            homeSubMenuAnim = 0f;
+                        }
+                        else if (i == 2)
+                        {
                             homeSubMenu = 2;
                             homeSubMenuAnim = 0f;
                         }
@@ -544,6 +717,12 @@ partial class Program
                         homeSubMenuAnim = 0f;
                     }
                     else if (homeSelection == 1)
+                    {
+                        homeSubMenu = 3;
+                        homeOptionRow = 0;
+                        homeSubMenuAnim = 0f;
+                    }
+                    else if (homeSelection == 2)
                     {
                         homeSubMenu = 2;
                         homeSubMenuAnim = 0f;
@@ -621,16 +800,110 @@ partial class Program
             if (escPressed || Raylib.IsKeyPressed(KeyboardKey.Enter) || leftClick || rightClick)
             {
                 homeSubMenu = 0;
-                homeSelection = 1;
+                homeSelection = 2;
                 homeSubMenuAnim = 0f;
+            }
+        }
+        else if (homeSubMenu == 3)
+        {
+            float optX = menuTextX;
+            float optY0 = menuY0 - 20f;
+            float barW = Math.Max(220f, W * 0.21f);
+            float rowStep = 64f;
+
+            for (int r = 0; r < 3; r++)
+            {
+                float ry = optY0 + 52f + r * rowStep;
+                Rectangle sliderHit = new(optX - 10f, ry - 6f, barW + 20f, 48f);
+                if (hoverEnabled && Raylib.CheckCollisionPointRec(mousePos, sliderHit))
+                {
+                    if (mouseMoved) homeOptionRow = r;
+                    if (leftClick)
+                    {
+                        homeOptionRow = r;
+                        draggingSlider = r;
+                    }
+                }
+
+                if (draggingSlider == r && leftDown)
+                {
+                    float norm = Math.Clamp((mousePos.X - optX) / barW, 0f, 1f);
+                    if (r == 0) masterVolume = norm;
+                    else if (r == 1) homeMusicVolume = norm;
+                    else homeSfxVolume = norm;
+                    ApplyAudioVolumes();
+                }
+            }
+
+            float backY = optY0 + 52f + 3 * rowStep + 10f;
+            Rectangle backHit = new(optX - menuSize * 1.6f, backY - 8f, 320f, menuSize + 16f);
+            if (hoverEnabled && Raylib.CheckCollisionPointRec(mousePos, backHit))
+            {
+                if (homeOptionRow != 3 && mouseMoved)
+                {
+                    homeOptionRow = 3;
+                    HomeBlip();
+                }
+                if (leftClick)
+                {
+                    HomeBlip();
+                    homeSubMenu = 0;
+                    homeSelection = 1;
+                    homeSubMenuAnim = 0f;
+                }
+            }
+
+            if (homeSubMenu == 3)
+            {
+                if (Raylib.IsKeyPressed(KeyboardKey.Down) || Raylib.IsKeyPressed(KeyboardKey.S))
+                {
+                    homeOptionRow = (homeOptionRow + 1) % 4;
+                    HomeBlip();
+                }
+                else if (Raylib.IsKeyPressed(KeyboardKey.Up) || Raylib.IsKeyPressed(KeyboardKey.W))
+                {
+                    homeOptionRow = (homeOptionRow + 3) % 4;
+                    HomeBlip();
+                }
+                else if (homeOptionRow < 3)
+                {
+                    float delta = 0f;
+                    if (Raylib.IsKeyPressed(KeyboardKey.Left) || Raylib.IsKeyPressed(KeyboardKey.A)) delta = -0.05f;
+                    else if (Raylib.IsKeyPressed(KeyboardKey.Right) || Raylib.IsKeyPressed(KeyboardKey.D)) delta = 0.05f;
+
+                    if (MathF.Abs(delta) > 0.001f)
+                    {
+                        if (homeOptionRow == 0) masterVolume = Math.Clamp(masterVolume + delta, 0f, 1f);
+                        else if (homeOptionRow == 1) homeMusicVolume = Math.Clamp(homeMusicVolume + delta, 0f, 1f);
+                        else homeSfxVolume = Math.Clamp(homeSfxVolume + delta, 0f, 1f);
+                        ApplyAudioVolumes();
+                        HomeBlip(1.25f);
+                    }
+                }
+                else if (homeOptionRow == 3 && (Raylib.IsKeyPressed(KeyboardKey.Enter) || Raylib.IsKeyPressed(KeyboardKey.Space)))
+                {
+                    HomeBlip();
+                    homeSubMenu = 0;
+                    homeSelection = 1;
+                    homeSubMenuAnim = 0f;
+                }
+
+                if (escPressed || rightClick)
+                {
+                    HomeBlip();
+                    homeSubMenu = 0;
+                    homeSelection = 1;
+                    homeSubMenuAnim = 0f;
+                }
             }
         }
 
         // Cập nhật animation hover / nhấn
         for (int i = 0; i < menuHoverAnim.Length; i++)
         {
-            bool active = (homeSubMenu == 0 && i < 3 && homeSelection == i) ||
-                          (homeSubMenu == 1 && (i == 0 || i == 3) && homeSelection == i);
+            bool active = (homeSubMenu == 0 && i < mainItems.Length && homeSelection == i) ||
+                          (homeSubMenu == 1 && (i == 0 || i == 3) && homeSelection == i) ||
+                          (homeSubMenu == 3 && i == 3 && homeOptionRow == 3);
             menuHoverAnim[i] += ((active ? 1f : 0f) - menuHoverAnim[i]) * hoverRate;
             menuPressAnim[i] += (0f - menuPressAnim[i]) * pressRate;
         }
@@ -652,7 +925,6 @@ partial class Program
         float aberration = 1.8f + (homeGlitchTimer > 0f ? 3.2f : 0f) + MathF.Sin(time * 1.7f) * 0.35f;
         DrawHomeSceneComposite(time, aberration);
 
-        // Phối màu xanh đêm + tối hai bên để chữ nổi
         Raylib.DrawRectangle(0, 0, W, H, HC(8, 20, 66, 62));
         Raylib.DrawRectangle(0, 0, W, H, HC(5, 7, 13, 70));
         int leftGradW = (int)(W * 0.50f);
@@ -670,7 +942,6 @@ partial class Program
         DrawVhsText(homeHeadingFont, HT("AN EPISODIC HORROR", "KINH DỊ NHIỀU TẬP"),
             titleX + 2f, titleY - 15f, 17f, 1.2f, white, 1.4f);
 
-        // Quầng sáng hồng mờ quanh tiêu đề
         for (int k = 0; k < 4; k++)
         {
             float gx = (k == 0 ? -3.5f : (k == 1 ? 3.5f : 0f));
@@ -680,7 +951,6 @@ partial class Program
         }
         DrawVhsText(homeTitleFont, mainTitle, titleX, titleY, titleSize, titleSpacing, pink, 2.6f, HomeGlitchFor(0), gseed);
 
-        // Phụ đề vàng căn phải dưới tiêu đề
         string subTitle = "CA TRỰC ĐÊM";
         float subSize = titleSize * 0.40f;
         const float subSpacing = 1.0f;
@@ -759,14 +1029,27 @@ partial class Program
             DrawVhsText(homeBodyFont, HT("[Click or ESC to go back]", "[Click hoặc ESC để quay lại]"), cx, cy + 270f, 16f, 0.6f,
                 HC(175, 182, 196, 220 * panelAlpha), 0.8f);
         }
+        else if (homeSubMenu == 3)
+        {
+            float ox = menuTextX + panelSlide;
+            float oy = menuY0 - 20f;
+            float barW = Math.Max(220f, W * 0.21f);
+            float rowStep = 64f;
 
-        // Ô chọn ngôn ngữ (vẽ sau cùng để nằm trên menu)
+            DrawVhsText(homeMenuFont, HT("OPTIONS", "CÀI ĐẶT"), ox, oy, 30f, 2.0f, HC(255, 52, 128, 255 * panelAlpha), 1.8f);
+
+            DrawHomeVolumeSlider(HT("MASTER VOLUME", "ÂM LƯỢNG TỔNG"), masterVolume, ox, oy + 52f, barW, homeOptionRow == 0, panelAlpha);
+            DrawHomeVolumeSlider(HT("MUSIC VOLUME", "NHẠC NỀN"), homeMusicVolume, ox, oy + 52f + rowStep, barW, homeOptionRow == 1, panelAlpha);
+            DrawHomeVolumeSlider(HT("SFX VOLUME", "HIỆU ỨNG"), homeSfxVolume, ox, oy + 52f + rowStep * 2f, barW, homeOptionRow == 2, panelAlpha);
+
+            float backY = oy + 52f + 3f * rowStep + 10f;
+            DrawHomeMenuItem(HT("Back", "Quay lại"), ox, backY, menuSize * 0.92f,
+                SmoothStep01(menuHoverAnim[3]), menuPressAnim[3], panelAlpha, 0f, gseed);
+        }
+
         DrawHomeLanguageDropdown(ddRect, langNames, mousePos, uiIntro);
-
-        // ---------- Lớp VHS phủ lên toàn bộ ----------
         DrawHomeVhsOverlay(time);
 
-        // Fade-in từ màn đen
         if (homeIntro < 1f)
         {
             Raylib.DrawRectangle(0, 0, W, H, HC(0, 0, 0, 255f * (1f - EaseOutCubic(homeIntro))));
@@ -778,9 +1061,14 @@ partial class Program
 
     static void StartGameFromHome()
     {
+        if (homeBgmLoaded && Raylib.IsMusicStreamPlaying(homeBgm))
+        {
+            Raylib.StopMusicStream(homeBgm);
+        }
         gameScene = -1;
         homeSubMenu = 0;
         homeLangOpen = false;
+        draggingSlider = -1;
         phoneNotifStep = 0;
         phoneStepTimer = 0.7f;
         phoneChoiceStage = 0;
@@ -804,6 +1092,12 @@ partial class Program
         homePanAngle = 0f;
         homeIntro = 0f;
         homeLangOpen = false;
+        draggingSlider = -1;
+        if (homeBgmLoaded)
+        {
+            Raylib.PlayMusicStream(homeBgm);
+            ApplyAudioVolumes();
+        }
         Raylib.EnableCursor();
     }
 }
