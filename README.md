@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=190&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=54&fontColor=eef2ff&fontAlignY=38&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.4&descSize=20&descAlignY=60&animation=fadeIn" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=190&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=54&fontColor=eef2ff&fontAlignY=38&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.6&descSize=20&descAlignY=60&animation=fadeIn" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
 
 ### 🌙 &nbsp;Năm tiếng đồng hồ. Một quyển nội quy. Không ai được phép vào sau 3 giờ sáng.&nbsp; 🔮
 
 [![C#](https://img.shields.io/badge/C%23-.NET%209.0-512BD4?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![Raylib](https://img.shields.io/badge/Raylib--cs-8.1.0%203D%20Engine-3B82F6?style=for-the-badge)](https://www.raylib.com/)
-[![Release](https://img.shields.io/badge/Release-v1.4-7C3AED?style=for-the-badge)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.4)
+[![Release](https://img.shields.io/badge/Release-v1.6-7C3AED?style=for-the-badge)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.6)
 [![Genre](https://img.shields.io/badge/Genre-Psychological%20Horror-1E3A8A?style=for-the-badge)]()
 [![Voice](https://img.shields.io/badge/Voice-Vietnamese%20TTS-0EA5E9?style=for-the-badge)]()
 
@@ -18,7 +18,7 @@
 <br/>
 
 [**Giới thiệu**](#-giới-thiệu) •
-[**Tính năng**](#-tính-năng-nổi-bật-v14) •
+[**Tính năng**](#-tính-năng-nổi-bật-v16) •
 [**Điều khiển**](#-điều-khiển) •
 [**Diễn biến**](#-diễn-biến-một-đêm) •
 [**Công nghệ**](#-công-nghệ) •
@@ -30,9 +30,9 @@
 
 ## 👁️ Giới thiệu
 
-**Ca Trực Đêm (Night Shift Horror)** là tựa game kinh dị tâm lý góc nhìn thứ nhất mang đậm bối cảnh đêm sương đường phố Việt Nam. Từ màn hình chính với camera chuyển động nhẹ quanh cửa hàng, chọn phân đoạn chơi, cuộc trò chuyện ở quán cà phê, tương tác điện thoại/thông báo cho đến chuyến xe đêm dọc con đường Số 9 mù sương, bạn bắt đầu ca trực tại cửa hàng tiện lợi từ **00:00 đến 05:00** với một tờ nội quy đặt trên quầy thu ngân. Những vị khách ghé qua nhìn rất bình thường, cho đến khi có điều gì đó không khớp.
+**Ca Trực Đêm (Night Shift Horror)** là tựa game kinh dị tâm lý góc nhìn thứ nhất mang đậm bối cảnh đêm sương đường phố Việt Nam. Từ màn hình chính phong cách VHS với nhạc nền piano, chọn tập chơi, cài đặt âm lượng, cuộc trò chuyện ở quán cà phê, tương tác điện thoại/thông báo cho đến chuyến xe đêm dọc con đường Số 9 mù sương, bạn bắt đầu ca trực tại cửa hàng tiện lợi từ **00:00 đến 05:00** với một tờ nội quy đặt trên quầy thu ngân. Những vị khách ghé qua nhìn rất bình thường, cho đến khi có điều gì đó không khớp.
 
-Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm khu vực nhà vệ sinh chi tiết có gương phản chiếu thời gian thực, sân sau, hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
+Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm hệ thống Jumpscare có phòng test riêng, thực thể ma hỗ trợ trỏ model `.glb` ngoài, khu vực nhà vệ sinh chi tiết có gương phản chiếu thời gian thực, sân sau, hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
 
 <table>
 <tr>
@@ -45,17 +45,22 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=70&section=header" width="100%"/>
 
-## 💀 Tính năng nổi bật (v1.4)
+## 💀 Tính năng nổi bật (v1.6)
+
+### 👻 Hệ thống Jumpscare, Dev Sandbox & Thực thể ma (`Jumpscares/`)
+- **Đa góc phục kích & đồng bộ nhịp âm thanh (`JumpscareSystem.cs`)**: Hỗ trợ các kịch bản hù trực diện (*Quầy thu ngân, Nhà vệ sinh, Cửa kính chính, Hành lang giữa tiệm*), khớp nhịp biểu diễn 2.0 giây với hiệu ứng rung camera, đèn chớp, nhiễu VHS và nhả rung mượt mà sau pha hù.
+- **Phòng căn chỉnh Jumpscare trực tiếp (`F9` / Dev Mode)**: Cho phép chuyển nhanh giữa các góc cảnh, phát lại cú hù, test tiếng thét (`Assets/Audio/jumpscare.mp3`), bật/tắt đèn hoặc VHS và căn khoảng cách dừng trước camera theo thời gian thực.
+- **Thực thể ma lai Procedural & Model ngoài (`GhostModel.cs`)**: Dựng sẵn tạo hình thực thể 3D chuyển động giật cục trong code, đồng thời hỗ trợ tự động nạp model 3D bên ngoài (`Assets/Models/ghost.glb` / `.obj`) khi cần thay thế.
 
 ### 🚿 Khu nhà vệ sinh chi tiết, Gương phản chiếu & Sân sau
-- **Không gian nhà vệ sinh & 3 buồng riêng biệt (`Props.WC.cs`)**: Bao gồm cửa chính nhà vệ sinh đóng/mở được, dãy bồn lavabo có vòi nước chảy/rửa tay góc nhìn thứ nhất, 3 buồng vệ sinh rộng rãi hơn với cửa đóng/mở độc lập, bồn cầu và xử lý va chạm giữ người chơi ổn định khi đứng bên trong buồng lúc đóng cửa.
+- **Không gian nhà vệ sinh & 3 buồng riêng biệt (`Props.WC.cs`)**: Bao gồm cửa chính nhà vệ sinh đóng/mở được, công tắc đèn riêng cho WC với mặt tường bên trong đồng bộ khi tắt đèn mà không làm tối mặt ngoài tiệm, dãy bồn lavabo có vòi nước chảy/rửa tay góc nhìn thứ nhất, 3 buồng vệ sinh với cửa đóng/mở độc lập, bồn cầu và xử lý va chạm ổn định.
 - **Gương phản chiếu thời gian thực (`RenderTexture2D`)**: Phản chiếu không gian bên trong phòng vệ sinh, dãy buồng và hình ảnh nhân vật người chơi, căn chỉnh gọn mặt tiền để không lem sang khu biển máy nước của tiệm.
 - **Kiểm tra che khuất raycast (`IsRayBlockedByWall`)**: Chặn tương tác `[F]` xuyên qua tường đối với các vật thể phía sau tường, thùng cầu chì ngoài tường, chồng hộp hàng và thùng rác.
 - **Khám phá sân sau**: Dựng xe máy của Tú dưới mái che sân sau, kiểm tra cổng sắt ra hẻm và các vật cản xung quanh.
 
-### 🏠 Màn hình chính, Chọn Episode & Điện thoại / Thông báo
-- **Màn hình chính động (`Program.Home.cs`)**: Camera chuyển động quanh không gian cửa hàng, hỗ trợ điều hướng menu bằng chuột hoặc bàn phím qua **Episodes** (chọn chapter), **Credits** và **Exit**, cũng như quay về màn hình chính khi cần.
-- **Điện thoại & Thông báo**: Tích hợp luồng thông báo và tương tác điện thoại kèm âm thanh thông báo (`Assets/Audio/fears-to-fathom-notification-sound.mp3`) để dẫn dắt mạch truyện và lựa chọn phản hồi.
+### 🏠 Màn hình chính VHS, Nhạc nền & Cài đặt âm lượng
+- **Màn hình chính động (`Program.Home.cs`)**: Camera 3D chuyển động quanh cửa hàng kết hợp hiệu ứng băng từ VHS, chuyển đổi ngôn ngữ (*English / Tiếng Việt*), chọn tập (*Episodes*), xem *Credits* và mở *Options* để điều chỉnh **Âm lượng tổng (Master)**, **Nhạc nền (Music)** và **Hiệu ứng (SFX)** bằng chuột hoặc bàn phím.
+- **Nhạc nền & Thông báo điện thoại**: Phát nhạc nền (`Assets/Audio/Myuu-Misconception-Piano-Version.mp3`) tại màn hình chính và tích hợp luồng thông báo điện thoại (`Assets/Audio/fears-to-fathom-notification-sound.mp3`) dẫn dắt mạch truyện.
 
 ### 🎙️ Lồng tiếng hội thoại tiếng Việt thông minh
 - Tự động phát giọng lồng tiếng tiếng Việt cho các câu thoại đối đáp trực tiếp của nhân vật, điều chỉnh **cao độ (Pitch) riêng biệt** cho từng tuyến nhân vật (*Tú, Dũng, Đen, Hưng, Quản lý, Ông cụ, Anh Hùng, Chị Mai, Cô gái áo mưa vàng*).
@@ -85,12 +90,24 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Di chuyển |
 | <kbd>Shift</kbd> | Chạy nhanh |
 | 🖱️ **Chuột** | Quan sát xung quanh |
-| <kbd>F</kbd> | Tương tác (cửa, buồng WC, vòi rửa tay, NPC, sổ giao ca, quy tắc...) / Nói chuyện / Hiện nhanh chữ |
+| <kbd>F</kbd> | Tương tác (cửa, buồng WC, công tắc đèn WC, vòi rửa tay, NPC, sổ giao ca, quy tắc...) / Nói chuyện / Hiện nhanh chữ |
 | <kbd>Space</kbd> | Hiện nhanh chữ |
 | <kbd>↑</kbd> <kbd>↓</kbd> | Chọn phương án trả lời |
 | <kbd>Enter</kbd> | Xác nhận / Sang câu tiếp theo |
 | <kbd>Esc</kbd> | Tạm dừng |
 | <kbd>R</kbd> | Chơi lại (tại màn hình kết thúc) |
+
+### 👻 Trong phòng căn chỉnh Jumpscare (Dev Mode)
+
+| Phím | Hành động |
+|:----:|:----------|
+| <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> | Chuyển nhanh giữa 4 góc cảnh Jumpscare |
+| <kbd>Space</kbd> / <kbd>R</kbd> | Phát lại cú hù (2.0s) |
+| <kbd>T</kbd> | Test riêng âm thanh `jumpscare.mp3` |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Chỉnh khoảng cách ma dừng trước camera |
+| <kbd>L</kbd> | Bật / Tắt đèn chiếu sáng |
+| <kbd>V</kbd> | Bật / Tắt hiệu ứng nhiễu VHS |
+| <kbd>Esc</kbd> | Quay về màn hình chính |
 
 ### 🏍️ Trong cảnh chạy xe máy
 
@@ -126,8 +143,8 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 | Hạng mục | Chi tiết |
 |:---------|:---------|
 | **Ngôn ngữ** | C# (.NET 9.0) |
-| **Đồ họa** | Raylib-cs (`8.1.0`), Model 3D (`.glb`), render 3D thủ tục & `RenderTexture2D` |
-| **Âm thanh** | Tổng hợp sóng PCM tại runtime + Phát nhạc stream `.mp3` & âm thanh thông báo |
+| **Đồ họa** | Raylib-cs (`8.1.0`), Model 3D (`.glb` / `.obj`), render 3D thủ tục & `RenderTexture2D` |
+| **Âm thanh** | Tổng hợp sóng PCM tại runtime + Phát nhạc stream `.mp3`, âm thanh thông báo & Jumpscare |
 | **Lồng tiếng** | Pipeline tự động sinh audio tiếng Việt (`gTTS` + mã hóa MD5) |
 | **IDE & Nền tảng** | Visual Studio 2022 • Windows |
 
@@ -142,8 +159,8 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 git clone [https://github.com/xXHvngXx/NightShiftHorror.git](https://github.com/xXHvngXx/NightShiftHorror.git)
 cd NightShiftHorror/NightShiftHorror
 
-# 2. (Tùy chọn) Thêm nhạc cá nhân để nghe khi lái xe
-# Chép các file .mp3 yêu thích vào thư mục Assets/Playlist/
+# 2. (Tùy chọn) Thêm nhạc cá nhân để nghe khi lái xe hoặc model ma 3D
+# Chép file .mp3 vào thư mục Assets/Playlist/ và model .glb vào Assets/Models/ghost.glb
 
 # 3. Chạy game
 dotnet run -c Release
