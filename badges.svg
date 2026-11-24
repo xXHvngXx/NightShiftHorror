@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 42" width="980" height="42" role="img" aria-label="Tech Stack Badges">
+  <style>
+    .lbl { font-family: 'Courier New', Consolas, monospace; font-size: 12px; font-weight: 700; fill: #fda4af; letter-spacing: 1px; }
+    .val { font-family: 'Courier New', Consolas, monospace; font-size: 12px; font-weight: 800; fill: #ffe4e6; letter-spacing: 0.8px; }
+  </style>
+
+  
+  <g transform="translate(10, 5)">
+    <rect width="146" height="32" rx="4" fill="#1c040a" stroke="#7f1128" stroke-width="1.2" />
+    <path d="M52 0 H142 A4 4 0 0 1 146 4 V28 A4 4 0 0 1 142 32 H52 Z" fill="#4a0919" />
+    <text class="lbl" x="26" y="20" text-anchor="middle">C#</text>
+    <text class="val" x="99" y="20" text-anchor="middle">.NET 9.0</text>
+  </g>
+
+  
+  <g transform="translate(168, 5)">
+    <rect width="196" height="32" rx="4" fill="#1c040a" stroke="#9f1239" stroke-width="1.2" />
+    <path d="M84 0 H192 A4 4 0 0 1 196 4 V28 A4 4 0 0 1 192 32 H84 Z" fill="#6b0f26" />
+    <text class="lbl" x="42" y="20" text-anchor="middle">RAYLIB</text>
+    <text class="val" x="140" y="20" text-anchor="middle">8.1.0 3D</text>
+  </g>
+
+  
+  <g transform="translate(376, 5)">
+    <rect width="164" height="32" rx="4" fill="#1c040a" stroke="#be123c" stroke-width="1.2" />
+    <path d="M88 0 H160 A4 4 0 0 1 164 4 V28 A4 4 0 0 1 160 32 H88 Z" fill="#881337" />
+    <text class="lbl" x="44" y="20" text-anchor="middle">RELEASE</text>
+    <text class="val" x="126" y="20" text-anchor="middle">v1.7</text>
+  </g>
+
+  
+  <g transform="translate(552, 5)">
+    <rect width="222" height="32" rx="4" fill="#1c040a" stroke="#9f1239" stroke-width="1.2" />
+    <path d="M74 0 H218 A4 4 0 0 1 222 4 V28 A4 4 0 0 1 218 32 H74 Z" fill="#590d22" />
+    <text class="lbl" x="37" y="20" text-anchor="middle">GENRE</text>
+    <text class="val" x="148" y="20" text-anchor="middle">PSYCH HORROR</text>
+  </g>
+
+  
+  <g transform="translate(786, 5)">
+    <rect width="184" height="32" rx="4" fill="#1c040a" stroke="#7f1128" stroke-width="1.2" />
+    <path d="M74 0 H180 A4 4 0 0 1 184 4 V28 A4 4 0 0 1 180 32 H74 Z" fill="#3b0714" />
+    <text class="lbl" x="37" y="20" text-anchor="middle">VOICE</text>
+    <text class="val" x="129" y="20" text-anchor="middle">VIETNAMESE</text>
+  </g>
+</svg>
