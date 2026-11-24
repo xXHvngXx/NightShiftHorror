@@ -1,14 +1,18 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=190&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=54&fontColor=eef2ff&fontAlignY=38&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.6&descSize=20&descAlignY=60&animation=fadeIn" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=205&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=56&fontColor=ffe4e6&fontAlignY=37&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.7&descSize=20&descAlignY=59&animation=glitch" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
 
-### 🌙 &nbsp;Năm tiếng đồng hồ. Một quyển nội quy. Không ai được phép vào sau 3 giờ sáng.&nbsp; 🔮
+<a href="https://github.com/xXHvngXx/NightShiftHorror">
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=18&duration=2600&pause=900&color=FB7185&center=true&vCenter=true&multiline=false&width=760&height=36&lines=%F0%9F%8C%99+N%C4%83m+ti%E1%BA%BFng+%C4%91%E1%BB%93ng+h%E1%BB%93.+M%E1%BB%99t+quy%E1%BB%83n+n%E1%BB%99i+quy.;%F0%9F%9A%AA+Kh%C3%B4ng+ai+%C4%91%C6%B0%E1%BB%A3c+ph%C3%A9p+v%C3%A0o+sau+3+gi%E1%BB%9D+s%C3%A1ng...;%F0%9F%91%BB+%C4%90%E1%BB%ABng+nh%C3%ACn+th%E1%BA%B3ng+v%C3%A0o+b%C3%B3ng+%C4%91en+sau+qu%E1%BA%A7y+thu+ng%C3%A2n." alt="Typing Effect" />
+</a>
 
-[![C#](https://img.shields.io/badge/C%23-.NET%209.0-512BD4?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
-[![Raylib](https://img.shields.io/badge/Raylib--cs-8.1.0%203D%20Engine-3B82F6?style=for-the-badge)](https://www.raylib.com/)
-[![Release](https://img.shields.io/badge/Release-v1.6-7C3AED?style=for-the-badge)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.6)
-[![Genre](https://img.shields.io/badge/Genre-Psychological%20Horror-1E3A8A?style=for-the-badge)]()
-[![Voice](https://img.shields.io/badge/Voice-Vietnamese%20TTS-0EA5E9?style=for-the-badge)]()
+<br/>
+
+[![C#](https://img.shields.io/badge/C%23-.NET%209.0-590D22?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+[![Raylib](https://img.shields.io/badge/Raylib--cs-8.1.0%203D%20Engine-800F2F?style=for-the-badge)](https://www.raylib.com/)
+[![Release](https://img.shields.io/badge/Release-v1.7-A4133C?style=for-the-badge&logo=github&logoColor=white)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.7)
+[![Genre](https://img.shields.io/badge/Genre-Psychological%20Horror-C9184A?style=for-the-badge)]()
+[![Voice](https://img.shields.io/badge/Voice-Vietnamese%20TTS-4A0919?style=for-the-badge)]()
 
 <br/>
 
@@ -18,7 +22,7 @@
 <br/>
 
 [**Giới thiệu**](#-giới-thiệu) •
-[**Tính năng**](#-tính-năng-nổi-bật-v16) •
+[**Tính năng v1.7**](#-tính-năng-nổi-bật-v17) •
 [**Điều khiển**](#-điều-khiển) •
 [**Diễn biến**](#-diễn-biến-một-đêm) •
 [**Công nghệ**](#-công-nghệ) •
@@ -26,13 +30,13 @@
 
 </div>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:16427a,50:2b1854,100:0d0a1a&height=70&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7f1128,50:4a0919,100:140308&height=70&section=header" width="100%"/>
 
 ## 👁️ Giới thiệu
 
 **Ca Trực Đêm (Night Shift Horror)** là tựa game kinh dị tâm lý góc nhìn thứ nhất mang đậm bối cảnh đêm sương đường phố Việt Nam. Từ màn hình chính phong cách VHS với nhạc nền piano, chọn tập chơi, cài đặt âm lượng, cuộc trò chuyện ở quán cà phê, tương tác điện thoại/thông báo cho đến chuyến xe đêm dọc con đường Số 9 mù sương, bạn bắt đầu ca trực tại cửa hàng tiện lợi từ **00:00 đến 05:00** với một tờ nội quy đặt trên quầy thu ngân. Những vị khách ghé qua nhìn rất bình thường, cho đến khi có điều gì đó không khớp.
 
-Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm hệ thống Jumpscare có phòng test riêng, thực thể ma hỗ trợ trỏ model `.glb` ngoài, khu vực nhà vệ sinh chi tiết có gương phản chiếu thời gian thực, sân sau, hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
+Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`, `horror_ghost_character_-_blood_stained_spirit.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm hệ thống Jumpscare cận cảnh khóa tâm khuôn mặt, thực thể ma 3D render 2 mặt chống xuyên thấu, khu vực nhà vệ sinh chi tiết có gương phản chiếu thời gian thực, sân sau, hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
 
 <table>
 <tr>
@@ -43,14 +47,14 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 </tr>
 </table>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=70&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=70&section=header" width="100%"/>
 
-## 💀 Tính năng nổi bật (v1.6)
+## 💀 Tính năng nổi bật (v1.7)
 
-### 👻 Hệ thống Jumpscare, Dev Sandbox & Thực thể ma (`Jumpscares/`)
-- **Đa góc phục kích & đồng bộ nhịp âm thanh (`JumpscareSystem.cs`)**: Hỗ trợ các kịch bản hù trực diện (*Quầy thu ngân, Nhà vệ sinh, Cửa kính chính, Hành lang giữa tiệm*), khớp nhịp biểu diễn 2.0 giây với hiệu ứng rung camera, đèn chớp, nhiễu VHS và nhả rung mượt mà sau pha hù.
-- **Phòng căn chỉnh Jumpscare trực tiếp (`F9` / Dev Mode)**: Cho phép chuyển nhanh giữa các góc cảnh, phát lại cú hù, test tiếng thét (`Assets/Audio/jumpscare.mp3`), bật/tắt đèn hoặc VHS và căn khoảng cách dừng trước camera theo thời gian thực.
-- **Thực thể ma lai Procedural & Model ngoài (`GhostModel.cs`)**: Dựng sẵn tạo hình thực thể 3D chuyển động giật cục trong code, đồng thời hỗ trợ tự động nạp model 3D bên ngoài (`Assets/Models/ghost.glb` / `.obj`) khi cần thay thế.
+### 👻 Hệ thống Jumpscare Cận Cảnh & Thực thể ma 3D `.glb` (`Jumpscares/`)
+- **Tích hợp Model ma 3D `.glb` & Render 2 mặt (`GhostModel.cs`)**: Tự động nạp model ma 3D từ `Assets/Models/`, chuẩn hóa chiều cao, căn chân chạm sàn và tắt *Backface Culling* trong lúc vẽ để hiển thị trọn vẹn hình hài 3D, mái tóc và trang phục mà không bị xuyên thấu.
+- **Lao vồ tốc độ cao & Khóa chính diện (`JumpscareSystem.cs`)**: Tự động tính góc hướng mặt thẳng vào ống kính ở cả 4 kịch bản phục kích (*Quầy thu ngân, Nhà vệ sinh, Cửa kính chính, Hành lang giữa tiệm*), tăng gia tốc cú lao áp sát màn hình (`0.35m` – `0.50m`) kèm hiệu ứng giật ảnh đỏ/xanh (*afterimage*), chớp đèn và nhiễu VHS.
+- **Phòng căn chỉnh Jumpscare trực tiếp (`F9` / Dev Mode)**: Hỗ trợ chuyển nhanh 4 góc cảnh, phát lại cú hù, test tiếng thét (`Assets/Audio/jumpscare.mp3`), xoay góc bù model (`Y`), căn tầm mắt (`[` / `]`), bật/tắt ánh mắt đỏ (`G`) và điều chỉnh khoảng cách dừng trước camera theo thời gian thực.
 
 ### 🚿 Khu nhà vệ sinh chi tiết, Gương phản chiếu & Sân sau
 - **Không gian nhà vệ sinh & 3 buồng riêng biệt (`Props.WC.cs`)**: Bao gồm cửa chính nhà vệ sinh đóng/mở được, công tắc đèn riêng cho WC với mặt tường bên trong đồng bộ khi tắt đèn mà không làm tối mặt ngoài tiệm, dãy bồn lavabo có vòi nước chảy/rửa tay góc nhìn thứ nhất, 3 buồng vệ sinh với cửa đóng/mở độc lập, bồn cầu và xử lý va chạm ổn định.
@@ -79,7 +83,7 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 - Hộp thoại gõ chữ từng ký tự, hỗ trợ tua nhanh và ngắt giọng mượt mà khi chuyển câu.
 - Quyết định gửi tin nhắn định vị, tương tác với khách hàng và hành động tại mốc **03:00 sáng** sẽ dẫn tới nhiều kết cục khác nhau.
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:16427a,50:2b1854,100:0d0a1a&height=70&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7f1128,50:4a0919,100:140308&height=70&section=header" width="100%"/>
 
 ## 🎮 Điều khiển
 
@@ -97,7 +101,7 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 | <kbd>Esc</kbd> | Tạm dừng |
 | <kbd>R</kbd> | Chơi lại (tại màn hình kết thúc) |
 
-### 👻 Trong phòng căn chỉnh Jumpscare (Dev Mode)
+### 👻 Trong phòng căn chỉnh Jumpscare (`F9` - Dev Mode)
 
 | Phím | Hành động |
 |:----:|:----------|
@@ -105,8 +109,13 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 | <kbd>Space</kbd> / <kbd>R</kbd> | Phát lại cú hù (2.0s) |
 | <kbd>T</kbd> | Test riêng âm thanh `jumpscare.mp3` |
 | <kbd>↑</kbd> / <kbd>↓</kbd> | Chỉnh khoảng cách ma dừng trước camera |
+| <kbd>Y</kbd> | Xoay hướng bù góc model `.glb` (`90°`) |
+| <kbd>[</kbd> / <kbd>]</kbd> | Hạ / Nâng tầm khóa khuôn mặt model `.glb` |
+| <kbd>G</kbd> | Bật / Tắt hiệu ứng ánh mắt đỏ |
+| <kbd>X</kbd> | Bật / Tắt chế độ làm chậm 4x (Slow-mo) |
 | <kbd>L</kbd> | Bật / Tắt đèn chiếu sáng |
 | <kbd>V</kbd> | Bật / Tắt hiệu ứng nhiễu VHS |
+| <kbd>H</kbd> | Ẩn / Hiện bảng thông số HUD |
 | <kbd>Esc</kbd> | Quay về màn hình chính |
 
 ### 🏍️ Trong cảnh chạy xe máy
@@ -122,7 +131,7 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 | <kbd>2</kbd> | **Bật / Tắt** (Tạm dừng hoặc phát tiếp nhạc) |
 | <kbd>3</kbd> | **Kế** (Chuyển sang bài nhạc tiếp theo) |
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=70&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=70&section=header" width="100%"/>
 
 ## 🕯️ Diễn biến một đêm
 
@@ -136,19 +145,19 @@ Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`)**
 
 > ⚠️ **Gợi ý nhỏ:** Đừng bỏ qua các dòng chữ viết tay bên lề, và đừng tin mọi giọng nói vang lên ngoài cửa kính lúc 3 giờ sáng.
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:16427a,50:2b1854,100:0d0a1a&height=70&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7f1128,50:4a0919,100:140308&height=70&section=header" width="100%"/>
 
 ## 🛠️ Công nghệ
 
 | Hạng mục | Chi tiết |
 |:---------|:---------|
 | **Ngôn ngữ** | C# (.NET 9.0) |
-| **Đồ họa** | Raylib-cs (`8.1.0`), Model 3D (`.glb` / `.obj`), render 3D thủ tục & `RenderTexture2D` |
+| **Đồ họa** | Raylib-cs (`8.1.0`), Model 3D (`.glb` / `.obj` Double-Sided), render 3D thủ tục & `RenderTexture2D` |
 | **Âm thanh** | Tổng hợp sóng PCM tại runtime + Phát nhạc stream `.mp3`, âm thanh thông báo & Jumpscare |
 | **Lồng tiếng** | Pipeline tự động sinh audio tiếng Việt (`gTTS` + mã hóa MD5) |
 | **IDE & Nền tảng** | Visual Studio 2022 • Windows |
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0a1a,50:2b1854,100:16427a&height=70&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=70&section=header" width="100%"/>
 
 ## 🚀 Cài đặt & chạy game
 
