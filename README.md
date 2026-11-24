@@ -1,175 +1,148 @@
-<div align="center">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 340" width="1280" height="340" role="img" aria-label="Ca Trực Đêm - Night Shift Horror">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#090104" />
+      <stop offset="0.55" stop-color="#26050e" />
+      <stop offset="1" stop-color="#4a0919" />
+    </linearGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.45" stop-color="#000" stop-opacity="0" />
+      <stop offset="1" stop-color="#000" stop-opacity="0.9" />
+    </radialGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e11d48" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#e11d48" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="txt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe4e6" />
+      <stop offset="0.6" stop-color="#fda4af" />
+      <stop offset="1" stop-color="#be123c" />
+    </linearGradient>
+    <linearGradient id="blood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7f1128" />
+      <stop offset="1" stop-color="#e11d48" />
+    </linearGradient>
+    <filter id="fog" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="28" /></filter>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="1.4" fill="#000" opacity="0.35" />
+    </pattern>
+  </defs>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=205&section=header&text=CA%20TR%E1%BB%B0C%20%C4%90%C3%8AM&fontSize=56&fontColor=ffe4e6&fontAlignY=37&desc=Night%20Shift%20Horror%20%E2%80%A2%20v1.7&descSize=20&descAlignY=59&animation=glitch" alt="Ca Trực Đêm - Night Shift Horror" width="100%"/>
+  <style>
+    .title { font-family: Georgia, 'Times New Roman', serif; font-weight: 900; font-size: 92px; letter-spacing: 12px; text-anchor: middle; }
+    .sub   { font-family: 'Courier New', Consolas, monospace; font-weight: 700; font-size: 22px; letter-spacing: 9px; text-anchor: middle; fill: #fb7185; }
+    .tag   { font-family: 'Courier New', Consolas, monospace; font-size: 15px; letter-spacing: 4px; text-anchor: middle; fill: #9f1239; }
 
-<a href="https://github.com/xXHvngXx/NightShiftHorror">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=18&duration=2600&pause=900&color=FB7185&center=true&vCenter=true&multiline=false&width=760&height=36&lines=%F0%9F%8C%99+N%C4%83m+ti%E1%BA%BFng+%C4%91%E1%BB%93ng+h%E1%BB%93.+M%E1%BB%99t+quy%E1%BB%83n+n%E1%BB%99i+quy.;%F0%9F%9A%AA+Kh%C3%B4ng+ai+%C4%91%C6%B0%E1%BB%A3c+ph%C3%A9p+v%C3%A0o+sau+3+gi%E1%BB%9D+s%C3%A1ng...;%F0%9F%91%BB+%C4%90%E1%BB%ABng+nh%C3%ACn+th%E1%BA%B3ng+v%C3%A0o+b%C3%B3ng+%C4%91en+sau+qu%E1%BA%A7y+thu+ng%C3%A2n." alt="Typing Effect" />
-</a>
+    .main   { animation: flicker 6s infinite; }
+    .ghostA { fill: #ff2a52; opacity: 0; animation: glitchA 6s infinite; }
+    .ghostB { fill: #7dd3fc; opacity: 0; animation: glitchB 6s infinite; }
 
-<br/>
+    @keyframes flicker {
+      0%, 18%, 22%, 62%, 64%, 100% { opacity: 1; }
+      19% { opacity: 0.25; } 20% { opacity: 0.9; } 21% { opacity: 0.15; }
+      63% { opacity: 0.4; }
+      80% { opacity: 1; } 81% { opacity: 0.55; } 82% { opacity: 1; }
+    }
+    @keyframes glitchA {
+      0%, 88%, 100% { opacity: 0; transform: translate(0, 0); }
+      89% { opacity: .85; transform: translate(-7px, 1px); }
+      91% { opacity: .85; transform: translate(6px, -2px); }
+      93% { opacity: .7;  transform: translate(-3px, 2px); }
+      95% { opacity: 0; }
+    }
+    @keyframes glitchB {
+      0%, 88%, 100% { opacity: 0; transform: translate(0, 0); }
+      90% { opacity: .6; transform: translate(7px, -1px); }
+      92% { opacity: .6; transform: translate(-6px, 2px); }
+      94% { opacity: 0; }
+    }
 
-[![C#](https://img.shields.io/badge/C%23-.NET%209.0-590D22?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
-[![Raylib](https://img.shields.io/badge/Raylib--cs-8.1.0%203D%20Engine-800F2F?style=for-the-badge)](https://www.raylib.com/)
-[![Release](https://img.shields.io/badge/Release-v1.7-A4133C?style=for-the-badge&logo=github&logoColor=white)](https://github.com/xXHvngXx/NightShiftHorror/releases/tag/v1.7)
-[![Genre](https://img.shields.io/badge/Genre-Psychological%20Horror-C9184A?style=for-the-badge)]()
-[![Voice](https://img.shields.io/badge/Voice-Vietnamese%20TTS-4A0919?style=for-the-badge)]()
+    .fog1 { animation: drift1 18s ease-in-out infinite alternate; }
+    .fog2 { animation: drift2 24s ease-in-out infinite alternate; }
+    .fog3 { animation: drift1 30s ease-in-out infinite alternate-reverse; }
+    @keyframes drift1 { from { transform: translateX(-120px); } to { transform: translateX(140px); } }
+    @keyframes drift2 { from { transform: translateX(150px); }  to { transform: translateX(-130px); } }
 
-<br/>
+    .scan { animation: scan 7s linear infinite; }
+    @keyframes scan { from { transform: translateY(-4px); } to { transform: translateY(0); } }
 
-> *"Cửa hàng tiện lợi cuối đường Số 9 tuyển người trực ca đêm, trả tiền mặt ngay khi hết ca.*
-> *Chỉ cần đọc kỹ tờ quy tắc và tuân thủ nó. Nghe thì đơn giản, phải không?"*
+    .pulse { animation: pulse 3.2s ease-in-out infinite; transform-origin: 640px 170px; }
+    @keyframes pulse { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
 
-<br/>
+    .eye { fill: #ff1744; transform-box: fill-box; transform-origin: center; animation: look 9s infinite; }
+    @keyframes look {
+      0%, 30% { opacity: 0; transform: scaleY(1); }
+      34%, 52% { opacity: 1; transform: scaleY(1); }
+      40% { transform: scaleY(0.05); }
+      42% { transform: scaleY(1); }
+      58%, 100% { opacity: 0; }
+    }
 
-[**Giới thiệu**](#-giới-thiệu) •
-[**Tính năng v1.7**](#-tính-năng-nổi-bật-v17) •
-[**Điều khiển**](#-điều-khiển) •
-[**Diễn biến**](#-diễn-biến-một-đêm) •
-[**Công nghệ**](#-công-nghệ) •
-[**Cài đặt**](#-cài-đặt--chạy-game)
+    .tagblink { animation: tagblink 4s infinite; }
+    @keyframes tagblink { 0%, 100% { opacity: .9; } 47% { opacity: .9; } 48% { opacity: .1; } 50% { opacity: .9; } 70% { opacity: .35; } 72% { opacity: .9; } }
+  </style>
 
-</div>
+  
+  <rect width="1280" height="340" fill="url(#bg)" />
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7f1128,50:4a0919,100:140308&height=70&section=header" width="100%"/>
+  
+  <g filter="url(#fog)">
+    <ellipse class="fog1" cx="320" cy="270" rx="360" ry="46" fill="#7f1128" opacity="0.45" />
+    <ellipse class="fog2" cx="900" cy="300" rx="420" ry="52" fill="#9f1239" opacity="0.32" />
+    <ellipse class="fog3" cx="640" cy="230" rx="300" ry="34" fill="#4a0919" opacity="0.55" />
+  </g>
 
-## 👁️ Giới thiệu
+  
+  <ellipse class="pulse" cx="640" cy="170" rx="470" ry="120" fill="url(#glow)" />
 
-**Ca Trực Đêm (Night Shift Horror)** là tựa game kinh dị tâm lý góc nhìn thứ nhất mang đậm bối cảnh đêm sương đường phố Việt Nam. Từ màn hình chính phong cách VHS với nhạc nền piano, chọn tập chơi, cài đặt âm lượng, cuộc trò chuyện ở quán cà phê, tương tác điện thoại/thông báo cho đến chuyến xe đêm dọc con đường Số 9 mù sương, bạn bắt đầu ca trực tại cửa hàng tiện lợi từ **00:00 đến 05:00** với một tờ nội quy đặt trên quầy thu ngân. Những vị khách ghé qua nhìn rất bình thường, cho đến khi có điều gì đó không khớp.
+  
+  <g>
+    <rect x="118" y="0" width="5" height="0" rx="2.5" fill="url(#blood)">
+      <animate attributeName="height" values="0;70;70;0" keyTimes="0;0.5;0.9;1" dur="7s" repeatCount="indefinite" />
+    </rect>
+    <circle cx="120.5" cy="0" r="6" fill="#e11d48">
+      <animate attributeName="cy" values="0;70;70;0" keyTimes="0;0.5;0.9;1" dur="7s" repeatCount="indefinite" />
+    </circle>
 
-Thế giới 3D kết hợp giữa **mô hình 3D nhập (`grocery_shelf.glb`, `horror_ghost_character_-_blood_stained_spirit.glb`)** và các vật thể dựng trực tiếp bằng code với **C# (.NET 9.0)** và **Raylib-cs**, đi kèm hệ thống Jumpscare cận cảnh khóa tâm khuôn mặt, thực thể ma 3D render 2 mặt chống xuyên thấu, khu vực nhà vệ sinh chi tiết có gương phản chiếu thời gian thực, sân sau, hiệu ứng ánh sáng, âm thanh môi trường, thông báo điện thoại và lồng tiếng hội thoại tiếng Việt tự động.
+    <rect x="402" y="0" width="4" height="0" rx="2" fill="url(#blood)">
+      <animate attributeName="height" values="0;110;110;0" keyTimes="0;0.55;0.92;1" dur="9s" begin="1.5s" repeatCount="indefinite" />
+    </rect>
+    <circle cx="404" cy="0" r="5" fill="#e11d48">
+      <animate attributeName="cy" values="0;110;110;0" keyTimes="0;0.55;0.92;1" dur="9s" begin="1.5s" repeatCount="indefinite" />
+    </circle>
 
-<table>
-<tr>
-<td width="25%" align="center">🏍️<br/><b>Chuyến xe đêm</b><br/>qua phố sương</td>
-<td width="25%" align="center">🕛<br/><b>5 tiếng</b><br/>một ca trực</td>
-<td width="25%" align="center">📜<br/><b>3 quy tắc</b><br/>sống còn</td>
-<td width="25%" align="center">🚪<br/><b>1 cánh cửa</b><br/>cấm mở sau 3h</td>
-</tr>
-</table>
+    <rect x="868" y="0" width="5" height="0" rx="2.5" fill="url(#blood)">
+      <animate attributeName="height" values="0;86;86;0" keyTimes="0;0.5;0.9;1" dur="8s" begin="3s" repeatCount="indefinite" />
+    </rect>
+    <circle cx="870.5" cy="0" r="6" fill="#e11d48">
+      <animate attributeName="cy" values="0;86;86;0" keyTimes="0;0.5;0.9;1" dur="8s" begin="3s" repeatCount="indefinite" />
+    </circle>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=70&section=header" width="100%"/>
+    <rect x="1154" y="0" width="4" height="0" rx="2" fill="url(#blood)">
+      <animate attributeName="height" values="0;58;58;0" keyTimes="0;0.5;0.9;1" dur="6s" begin="0.8s" repeatCount="indefinite" />
+    </rect>
+    <circle cx="1156" cy="0" r="5" fill="#e11d48">
+      <animate attributeName="cy" values="0;58;58;0" keyTimes="0;0.5;0.9;1" dur="6s" begin="0.8s" repeatCount="indefinite" />
+    </circle>
+  </g>
 
-## 💀 Tính năng nổi bật (v1.7)
+  
+  <g>
+    <text class="title ghostB" x="640" y="188">CA TRỰC ĐÊM</text>
+    <text class="title ghostA" x="640" y="188">CA TRỰC ĐÊM</text>
+    <text class="title main" x="640" y="188" fill="url(#txt)">CA TRỰC ĐÊM</text>
+  </g>
 
-### 👻 Hệ thống Jumpscare Cận Cảnh & Thực thể ma 3D `.glb` (`Jumpscares/`)
-- **Tích hợp Model ma 3D `.glb` & Render 2 mặt (`GhostModel.cs`)**: Tự động nạp model ma 3D từ `Assets/Models/`, chuẩn hóa chiều cao, căn chân chạm sàn và tắt *Backface Culling* trong lúc vẽ để hiển thị trọn vẹn hình hài 3D, mái tóc và trang phục mà không bị xuyên thấu.
-- **Lao vồ tốc độ cao & Khóa chính diện (`JumpscareSystem.cs`)**: Tự động tính góc hướng mặt thẳng vào ống kính ở cả 4 kịch bản phục kích (*Quầy thu ngân, Nhà vệ sinh, Cửa kính chính, Hành lang giữa tiệm*), tăng gia tốc cú lao áp sát màn hình (`0.35m` – `0.50m`) kèm hiệu ứng giật ảnh đỏ/xanh (*afterimage*), chớp đèn và nhiễu VHS.
-- **Phòng căn chỉnh Jumpscare trực tiếp (`F9` / Dev Mode)**: Hỗ trợ chuyển nhanh 4 góc cảnh, phát lại cú hù, test tiếng thét (`Assets/Audio/jumpscare.mp3`), xoay góc bù model (`Y`), căn tầm mắt (`[` / `]`), bật/tắt ánh mắt đỏ (`G`) và điều chỉnh khoảng cách dừng trước camera theo thời gian thực.
+  <text class="sub" x="640" y="238">NIGHT SHIFT HORROR  •  v1.7</text>
+  <text class="tag tagblink" x="640" y="274">00:00 — 05:00  ·  ĐƯỜNG SỐ 9  ·  ĐỪNG MỞ CỬA SAU 03:00</text>
 
-### 🚿 Khu nhà vệ sinh chi tiết, Gương phản chiếu & Sân sau
-- **Không gian nhà vệ sinh & 3 buồng riêng biệt (`Props.WC.cs`)**: Bao gồm cửa chính nhà vệ sinh đóng/mở được, công tắc đèn riêng cho WC với mặt tường bên trong đồng bộ khi tắt đèn mà không làm tối mặt ngoài tiệm, dãy bồn lavabo có vòi nước chảy/rửa tay góc nhìn thứ nhất, 3 buồng vệ sinh với cửa đóng/mở độc lập, bồn cầu và xử lý va chạm ổn định.
-- **Gương phản chiếu thời gian thực (`RenderTexture2D`)**: Phản chiếu không gian bên trong phòng vệ sinh, dãy buồng và hình ảnh nhân vật người chơi, căn chỉnh gọn mặt tiền để không lem sang khu biển máy nước của tiệm.
-- **Kiểm tra che khuất raycast (`IsRayBlockedByWall`)**: Chặn tương tác `[F]` xuyên qua tường đối với các vật thể phía sau tường, thùng cầu chì ngoài tường, chồng hộp hàng và thùng rác.
-- **Khám phá sân sau**: Dựng xe máy của Tú dưới mái che sân sau, kiểm tra cổng sắt ra hẻm và các vật cản xung quanh.
+  
+  <g>
+    <ellipse class="eye" cx="1110" cy="104" rx="9" ry="4.5" />
+    <ellipse class="eye" cx="1142" cy="104" rx="9" ry="4.5" />
+  </g>
 
-### 🏠 Màn hình chính VHS, Nhạc nền & Cài đặt âm lượng
-- **Màn hình chính động (`Program.Home.cs`)**: Camera 3D chuyển động quanh cửa hàng kết hợp hiệu ứng băng từ VHS, chuyển đổi ngôn ngữ (*English / Tiếng Việt*), chọn tập (*Episodes*), xem *Credits* và mở *Options* để điều chỉnh **Âm lượng tổng (Master)**, **Nhạc nền (Music)** và **Hiệu ứng (SFX)** bằng chuột hoặc bàn phím.
-- **Nhạc nền & Thông báo điện thoại**: Phát nhạc nền (`Assets/Audio/Myuu-Misconception-Piano-Version.mp3`) tại màn hình chính và tích hợp luồng thông báo điện thoại (`Assets/Audio/fears-to-fathom-notification-sound.mp3`) dẫn dắt mạch truyện.
-
-### 🎙️ Lồng tiếng hội thoại tiếng Việt thông minh
-- Tự động phát giọng lồng tiếng tiếng Việt cho các câu thoại đối đáp trực tiếp của nhân vật, điều chỉnh **cao độ (Pitch) riêng biệt** cho từng tuyến nhân vật (*Tú, Dũng, Đen, Hưng, Quản lý, Ông cụ, Anh Hùng, Chị Mai, Cô gái áo mưa vàng*).
-- Tự động nhận diện và **tắt giọng với các câu tự sự**, độc thoại nội tâm hoặc nội dung đọc trên giấy tờ, trả về âm thanh gõ nhịp retro để giữ không khí căng thẳng.
-
-### 🏍️ Trải nghiệm lái xe đêm & Kính chiếu hậu thời gian thực
-- Phân cảnh điều khiển xe máy chạy dọc tuyến phố Việt Nam ban đêm với biển hiệu tạp hóa, cột điện, sương mù dày đặc, đèn pha chiếu xa, tiếng động cơ biến thiên theo tốc độ và phím **`Shift`** nẹt ga/tăng tốc kết hợp phản hồi FOV.
-- **Kính chiếu hậu hai bên render thời gian thực** qua `RenderTexture2D`, cho phép quan sát phía sau trong lúc di chuyển.
-- **Trình phát nhạc Playlist tích hợp trên màn hình**: tự động nạp các file `.mp3` từ thư mục `Assets/Playlist`, hiển thị đĩa than xoay tròn và hỗ trợ chuyển bài ngay trong lúc chạy xe.
-
-### 🏪 Thế giới 3D kết hợp Model & Ánh sáng động
-- Nạp và render mô hình 3D (`Assets/Models/grocery_shelf.glb` qua `Program.Models.cs`) cùng hệ thống kệ hàng, tủ mát, quầy thu ngân, máy tính tiền, camera an ninh nhấp nháy đèn đỏ và đồng hồ treo tường **chạy theo thời gian thực trong game**.
-- Quán cà phê ấm áp đối lập với cửa hàng tiện lợi lạnh lẽo cuối đường Số 9, kết hợp hiệu ứng mất điện, đèn huỳnh quang chập chờn và sương mù chiều sâu.
-
-### 💬 Hội thoại phân nhánh & Đa kết thúc
-- Hộp thoại gõ chữ từng ký tự, hỗ trợ tua nhanh và ngắt giọng mượt mà khi chuyển câu.
-- Quyết định gửi tin nhắn định vị, tương tác với khách hàng và hành động tại mốc **03:00 sáng** sẽ dẫn tới nhiều kết cục khác nhau.
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7f1128,50:4a0919,100:140308&height=70&section=header" width="100%"/>
-
-## 🎮 Điều khiển
-
-### 🚶 Trong quán cà phê, Cửa hàng tiện lợi & Nhà vệ sinh
-
-| Phím | Hành động |
-|:----:|:----------|
-| <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Di chuyển |
-| <kbd>Shift</kbd> | Chạy nhanh |
-| 🖱️ **Chuột** | Quan sát xung quanh |
-| <kbd>F</kbd> | Tương tác (cửa, buồng WC, công tắc đèn WC, vòi rửa tay, NPC, sổ giao ca, quy tắc...) / Nói chuyện / Hiện nhanh chữ |
-| <kbd>Space</kbd> | Hiện nhanh chữ |
-| <kbd>↑</kbd> <kbd>↓</kbd> | Chọn phương án trả lời |
-| <kbd>Enter</kbd> | Xác nhận / Sang câu tiếp theo |
-| <kbd>Esc</kbd> | Tạm dừng |
-| <kbd>R</kbd> | Chơi lại (tại màn hình kết thúc) |
-
-### 👻 Trong phòng căn chỉnh Jumpscare (`F9` - Dev Mode)
-
-| Phím | Hành động |
-|:----:|:----------|
-| <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> | Chuyển nhanh giữa 4 góc cảnh Jumpscare |
-| <kbd>Space</kbd> / <kbd>R</kbd> | Phát lại cú hù (2.0s) |
-| <kbd>T</kbd> | Test riêng âm thanh `jumpscare.mp3` |
-| <kbd>↑</kbd> / <kbd>↓</kbd> | Chỉnh khoảng cách ma dừng trước camera |
-| <kbd>Y</kbd> | Xoay hướng bù góc model `.glb` (`90°`) |
-| <kbd>[</kbd> / <kbd>]</kbd> | Hạ / Nâng tầm khóa khuôn mặt model `.glb` |
-| <kbd>G</kbd> | Bật / Tắt hiệu ứng ánh mắt đỏ |
-| <kbd>X</kbd> | Bật / Tắt chế độ làm chậm 4x (Slow-mo) |
-| <kbd>L</kbd> | Bật / Tắt đèn chiếu sáng |
-| <kbd>V</kbd> | Bật / Tắt hiệu ứng nhiễu VHS |
-| <kbd>H</kbd> | Ẩn / Hiện bảng thông số HUD |
-| <kbd>Esc</kbd> | Quay về màn hình chính |
-
-### 🏍️ Trong cảnh chạy xe máy
-
-| Phím | Hành động |
-|:----:|:----------|
-| <kbd>W</kbd> / <kbd>S</kbd> | Tăng ga / Phanh giảm tốc |
-| <kbd>A</kbd> / <kbd>D</kbd> | Đánh lái trái / phải |
-| <kbd>Shift</kbd> | Nẹt ga / Tăng tốc & điều chỉnh FOV |
-| <kbd>L</kbd> | Bật / Tắt đèn pha |
-| <kbd>Space</kbd> | Bấm còi xe |
-| <kbd>1</kbd> | **Trước** (Chuyển bài nhạc trước đó) |
-| <kbd>2</kbd> | **Bật / Tắt** (Tạm dừng hoặc phát tiếp nhạc) |
-| <kbd>3</kbd> | **Kế** (Chuyển sang bài nhạc tiếp theo) |
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=70&section=header" width="100%"/>
-
-## 🕯️ Diễn biến một đêm
-
-| Thời gian | Sự kiện chính | Ghi chú |
-| :---: | :--- | :--- |
-| **23:00** | Quán cà phê & Lên đường | Nhận việc qua điện thoại, chạy xe tới cuối đường Số 9 |
-| **00:00** | Bắt đầu ca trực | Nhận bàn giao và đọc kỹ tờ quy tắc trên quầy |
-| **02:00** | Điện thoại bàn đổ chuông | Những vị khách bất thường bắt đầu ghé tiệm |
-| **03:00** | Thời điểm khóa cửa | Tuyệt đối không mở cửa cho bất kỳ ai bên ngoài |
-| **05:00** | Kết thúc ca trực | Nhận tiền công và hoàn thành ca làm việc |
-
-> ⚠️ **Gợi ý nhỏ:** Đừng bỏ qua các dòng chữ viết tay bên lề, và đừng tin mọi giọng nói vang lên ngoài cửa kính lúc 3 giờ sáng.
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7f1128,50:4a0919,100:140308&height=70&section=header" width="100%"/>
-
-## 🛠️ Công nghệ
-
-| Hạng mục | Chi tiết |
-|:---------|:---------|
-| **Ngôn ngữ** | C# (.NET 9.0) |
-| **Đồ họa** | Raylib-cs (`8.1.0`), Model 3D (`.glb` / `.obj` Double-Sided), render 3D thủ tục & `RenderTexture2D` |
-| **Âm thanh** | Tổng hợp sóng PCM tại runtime + Phát nhạc stream `.mp3`, âm thanh thông báo & Jumpscare |
-| **Lồng tiếng** | Pipeline tự động sinh audio tiếng Việt (`gTTS` + mã hóa MD5) |
-| **IDE & Nền tảng** | Visual Studio 2022 • Windows |
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:140308,50:4a0919,100:7f1128&height=70&section=header" width="100%"/>
-
-## 🚀 Cài đặt & chạy game
-
-**Yêu cầu:** Windows, [.NET 9.0 SDK](https://dotnet.microsoft.com/download), Visual Studio 2022 hoặc `dotnet` CLI.
-
-```bash
-# 1. Tải mã nguồn
-git clone [https://github.com/xXHvngXx/NightShiftHorror.git](https://github.com/xXHvngXx/NightShiftHorror.git)
-cd NightShiftHorror/NightShiftHorror
-
-# 2. (Tùy chọn) Thêm nhạc cá nhân để nghe khi lái xe hoặc model ma 3D
-# Chép file .mp3 vào thư mục Assets/Playlist/ và model .glb vào Assets/Models/ghost.glb
-
-# 3. Chạy game
-dotnet run -c Release
+  
+  <rect class="scan" width="1280" height="344" fill="url(#scan)" />
+  <rect width="1280" height="340" fill="url(#vig)" />
+</svg>
