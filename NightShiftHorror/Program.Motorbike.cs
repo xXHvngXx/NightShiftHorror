@@ -3,8 +3,8 @@ using Raylib_cs;
 
 partial class Program
 {
-    const float BikeRoadEndZ = 1000.0f;
-    const float BikeMaxSpeed = 69.5f;
+    const float BikeRoadEndZ = 1550.0f;
+    const float BikeMaxSpeed = 69.3f;
 
     // ===== Kích thước cabin xe (toạ độ cục bộ: +X = bên TRÁI người lái, +Z = phía trước) =====
     const float BikeEyeHeight = 1.36f;     // độ cao mắt người lái
