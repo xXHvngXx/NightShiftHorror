@@ -13,6 +13,8 @@ partial class Program
         new Vector3(9.65f, 2.50f, -18.40f)
     );
 
+    static int pendingJumpscareEnding = -1;
+
     static bool IsConfirmKeyPressed()
         => Raylib.IsKeyPressed(KeyboardKey.Enter) || Raylib.IsKeyPressed(KeyboardKey.KpEnter);
 
@@ -90,6 +92,7 @@ partial class Program
     static void SpawnNpc(Vector3 start, Vector3 target, Color shirtColor, Color hairColor,
                          FearsBodySpec spec, FaceId faceId = FaceId.None)
     {
+        npcIsGhostModel = false;
         npcPos = start;
         npcTarget = target;
         npcShirtColor = shirtColor;
@@ -108,8 +111,106 @@ partial class Program
         npcActive = true;
     }
 
+    static void SpawnGlassGhost(Vector3 pos, float yawDeg = 180f)
+    {
+        GhostModel.EnsureLoaded();
+        npcIsGhostModel = true;
+        npcPos = pos;
+        npcTarget = pos;
+        npcYaw = yawDeg;
+        npcLeaving = false;
+        npcShouldLeaveAfterDialogue = false;
+        npcSwing = 0f;
+        npcGazeWeight = 0f;
+        npcHeadYaw = 0f;
+        npcHeadPitch = 0f;
+        npcHeadRoll = 0f;
+        npcEyeGaze = Vector2.Zero;
+        npcActive = true;
+    }
+
+    static void TriggerStoryJumpscare(JumpscarePreset preset, int endingIdAfter)
+    {
+        EnsureJumpscareTarget();
+        StopDialogueVoice();
+        isTalking = false;
+        isTalkingToNpc = false;
+        dialogueStage = 0;
+        subChoiceMode = "";
+        npcActive = false;
+        npcIsGhostModel = false;
+        pendingJumpscareEnding = endingIdAfter;
+        TriggerJumpscare(preset, 2.0f);
+    }
+
+    static void UpdateAndDrawStoryJumpscare(float dt)
+    {
+        float time = (float)Raylib.GetTime();
+        EnsureJumpscareTarget();
+
+        if (!jumpscareAudioTriggered)
+        {
+            PlayJumpscareAudioBurst();
+            jumpscareAudioTriggered = true;
+        }
+
+        jumpscareTimer += dt;
+        float dur = MathF.Max(0.5f, jumpscareDuration);
+        float tNorm = Math.Clamp(jumpscareTimer / dur, 0f, 1f);
+        float u = tNorm * dur - JsImpactTime(dur);
+
+        ComputeJumpscarePose(activeJumpscarePreset, tNorm, true,
+            out Vector3 camPos, out Vector3 camTarget, out Vector3 camUp, out float fov,
+            out Vector3 ghostPos, out float ghostYaw, out float lunge);
+
+        camera.Position = camPos;
+        camera.Target = camTarget;
+        camera.Up = camUp;
+        camera.FovY = fov;
+
+        bool strobeLit = jsLit;
+
+        Raylib.BeginTextureMode(jsTarget);
+        Raylib.ClearBackground(strobeLit ? JsColor(24, 27, 34) : JsColor(6, 7, 11));
+
+        Raylib.BeginMode3D(camera);
+        Props.DrawStore(lit: strobeLit, doorLocked: false, time, currentTime, phoneRinging: false, daylight: 0f);
+        DrawStoreShelves(lit: strobeLit);
+        Props.DrawWashroom(strobeLit, time, wcDoorOpen, wcStallDoorsOpen, -1, 0f, false, 0, 0f);
+        Props.DrawStoreGlass(doorLocked: false, daylight: 0f);
+
+        DrawJumpscareDebris(activeJumpscarePreset, u);
+        GhostModel.Draw(ghostPos, ghostYaw, time, lunge,
+            twitchIntensity: jsTwitch, screamAmount: jsScream, brightness: jsGhostBright);
+        Raylib.EndMode3D();
+        Raylib.EndTextureMode();
+
+        Raylib.BeginDrawing();
+        Raylib.ClearBackground(Color.Black);
+
+        DrawJumpscareComposite(jsAber, jsZoom);
+        DrawJumpscareScreenEffects(tNorm, time, true);
+
+        Raylib.EndDrawing();
+
+        if (jumpscareTimer >= jumpscareDuration)
+        {
+            jumpscareActive = false;
+            int endId = pendingJumpscareEnding > 0 ? pendingJumpscareEnding : 1;
+            pendingJumpscareEnding = -1;
+            TriggerEnding(endId);
+        }
+    }
+
     static void UpdateAndDrawStoreGameplay(float dt)
     {
+        if (jumpscareActive)
+        {
+            UpdateAndDrawStoryJumpscare(dt);
+            return;
+        }
+        
+
         if (!gameEnded && !Raylib.IsSoundPlaying(ambientHumSound))
         {
             Raylib.PlaySound(ambientHumSound);
@@ -159,15 +260,16 @@ partial class Program
 
             if (storyStep == 0 && clockMinutes >= 1440f && currentObjective.Contains("Ca tối"))
             {
-                currentObjective = "Đã quá 00:00 khuya - Phố vắng tanh, kiểm tra lại quầy & kệ hàng";
+                currentObjective = "Đã quá 00:00 khuya - Phố vắng tanh, chuẩn bị đón khách đêm";
             }
 
+            // Sau giờ hành chính/ca tối (00:00), các NPC sự kiện chính tiến thẳng tới quầy tương tác rồi rời đi
             if (!npcActive && IsShopperIdleOrLeaving())
             {
                 if (storyStep == 0 && clockMinutes >= 1470f)
                 {
                     currentTime = FormatClock(1470f);
-                    currentObjective = "Đón vị khách đầu tiên lúc khuya vừa bước vào (00:30)";
+                    currentObjective = "Tiếp vị khách đầu tiên lúc khuya vừa bước vào quầy (00:30)";
                     SpawnNpc(
                         new Vector3(0f, 0f, 12.0f),
                         new Vector3(-1.1f, 0f, -1.1f),
@@ -181,7 +283,7 @@ partial class Program
                 else if (storyStep == 1 && clockMinutes >= 1515f)
                 {
                     currentTime = FormatClock(1515f);
-                    currentObjective = "Tiếp vị khách tiếp theo vừa vào cửa hàng (01:15)";
+                    currentObjective = "Tiếp vị khách tiếp theo vừa tiến tới quầy (01:15)";
                     SpawnNpc(
                         new Vector3(0f, 0f, 12.0f),
                         new Vector3(-1.1f, 0f, -1.1f),
@@ -204,6 +306,7 @@ partial class Program
                 }
             }
 
+            // Nếu đã gửi vị trí, lúc 02:54 thực thể ma 3D lấp ló ngoài cửa kính trước giờ chốt cửa
             if (storyStep == 7 && !isDoorLocked && sharedLocation && !spoofAlertShown && clockMinutes >= 1614f)
             {
                 spoofAlertShown = true;
@@ -214,17 +317,10 @@ partial class Program
                     new Color(24, 119, 242, 255),
                     4.5f
                 );
-                SpawnNpc(
-                    new Vector3(0.45f, 0f, 9.6f),
-                    new Vector3(0.45f, 0f, 9.6f),
-                    Color.Gold,
-                    new Color(40, 30, 25, 255),
-                    FearsBodySpec.YellowGirl,
-                    FaceId.YellowNormal
-                );
+                SpawnGlassGhost(new Vector3(0.45f, 0f, 8.95f), 180f);
                 StartDialogue(
                     "Tin nhắn (Dũng)",
-                    "Điện thoại Tú rung lên tin nhắn từ một tài khoản lạ sao chép y hệt ảnh đại diện Dũng: 'Ê, tao chạy ngang đường Số 9 ghé qua chỗ mày nè, ra mở cửa tao coi.' (Ngoài cửa kính xuất hiện một bóng người đứng khuất trong sương)",
+                    "Điện thoại Tú rung lên tin nhắn từ một tài khoản lạ sao chép y hệt ảnh đại diện Dũng: 'Ê, tao chạy ngang đường Số 9 ghé qua chỗ mày nè, ra mở cửa tao coi.' (Ngoài cửa kính lấp ló một bóng ma đứng khuất trong sương)",
                     2
                 );
             }
@@ -267,7 +363,7 @@ partial class Program
             {
                 clockMinutes = 1580f;
                 currentTime = FormatClock(clockMinutes);
-                currentObjective = "Tiếp vị khách vừa bước vào cửa hàng (02:20)";
+                currentObjective = "Tiếp vị khách vừa bước tới quầy (02:20)";
                 SpawnNpc(
                     new Vector3(0f, 0f, 12.0f),
                     new Vector3(-1.1f, 0f, -1.1f),
@@ -296,6 +392,7 @@ partial class Program
             else if (npcLeaving)
             {
                 npcActive = false;
+                npcIsGhostModel = false;
                 npcLeaving = false;
 
                 if (storyStep == -1)
@@ -490,10 +587,11 @@ partial class Program
 
             UpdateFirstPersonLook(new Vector3(playerPos.X, 1.7f + currentBobOffset, playerPos.Z));
 
+            // Nếu người chơi mở cửa hoặc bước ra ngoài đường trong lúc chưa chốt cửa
             if (storyStep >= 1 && storyStep <= 7 && !isDoorLocked && playerPos.Z > 10.7f)
             {
                 if (spoofAlertShown)
-                    TriggerEnding(1);
+                    TriggerStoryJumpscare(JumpscarePreset.FrontDoorRush, 1);
                 else
                     TriggerEnding(3);
                 return;
@@ -517,7 +615,8 @@ partial class Program
             RayCollision bikeHit = Raylib.GetRayCollisionBox(eyeRay, backyardMotorbikeBox);
             RayCollision gateHit = Raylib.GetRayCollisionBox(eyeRay, backyardAlleyGateBox);
 
-            BoundingBox npcBox = new(npcPos - new Vector3(0.4f, 0f, 0.4f), npcPos + new Vector3(0.4f, 1.85f * npcSpec.HeightScale, 0.4f));
+            float npcHeight = npcIsGhostModel ? 1.88f : 1.85f * npcSpec.HeightScale;
+            BoundingBox npcBox = new(npcPos - new Vector3(0.45f, 0f, 0.45f), npcPos + new Vector3(0.45f, npcHeight, 0.45f));
             RayCollision npcHit = npcActive ? Raylib.GetRayCollisionBox(eyeRay, npcBox) : new RayCollision { Hit = false };
 
             if (skullPromptKey == "")
@@ -527,11 +626,12 @@ partial class Program
 
             if (skullPromptKey == "")
             {
-                if (npcHit.Hit && npcHit.Distance <= 3.2f && !npcLeaving && storyStep != 7 && !IsRayBlockedByWall(eyeRay, npcHit.Distance))
+                float maxNpcDist = npcIsGhostModel ? 3.8f : 3.2f;
+                if (npcHit.Hit && npcHit.Distance <= maxNpcDist && !npcLeaving && storyStep != 7 && !IsRayBlockedByWall(eyeRay, npcHit.Distance))
                 {
                     activeInteractId = "npc";
                     skullPromptKey = "F";
-                    skullPromptText = "NÓI CHUYỆN";
+                    skullPromptText = npcIsGhostModel ? "NHÌN RA NGOÀI CỬA KÍNH" : "NÓI CHUYỆN";
                 }
                 else if (posterHit.Hit && posterHit.Distance <= 3.0f && !IsRayBlockedByWall(eyeRay, posterHit.Distance))
                 {
@@ -593,7 +693,7 @@ partial class Program
         float zoomSmooth = 1f - MathF.Exp(-6.0f * dt);
         camera.FovY += (targetFov - camera.FovY) * zoomSmooth;
 
-        if (npcActive)
+        if (npcActive && !npcIsGhostModel)
         {
             float targetWeight = (npcLeaving || anyCutscene) ? 0f : 1f;
             npcGazeWeight += (targetWeight - npcGazeWeight) * (1f - MathF.Exp(-5.5f * dt));
@@ -691,21 +791,15 @@ partial class Program
         {
             isDoorLocked = true;
             Raylib.PlaySound(knockSound);
+            flickerTimer = 0.65f;
             clockMinutes = 1620f;
             currentTime = FormatClock(clockMinutes);
-            currentObjective = "03:00 - Có tiếng đập cửa kính! Ra kiểm tra cửa chính";
-            SpawnNpc(
-                new Vector3(0f, 0f, 8.2f),
-                new Vector3(0f, 0f, 8.2f),
-                Color.Gold,
-                new Color(40, 30, 25, 255),
-                FearsBodySpec.YellowGirl,
-                FaceId.YellowNormal
-            );
+            currentObjective = "03:00 - Có bóng ma áp sát ngoài cửa kính! Ra kiểm tra cửa chính";
+            SpawnGlassGhost(new Vector3(0f, 0f, 8.15f), 180f);
             storyStep = 8;
             StartDialogue(
                 "Tú",
-                "Mình vừa gạt chốt khóa cửa đúng 03:00 thì bóng áo mưa vàng lao sầm tới áp sát cửa kính, đập dồn dập: CỐC! CỐC! CỐC!",
+                "Mình vừa gạt chốt khóa cửa đúng 03:00 thì một bóng người bê bết máu lao sầm tới áp sát mặt kính, đập dồn dập: CỐC! CỐC! CỐC!",
                 2
             );
         }
@@ -765,8 +859,8 @@ partial class Program
                 if (sharedLocation)
                 {
                     StartDialogue(
-                        "Cô gái (Áo mưa vàng)",
-                        "Bóng áo mưa vàng áp sát mặt kính, nhưng từ cổ họng cô ta lại phát ra giọng hệt thằng Dũng: 'Ê Tú! Tao Dũng nè, mở cửa nhanh đi ngoài này lạnh teo rồi!'",
+                        "Bóng ma ngoài kính",
+                        "Thực thể ngoài cửa kính nghiêng đầu gãy gập, từ cổ họng phát ra giọng nhại y hệt thằng Dũng: 'Ê Tú! Tao Dũng nè, mở cửa nhanh đi ngoài này lạnh teo rồi!'",
                         1,
                         [
                             "Mở chốt cửa cho 'Dũng' vào",
@@ -780,12 +874,12 @@ partial class Program
                 else
                 {
                     StartDialogue(
-                        "Cô gái (Áo mưa vàng)",
-                        "Em ơi mở cửa nhanh giúp chị với! Lúc nãy chị làm rơi chùm chìa khóa phòng trọ ngay trước quầy thu ngân!",
+                        "Bóng ma ngoài kính",
+                        "Thực thể áp sát mặt kính lạnh toát, cất giọng khàn đục: 'Em ơi mở cửa nhanh giúp với... Lúc nãy làm rơi chùm chìa khóa ngay trước quầy thu ngân!'",
                         1,
                         [
-                            "Mở chốt cửa cho chị ấy vào tìm chìa khóa",
-                            "Trên quầy không có chìa khóa nào đâu chị"
+                            "Mở chốt cửa cho vào tìm chìa khóa",
+                            "Trên quầy không có chìa khóa nào cả, không mở cửa"
                         ],
                         talkingToNpc: true,
                         mode: "0300_normal"
@@ -829,7 +923,9 @@ partial class Program
 
         if (isTalkingToNpc && npcActive)
         {
-            Vector3 npcFacePos = npcPos + new Vector3(0f, 1.56f * npcSpec.HeightScale, 0f);
+            Vector3 npcFacePos = npcIsGhostModel
+                ? GhostModel.GetLiveFaceWorld(npcPos, npcYaw, (float)Raylib.GetTime(), storyStep >= 9 ? 0.35f : 0.08f, 0.5f)
+                : npcPos + new Vector3(0f, 1.56f * npcSpec.HeightScale, 0f);
             SmoothLookAtPoint(eyePos, npcFacePos, dt, 7.5f);
         }
 
@@ -952,20 +1048,19 @@ partial class Program
                         {
                             if (selectedOption == 0)
                             {
-                                TriggerEnding(1);
+                                isDoorLocked = false;
+                                TriggerStoryJumpscare(JumpscarePreset.FrontDoorRush, 1);
                                 return;
                             }
                             else if (selectedOption == 1)
                             {
                                 subChoiceMode = "";
                                 calledRealDung = true;
-                                npcFaceId = FaceId.YellowHorror;
-                                npcSpec = FearsBodySpec.YellowHorror;
-                                flickerTimer = 0.55f;
+                                flickerTimer = 0.75f;
                                 storyStep = 9;
                                 StartDialogue(
                                     "Điện thoại (Dũng)",
-                                    "Đầu dây bên kia giọng Dũng ngái ngủ: 'Alo? Tao nhắn hỏi thăm hồi 10 giờ không thấy rep nên ngủ luôn rồi, qua đường Số 9 hồi nào!' Ngoài kính, cô gái áo mưa vàng đứng khựng lại, nụ cười tắt ngấm rồi gầm gừ: 'Mắt tinh tú đấy... Tiếc thật.'",
+                                    "Đầu dây bên kia giọng Dũng ngái ngủ: 'Alo? Tao nhắn hỏi thăm hồi 10 giờ không thấy rep nên ngủ luôn rồi, qua đường Số 9 hồi nào!' Ngoài kính, bóng ma đứng khựng lại, giật cổ rồi gầm gừ: 'Mắt tinh tú đấy... Tiếc thật.'",
                                     2,
                                     talkingToNpc: true,
                                     leaveAfter: true
@@ -974,13 +1069,11 @@ partial class Program
                             else
                             {
                                 subChoiceMode = "";
-                                npcFaceId = FaceId.YellowHorror;
-                                npcSpec = FearsBodySpec.YellowHorror;
-                                flickerTimer = 0.45f;
+                                flickerTimer = 0.65f;
                                 storyStep = 9;
                                 StartDialogue(
-                                    "Cô gái (Áo mưa vàng)",
-                                    "Cô ta đứng khựng lại, giọng thằng Dũng biến mất, đổi sang tiếng trầm khàn: 'Mắt tinh tú đấy... Tiếc thật.'",
+                                    "Bóng ma ngoài kính",
+                                    "Nó đứng khựng lại sau lớp kính, giọng thằng Dũng biến mất, đổi sang tiếng gầm khàn đặc: 'Mắt tinh tú đấy... Tiếc thật.'",
                                     2,
                                     talkingToNpc: true,
                                     leaveAfter: true
@@ -991,19 +1084,18 @@ partial class Program
                         {
                             if (selectedOption == 0)
                             {
-                                TriggerEnding(1);
+                                isDoorLocked = false;
+                                TriggerStoryJumpscare(JumpscarePreset.FrontDoorRush, 1);
                                 return;
                             }
                             else
                             {
                                 subChoiceMode = "";
-                                npcFaceId = FaceId.YellowHorror;
-                                npcSpec = FearsBodySpec.YellowHorror;
-                                flickerTimer = 0.45f;
+                                flickerTimer = 0.65f;
                                 storyStep = 9;
                                 StartDialogue(
-                                    "Cô gái (Áo mưa vàng)",
-                                    "Cô ta đứng khựng lại, nụ cười tắt ngấm rồi đổi sang giọng trầm khàn: 'Mắt tinh tú đấy... Tiếc thật.'",
+                                    "Bóng ma ngoài kính",
+                                    "Nó đứng khựng lại sau lớp kính, cổ giật mạnh rồi cất tiếng gầm khàn đặc: 'Mắt tinh tú đấy... Tiếc thật.'",
                                     2,
                                     talkingToNpc: true,
                                     leaveAfter: true
@@ -1069,7 +1161,7 @@ partial class Program
                     }
                     else if (shouldNpcLeave && npcActive)
                     {
-                        npcTarget = new Vector3(0f, 0f, 14.0f);
+                        npcTarget = npcIsGhostModel ? new Vector3(0f, 0f, 15.5f) : new Vector3(0f, 0f, 14.0f);
                         npcLeaving = true;
                     }
                     else if (storyStep == 4 && finishedMode == "desk_phone")
@@ -1111,8 +1203,27 @@ partial class Program
             Props.DrawFirstPersonWashHands(camera, washHandsTimer);
 
             if (npcActive)
-                Props.DrawFearsCharacter(npcPos, npcYaw, npcShirtColor, npcHairColor, npcSpec, npcWalkPhase, npcSwing,
-                                         npcHeadYaw, npcHeadPitch, npcHeadRoll, npcEyeGaze, npcFaceId);
+            {
+                if (npcIsGhostModel)
+                {
+                    float tNow = (float)Raylib.GetTime();
+                    bool ghostRevealed = storyStep >= 9;
+                    GhostModel.Draw(
+                        npcPos,
+                        npcYaw,
+                        tNow,
+                        lungeProgress: ghostRevealed ? 0.35f : 0.08f,
+                        twitchIntensity: ghostRevealed ? 1.15f : 0.35f,
+                        screamAmount: ghostRevealed ? 0.65f : 0.05f,
+                        brightness: lightsOn ? 0.92f : 0.32f
+                    );
+                }
+                else
+                {
+                    Props.DrawFearsCharacter(npcPos, npcYaw, npcShirtColor, npcHairColor, npcSpec, npcWalkPhase, npcSwing,
+                                             npcHeadYaw, npcHeadPitch, npcHeadRoll, npcEyeGaze, npcFaceId);
+                }
+            }
             Props.DrawStoreGlass(isDoorLocked, currentDaylight);
         }, skyColor, LerpColor(new Color(24, 0, 0, 255), new Color(14, 0, 0, 255), currentDaylight).R * 0.1f);
 
@@ -1199,5 +1310,102 @@ partial class Program
         }
 
         Raylib.EndDrawing();
+    }
+
+    static void HandleEndingDevShortcuts()
+    {
+        if (isPaused || jumpscareActive) return;
+
+        bool shiftHeld = Raylib.IsKeyDown(KeyboardKey.LeftShift) || Raylib.IsKeyDown(KeyboardKey.RightShift);
+        if (!shiftHeld) return;
+
+        bool pressF6 = Raylib.IsKeyPressed(KeyboardKey.F6);
+        bool pressF7 = Raylib.IsKeyPressed(KeyboardKey.F7);
+        bool pressF8 = Raylib.IsKeyPressed(KeyboardKey.F8);
+        if (!pressF6 && !pressF7 && !pressF8) return;
+
+        // Dọn sạch trạng thái hiện tại để tua băng tới mốc thời gian bí mật
+        Raylib.StopSound(cafeAmbience);
+        Raylib.StopSound(motorbikeEngineSound);
+        StopDialogueVoice();
+
+        gameEnded = false;
+        isBadEnding = false;
+        fadeAlpha = 0f;
+        isCafeCutscene = false;
+        isFadingOutCafe = false;
+        isWorkCutscene = false;
+        isDawnCutscene = false;
+        isReturnHomeCutscene = false;
+
+        isTalking = false;
+        isTalkingToNpc = false;
+        dialogueStage = 0;
+        subChoiceMode = "";
+        npcShouldLeaveAfterDialogue = false;
+        ResetShopperState();
+
+        gameScene = 2;
+        Raylib.DisableCursor();
+        Raylib.GetMouseDelta();
+
+        // Tiếng rè tua băng VHS
+        Raylib.SetSoundPitch(voiceStaticSound, 0.55f);
+        Raylib.PlaySound(voiceStaticSound);
+
+        if (pressF6)
+        {
+            isDoorLocked = true;
+            lightsOn = true;
+            clockMinutes = 1620f;
+            currentTime = "03:00";
+            sharedLocation = true;
+            spoofAlertShown = true;
+            recordingOn = true;
+            readPoster = readLogbook = readMargin = nameTag = talkedMai = true;
+            greetedCount = 2;
+
+            playerPos = new Vector3(0f, 0f, 5.15f);
+            camYaw = 0f;
+            camPitch = -0.04f;
+            currentBobOffset = 0f;
+            camera.FovY = NormalFov;
+            ApplyCameraOrientation(new Vector3(playerPos.X, 1.7f, playerPos.Z));
+
+            SpawnGlassGhost(new Vector3(0f, 0f, 8.15f), 180f);
+            storyStep = 8;
+            currentObjective = "03:00 - Thứ ngoài cửa kính đang chờ câu trả lời...";
+            ShowTopNotificationBanner(
+                "VHS // EASTER EGG",
+                "Tua Băng Tới 03:00",
+                "Ký ức bị khóa đã mở. Tiến lại cửa kính và bấm [F] để đối mặt.",
+                new Color(220, 38, 38, 255),
+                4.2f
+            );
+        }
+        else
+        {
+            bool fullClues = pressF7;
+            npcActive = false;
+            npcIsGhostModel = false;
+
+            recordingOn = true;
+            readPoster = true;
+            readLogbook = fullClues;
+            readMargin = fullClues;
+            nameTag = fullClues;
+            talkedMai = fullClues;
+            greetedCount = fullClues ? 2 : 0;
+            calledRealDung = fullClues;
+
+            StartDawnCutscene();
+            ShowTopNotificationBanner(
+                "VHS // EASTER EGG",
+                fullClues ? "Tua Băng Tới 05:00 (Băng Đầy Đủ 5/5)" : "Tua Băng Tới 05:00 (Băng Nhiễu 1/5)",
+                "Cuốn băng đã tua tới lúc rạng sáng. Hãy đưa ra lựa chọn cuối cùng.",
+                new Color(234, 179, 8, 255),
+                4.5f
+            );
+        }
     }
 }

@@ -78,6 +78,7 @@ partial class Program
     static float dawnProgress = 0f;
 
     static bool npcActive = false;
+    static bool npcIsGhostModel = false;
     static Vector3 npcPos = new(0f, 0f, 13.5f);
     static Vector3 npcTarget = new(0f, 0f, 13.5f);
     static Color npcShirtColor = Color.Blue;
@@ -115,6 +116,7 @@ partial class Program
     {
         Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow);
         Raylib.InitWindow(1280, 720, "Ca Trực Đêm - Night Shift Horror");
+        Raylib.SetExitKey(KeyboardKey.Null);
 
         int monitor = Raylib.GetCurrentMonitor();
         int monW = Raylib.GetMonitorWidth(monitor);
@@ -128,10 +130,9 @@ partial class Program
         Raylib.SetWindowSize(ScreenWidth, ScreenHeight);
 
         LoadCustomModels();
+        GhostModel.EnsureLoaded();
         DisableIme();
 
-
-        Raylib.SetExitKey(KeyboardKey.Null);
         Raylib.InitAudioDevice();
         Raylib.SetTargetFPS(60);
         Raylib.EnableCursor();
@@ -156,7 +157,7 @@ partial class Program
 
         while (!Raylib.WindowShouldClose())
         {
-            float dt = Raylib.GetFrameTime();
+            float dt = Math.Min(Raylib.GetFrameTime(), 0.05f);
 
             bool altEnter = (Raylib.IsKeyDown(KeyboardKey.LeftAlt) || Raylib.IsKeyDown(KeyboardKey.RightAlt))
                 && Raylib.IsKeyPressed(KeyboardKey.Enter);
@@ -165,21 +166,11 @@ partial class Program
                 Raylib.ToggleBorderlessWindowed();
             }
 
-            if (!gameEnded && gameScene != -2 && Raylib.IsKeyPressed(KeyboardKey.Escape))
+            bool shiftHeld = Raylib.IsKeyDown(KeyboardKey.LeftShift) || Raylib.IsKeyDown(KeyboardKey.RightShift);
+           
+            if (gameScene != -2 && !gameEnded && !jumpscareActive && Raylib.IsKeyPressed(KeyboardKey.Escape))
             {
-                isPaused = !isPaused;
-                pauseSelection = 0;
-                if (isPaused)
-                {
-                    Raylib.EnableCursor();
-                    if (Raylib.IsSoundPlaying(cafeAmbience)) Raylib.PauseSound(cafeAmbience);
-                }
-                else
-                {
-                    Raylib.DisableCursor();
-                    Raylib.GetMouseDelta();
-                    if (gameScene == 0 && cafeSubStep < 2) Raylib.ResumeSound(cafeAmbience);
-                }
+                TogglePauseMenu(!isPaused);
             }
 
             if (isPaused)
@@ -187,6 +178,8 @@ partial class Program
                 if (UpdateAndDrawPauseMenu()) break;
                 continue;
             }
+
+            HandleEndingDevShortcuts();
 
             if (gameScene == -2)
             {
@@ -223,6 +216,8 @@ partial class Program
 
         Props.UnloadFaceTextures();
         Props.UnloadWorldTextures();
+        GhostModel.Unload();
+        UnloadJumpscareAudio();
         Raylib.UnloadRenderTexture(sceneTarget);
         Raylib.UnloadFont(viFont);
         UnloadAudio();
@@ -230,7 +225,7 @@ partial class Program
         UnloadCustomModels();
         Raylib.CloseWindow();
     }
-
+    
     static unsafe void DisableIme()
     {
         NativeMethods.ImmAssociateContext((IntPtr)Raylib.GetWindowHandle(), IntPtr.Zero);

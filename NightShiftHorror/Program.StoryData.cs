@@ -3,6 +3,8 @@ using Raylib_cs;
 
 partial class Program
 {
+    static bool chapter1Completed = false;
+
     static readonly Vector3 cafeSeatPos = new(0.0f, 1.32f, -1.15f);
     static readonly Vector3 dungHeadPos = new(0.0f, 1.28f, 0.85f);
     static readonly Vector3 denHeadPos = new(0.95f, 1.28f, -0.15f);
@@ -60,9 +62,9 @@ partial class Program
 
     static readonly string[] introMonologue =
     [
-        "23:45 - Đêm sương dày đặc ở cuối đường Số 9. Phía trước là cửa hàng tiện lợi Thuận Phát 24H rộng lớn sáng trưng ánh đèn huỳnh quang.",
-        "Trên cột đèn sát vỉa hè có dán một tờ thông báo cũ đã ố vàng. Bên trong tiệm, nhân viên ca tối đang tất bật kiểm hàng trước giờ bàn giao.",
-        "Vào nhận bàn giao ca thôi. Nhớ bật ghi âm điện thoại cho chắc ăn..."
+        "18:45 - Trời sẩm tối, sương bắt đầu giăng mờ ở cuối đường Số 9. Phía trước là cửa hàng tiện lợi Thuận Phát 24H sáng trưng ánh đèn huỳnh quang.",
+        "Trên cột đèn sát vỉa hè có dán một tờ thông báo cũ đã ố vàng. Bên trong tiệm, Quản lý đang đứng chờ bàn giao ca tối.",
+        "Vào nhận ca thôi. Nhớ bật ghi âm điện thoại cho chắc ăn..."
     ];
 
     static int GetClueCount()
@@ -84,6 +86,7 @@ partial class Program
         "Ông cụ" => 0.78f,
         "Chị Mai" => 1.18f,
         "Cô gái (Áo mưa vàng)" => 1.12f,
+        "Bóng ma ngoài kính" => 0.68f,
         "Anh Hùng" => 0.72f,
         "Quản lý" => 0.90f,
         "Điện thoại bàn" => 0.65f,
@@ -119,11 +122,12 @@ partial class Program
 
             endingText =
                 $"{trapReason}\n" +
-                "Bóng người mặc áo mưa màu vàng lao sầm tới từ bóng tối với nụ cười rách toạc mang tai...\n" +
+                "Bóng ma bê bết máu lao sầm tới từ màn đêm, gào thét điên dại áp sát mặt kính...\n" +
                 "Sáng hôm sau, người ta chỉ tìm thấy chiếc balo cùng chiếc điện thoại nứt vỡ của Tú nằm lăn lóc dưới quầy thu ngân.";
         }
         else if (type == 2)
         {
+            chapter1Completed = true;
             isBadEnding = false;
             endingTitle = "ENDING 2: KẺ THẾ MẠNG MỚI (LOOP ENDING)";
             string extraLine = noticedAnomaly
@@ -131,7 +135,7 @@ partial class Program
                 : "Tú bàng hoàng nhớ lại ông cụ hiền lành lúc đầu ca — hóa ra ngay từ vị khách đầu tiên, Tú đã không còn ở thế giới bình thường nữa.";
 
             endingText =
-                "Tú cầm phong bì tiền công bước qua bên kia đường rồi quay đầu nhìn lại cửa hàng.\n" +
+                "Tú cầm phong bì tiền công chạy xe rời khỏi tiệm rồi quay đầu nhìn lại cửa hàng.\n" +
                 "Cửa cuốn gỉ sét đóng im lìm, phủ đầy bụi bặm cùng tấm biển cũ nát: 'THUẬN PHÁT 24H - NGỪNG HOẠT ĐỘNG TỪ NĂM 2019'.\n" +
                 extraLine + "\n" +
                 "Tú run tay xé phong bì kiểm tra: bên trong không có tờ 500 nghìn nào, chỉ có bản hợp đồng 'Nhân viên trực ca vĩnh viễn' đã ký sẵn tên Tú.";
@@ -151,6 +155,7 @@ partial class Program
         }
         else if (type == 4)
         {
+            chapter1Completed = true;
             isBadEnding = false;
             endingTitle = "ENDING 4: NHÂN CHỨNG SỐNG (GOOD ENDING)";
             endingText =
@@ -160,6 +165,7 @@ partial class Program
         }
         else if (type == 5)
         {
+            chapter1Completed = true;
             isBadEnding = false;
             endingTitle = "ENDING 5: CUỐN BĂNG GHI ÂM LÚC 05:00 (TRUE ENDING)";
             string callNote = calledRealDung
@@ -215,8 +221,8 @@ partial class Program
         isPaused = false;
         pauseSelection = 0;
         storyStep = -1;
-        clockMinutes = 1428f;
-        currentTime = "23:48";
+        clockMinutes = 1128f;
+        currentTime = "18:48";
         currentObjective = "Nói chuyện với Quản lý để nhận bàn giao ca";
         isDoorLocked = false;
         lightsOn = true;
@@ -232,7 +238,11 @@ partial class Program
         isDawnCutscene = false;
         dawnCutsceneTimer = 0f;
         dawnProgress = 0f;
+        isReturnHomeCutscene = false;
+        returnHomeCutsceneTimer = 0f;
+
         npcActive = false;
+        npcIsGhostModel = false;
         npcLeaving = false;
         npcShouldLeaveAfterDialogue = false;
         npcFaceId = FaceId.None;
@@ -242,6 +252,11 @@ partial class Program
         npcHeadPitch = 0f;
         npcHeadRoll = 0f;
         npcEyeGaze = Vector2.Zero;
+
+        jumpscareActive = false;
+        jumpscareTimer = 0f;
+        pendingJumpscareEnding = -1;
+
         gameEnded = false;
         isBadEnding = false;
         isTalking = false;

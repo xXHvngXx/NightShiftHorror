@@ -3,10 +3,10 @@ using Raylib_cs;
 
 partial class Program
 {
-    const string HomeVersion = "v1.4";
+    const string HomeVersion = "v1.75";
 
     static int homeSelection = 0;
-    static int homeSubMenu = 0; // 0: Main, 1: Chapters, 2: Credits, 3: Options
+    static int homeSubMenu = 0;
     static float homeOrbitAngle = 0f;
     static float homePanAngle = 0f;
     static float homeSubMenuAnim = 0f;
@@ -20,31 +20,77 @@ partial class Program
     static Font homeMenuFont;
     static bool homeFontsLoaded = false;
 
-    // ----- Âm thanh & Nhạc nền Home -----
     static Music homeBgm;
     static bool homeBgmLoaded = false;
     static float masterVolume = 0.85f;
     static float homeMusicVolume = 0.70f;
     static float homeSfxVolume = 0.85f;
-    static int homeOptionRow = 0;       // 0: Tổng, 1: Nhạc nền, 2: Hiệu ứng, 3: Quay lại
-    static int draggingSlider = -1;     // -1: không kéo, 0..2: thanh trượt đang kéo
+    static int homeOptionRow = 0;
+    static int draggingSlider = -1;
 
-    // ----- Trạng thái kiểu VHS / Fears to Fathom -----
     static RenderTexture2D homeSceneTarget;
     static bool homeTargetLoaded = false;
-    static float homeIntro = 0f;                 // 0..1 fade-in khi vào màn hình chính
-    static int homeLang = 0;                     // 0 = English, 1 = Tiếng Việt
+    static float homeIntro = 0f;
+    static int homeLang = 0;
     static bool homeLangOpen = false;
     static float homeLangOpenAnim = 0f;
-    static float homeGlitchTimer = 0f;           // thời gian còn lại của cú giật hình
+    static float homeGlitchTimer = 0f;
     static float homeGlitchCooldown = 2.5f;
-    static int homeGlitchTarget = 0;             // 0 tiêu đề, 1 phụ đề, 2..5 mục menu
+    static int homeGlitchTarget = 0;
     static Vector2 homeLastMouse = Vector2.Zero;
     static readonly Random homeRng = new(7);
 
-    // =====================================================================
-    //  TIỆN ÍCH CHUNG & ÂM THANH
-    // =====================================================================
+    static bool creditsClosing = false;
+    static float creditsBlend = 0f;
+    static float creditsScrollY = 0f;
+    static float creditsElapsed = 0f;
+    static float creditsSkipHover = 0f;
+
+    record HomeCreditLine(string RoleEn, string RoleVi, string ValueEn, string ValueVi, int Kind);
+
+    static readonly HomeCreditLine[] homeCreditsList =
+    [
+        new("", "", "DREAD TO DWELL", "ÁM ẢNH ĐỜI THƯỜNG", 0),
+        new("", "", "CHAPTER 1: NIGHT SHIFT", "TẬP 1: CA TRỰC ĐÊM", 1),
+        new("", "", "", "", 3),
+
+        new("CREATED & DIRECTED BY", "SÁNG TẠO & ĐẠO DIỄN", "Minh Hưng & Tiến Dũng", "Minh Hưng & Tiến Dũng", 2),
+        new("STORY & SCRIPTWRITING", "KỊCH BẢN & CỐT TRUYỆN", "Minh Hưng & Tiến Dũng", "Minh Hưng & Tiến Dũng", 2),
+        new("GAMEPLAY PROGRAMMING", "LẬP TRÌNH GAMEPLAY", "Minh Hưng & Tiến Dũng", "Minh Hưng & Tiến Dũng", 2),
+        new("UI / UX & VHS POST-PROCESSING", "GIAO DIỆN & HIỆU ỨNG VHS", "Chromatic Aberration, Scanlines & Strobe Shaders", "Quang sai màu, sọc nhiễu băng từ & chớp đèn", 2),
+        new("", "", "", "", 3),
+
+        new("", "", "3D ENVIRONMENTS & PROPS", "MÔI TRƯỜNG & VẬT THỂ 3D", 1),
+        new("24H CONVENIENCE STORE", "CỬA HÀNG TIỆN LỢI 24H", "Counter, Checkout Register, Storage & Alley Gate", "Quầy thu ngân, máy tính tiền, kho sau & cổng hẻm", 2),
+        new("OPENING & CUTSCENE SCENES", "PHÂN CẢNH MỞ ĐẦU & KẾT THÚC", "Evening Café, Street 9 & Midnight Motorbike Ride", "Quán cà phê chiều, đường Số 9 & cảnh chạy xe đêm", 2),
+        new("WASHROOM & MIRROR SYSTEM", "NHÀ VỆ SINH & HỆ THỐNG GƯƠNG", "Real-Time Reflection & Flickering Fluorescent Lights", "Gương phản chiếu thời gian thực & đèn huỳnh quang", 2),
+        new("3D SHELF ASSET", "TÀI NGUYÊN KỆ HÀNG 3D", "Grocery Shelf by Palmart Productions", "Grocery Shelf by Palmart Productions", 2),
+        new("", "", "", "", 3),
+
+        new("", "", "CHARACTERS & ENTITIES", "NHÂN VẬT & THỰC THỂ", 1),
+        new("ENTITY 3D MODEL (.GLB)", "MÔ HÌNH THỰC THỂ 3D (.GLB)", "Custom Rigged Entity & Dynamic Face-Lock Framing", "Mô hình thực thể tùy chỉnh & khóa góc nhìn khuôn mặt", 2),
+        new("NPC CAST & BEHAVIORS", "DÀN NHÂN VẬT & HÀNH VI", "Store Manager, Old Man, Mai, Hùng & Night Customers", "Quản lý, Ông cụ, Chị Mai, Anh Hùng & Khách trực đêm", 2),
+        new("PROCEDURAL ANIMATION", "CHUYỂN ĐỘNG THỦ TỤC", "Walk Cycles, Head Tracking & Eye Gaze System", "Dáng đi, xoay đầu theo mục tiêu & ánh nhìn", 2),
+        new("", "", "", "", 3),
+
+        new("", "", "HORROR & NARRATIVE SYSTEMS", "HỆ THỐNG KINH DỊ & DẪN TRUYỆN", 1),
+        new("MULTI-ANGLE JUMPSCARE ENGINE", "HỆ THỐNG JUMPSCARE ĐA GÓC", "Counter Lunge, Washroom Mirror, Front Door & Aisle", "Quầy thu ngân, Gương nhà vệ sinh, Cửa kính & Hành lang", 2),
+        new("INTERACTIVE SMARTPHONE", "ĐIỆN THOẠI TƯƠNG TÁC", "Real-Time Messaging, Branching Replies & Notifications", "Nhắn tin thời gian thực, chọn phản hồi & thông báo", 2),
+        new("5 BRANCHING ENDINGS", "5 NHÁNH KẾT THÚC", "Multiple Fates & Secret VHS Tape Replay (Shift+F6..F8)", "Đa kết cục & băng từ ký ức bí mật (Shift+F6..F8)", 2),
+        new("", "", "", "", 3),
+
+        new("", "", "ENGINE & AUDIO", "ENGINE & ÂM THANH", 1),
+        new("GAME ENGINE & RUNTIME", "NỀN TẢNG PHÁT TRIỂN", "C# (.NET 9.0) • Raylib-cs", "C# (.NET 9.0) • Raylib-cs", 2),
+        new("MAIN THEME PIANO", "NHẠC NỀN PIANO", "Myuu - Misconception (Piano Version)", "Myuu - Misconception (Piano Version)", 2),
+        new("SOUND DESIGN & FOLEY", "THIẾT KẾ ÂM THANH", "Night Ambience, Engine Audio, Static & Voice Synth", "Không khí đêm, tiếng động cơ, nhiễu đài & giọng thoại", 2),
+        new("", "", "", "", 3),
+
+        new("", "", "SPECIAL THANKS", "CẢM ƠN ĐẶC BIỆT", 1),
+        new("OPEN-SOURCE COMMUNITY", "CỘNG ĐỒNG MÃ NGUỒN MỞ", "Raylib & .NET Contributors", "Các nhà phát triển Raylib & .NET", 2),
+        new("PLAYERS", "NGƯỜI CHƠI", "Thank you for surviving the night shift.", "Cảm ơn bạn đã sống sót qua ca trực đêm.", 2),
+        new("", "", "", "", 3),
+        new("", "", "TO BE CONTINUED IN CHAPTER 2...", "HẸN GẶP LẠI Ở TẬP 2...", 1)
+    ];
 
     static byte AlphaByte(float value)
         => (byte)Math.Clamp((int)MathF.Round(value), 0, 255);
@@ -90,7 +136,6 @@ partial class Program
         int totalSamples = sampleRate * durationSec;
         short[] pcm = new short[totalSamples];
 
-        // Vòng hợp âm piano u ám (Am - F - Dm - E)
         float[][] chords =
         [
             [220.00f, 261.63f, 329.63f, 440.00f],
@@ -122,7 +167,6 @@ partial class Program
                 }
             }
 
-            // Fade nhẹ đầu/cuối vòng lặp để nối mượt
             float loopFade = MathF.Min(1f, MathF.Min(t * 2f, (durationSec - t) * 2f));
             pcm[i] = (short)Math.Clamp(sample * loopFade * 24000f, short.MinValue, short.MaxValue);
         }
@@ -207,9 +251,9 @@ partial class Program
 
         string[] titlePaths =
         [
-            @"C:\Windows\Fonts\ariblk.ttf",
-            @"C:\Windows\Fonts\impact.ttf",
             @"C:\Windows\Fonts\segoeuib.ttf",
+            @"C:\Windows\Fonts\arialbd.ttf",
+            @"C:\Windows\Fonts\tahomabd.ttf",
             @"C:\Windows\Fonts\bahnschrift.ttf"
         ];
         string titlePath = titlePaths.FirstOrDefault(File.Exists) ?? "";
@@ -285,10 +329,6 @@ partial class Program
             AlphaByte(a.A + (b.A - a.A) * t)
         );
     }
-
-    // =====================================================================
-    //  VẼ CHỮ KIỂU VHS
-    // =====================================================================
 
     static void DrawVhsTextCore(Font font, string text, float x, float y, float size, float spacing, Color col, float ab)
     {
@@ -370,15 +410,12 @@ partial class Program
         Raylib.DrawRectangleRec(new Rectangle(knobX - 5f, knobY - 8f, 10f, 16f), HC(255, 255, 255, 255 * alpha));
     }
 
-    // =====================================================================
-    //  Ô CHỌN NGÔN NGỮ
-    // =====================================================================
-
     static Rectangle HomeLangRow(Rectangle dd, int i)
         => new(dd.X, dd.Y + dd.Height + 4f + i * (dd.Height - 2f), dd.Width, dd.Height);
 
     static void DrawHomeLanguageDropdown(Rectangle r, string[] names, Vector2 mouse, float alpha)
     {
+        if (alpha <= 0.01f) return;
         float openT = SmoothStep01(homeLangOpenAnim);
 
         Raylib.DrawRectangleRec(r, HC(8, 12, 30, 120 * alpha));
@@ -412,10 +449,6 @@ partial class Program
         }
     }
 
-    // =====================================================================
-    //  HIỆU ỨNG VHS TRÊN NỀN 3D
-    // =====================================================================
-
     static void DrawHomeStrip(Texture2D tex, int y, int h, float dx, Color tint)
     {
         if (h <= 0) return;
@@ -427,7 +460,7 @@ partial class Program
             Raylib.DrawTexturePro(tex, src, new Rectangle(dx + ScreenWidth, y, ScreenWidth, h), Vector2.Zero, 0f, tint);
     }
 
-    static void DrawHomeSceneComposite(float time, float ab)
+    static void DrawHomeSceneComposite(float time, float ab, float blurAmount)
     {
         Texture2D tex = homeSceneTarget.Texture;
         int W = ScreenWidth, H = ScreenHeight;
@@ -446,12 +479,42 @@ partial class Program
         Raylib.DrawTexturePro(tex, src, new Rectangle(0, -sp * 0.7f, W, H), Vector2.Zero, 0f, haze);
         Raylib.DrawTexturePro(tex, src, new Rectangle(0, sp * 0.7f, W, H), Vector2.Zero, 0f, haze);
 
+        if (blurAmount > 0.005f)
+        {
+            float r1 = 7.5f * blurAmount;
+            float r2 = 16.5f * blurAmount;
+            Color bCol1 = HC(255, 255, 255, 58f * blurAmount);
+            Color bCol2 = HC(255, 255, 255, 38f * blurAmount);
+
+            Vector2[] ring1 =
+            [
+                new(-r1, 0f), new(r1, 0f), new(0f, -r1), new(0f, r1),
+                new(-r1 * 0.71f, -r1 * 0.71f), new(r1 * 0.71f, -r1 * 0.71f),
+                new(-r1 * 0.71f, r1 * 0.71f), new(r1 * 0.71f, r1 * 0.71f)
+            ];
+            for (int i = 0; i < ring1.Length; i++)
+            {
+                Raylib.DrawTexturePro(tex, src, new Rectangle(ring1[i].X, ring1[i].Y, W, H), Vector2.Zero, 0f, bCol1);
+            }
+
+            Vector2[] ring2 =
+            [
+                new(-r2, 0f), new(r2, 0f), new(0f, -r2), new(0f, r2),
+                new(-r2 * 0.71f, -r2 * 0.71f), new(r2 * 0.71f, -r2 * 0.71f),
+                new(-r2 * 0.71f, r2 * 0.71f), new(r2 * 0.71f, r2 * 0.71f)
+            ];
+            for (int i = 0; i < ring2.Length; i++)
+            {
+                Raylib.DrawTexturePro(tex, src, new Rectangle(ring2[i].X, ring2[i].Y, W, H), Vector2.Zero, 0f, bCol2);
+            }
+        }
+
         float trackY = (time * 38f) % (H + 160f) - 80f;
-        DrawHomeStrip(tex, (int)Math.Clamp(trackY, 0f, H - 1f), 24, MathF.Sin(time * 7.3f) * 5f, HC(255, 255, 255, 235));
+        DrawHomeStrip(tex, (int)Math.Clamp(trackY, 0f, H - 1f), 24, MathF.Sin(time * 7.3f) * 5f, HC(255, 255, 255, 235 * (1f - blurAmount * 0.6f)));
 
-        DrawHomeStrip(tex, H - 14, 14, MathF.Sin(time * 2.3f) * 9f + homeRng.Next(-3, 4), HC(205, 205, 215, 255));
+        DrawHomeStrip(tex, H - 14, 14, MathF.Sin(time * 2.3f) * 9f + homeRng.Next(-3, 4), HC(205, 205, 215, 255 * (1f - blurAmount * 0.6f)));
 
-        if (homeGlitchTimer > 0f)
+        if (homeGlitchTimer > 0f && blurAmount < 0.25f)
         {
             int gs = (int)(time * 24f);
             int ty = HomeHash(gs, 1) % Math.Max(1, H - 60);
@@ -482,38 +545,135 @@ partial class Program
         }
     }
 
-    // =====================================================================
-    //  MÀN HÌNH CHÍNH
-    // =====================================================================
+    static void OpenHomeCredits()
+    {
+        homeSubMenu = 2;
+        homeSubMenuAnim = 0f;
+        creditsClosing = false;
+        creditsElapsed = 0f;
+        creditsScrollY = ScreenHeight + 48f;
+        creditsSkipHover = 0f;
+        homeLangOpen = false;
+    }
 
-    //============================================
+    static void CloseHomeCredits()
+    {
+        if (homeSubMenu != 2 || creditsClosing) return;
+        creditsClosing = true;
+        HomeBlip(1.1f);
+    }
+
+    static void DrawHomeCreditsOverlay(float dt, Vector2 mousePos, float blurEase)
+    {
+        int W = ScreenWidth, H = ScreenHeight;
+        float contentAlpha = blurEase;
+
+        Raylib.DrawRectangle(0, 0, W, H, HC(4, 6, 14, 178f * contentAlpha));
+
+        int cursorY = (int)creditsScrollY;
+        for (int i = 0; i < homeCreditsList.Length; i++)
+        {
+            var entry = homeCreditsList[i];
+            if (entry.Kind == 3)
+            {
+                cursorY += 44;
+                continue;
+            }
+
+            if (cursorY > -90 && cursorY < H + 90)
+            {
+                float edgeFade = 1f;
+                if (cursorY < 130) edgeFade = Math.Clamp((cursorY - 24f) / 106f, 0f, 1f);
+                else if (cursorY > H - 130) edgeFade = Math.Clamp((H - 24f - cursorY) / 106f, 0f, 1f);
+
+                float alpha = contentAlpha * edgeFade;
+                if (alpha > 0.01f)
+                {
+                    if (entry.Kind == 0)
+                    {
+                        string title = HT(entry.ValueEn, entry.ValueVi);
+                        float w = Raylib.MeasureTextEx(homeTitleFont, title, 46f, 1.4f).X;
+                        DrawVhsText(homeTitleFont, title, (W - w) * 0.5f, cursorY, 46f, 1.4f,
+                            HC(255, 52, 128, 255f * alpha), 2.2f);
+                    }
+                    else if (entry.Kind == 1)
+                    {
+                        string sec = HT(entry.ValueEn, entry.ValueVi);
+                        float w = Raylib.MeasureTextEx(homeHeadingFont, sec, 20f, 2.2f).X;
+                        DrawVhsText(homeHeadingFont, sec, (W - w) * 0.5f, cursorY, 20f, 2.2f,
+                            HC(255, 238, 64, 245f * alpha), 1.5f);
+                    }
+                    else
+                    {
+                        string role = HT(entry.RoleEn, entry.RoleVi);
+                        float roleW = Raylib.MeasureTextEx(homeHeadingFont, role, 14f, 1.5f).X;
+                        DrawVhsText(homeHeadingFont, role, (W - roleW) * 0.5f, cursorY, 14f, 1.5f,
+                            HC(175, 190, 220, 225f * alpha), 1.0f);
+
+                        string val = HT(entry.ValueEn, entry.ValueVi);
+                        float valW = Raylib.MeasureTextEx(homeBodyFont, val, 21f, 0.7f).X;
+                        DrawVhsText(homeBodyFont, val, (W - valW) * 0.5f, cursorY + 20f, 21f, 0.7f,
+                            HC(246, 248, 252, 250f * alpha), 1.2f);
+                    }
+                }
+            }
+
+            cursorY += entry.Kind switch
+            {
+                0 => 58,
+                1 => 46,
+                _ => 64
+            };
+        }
+
+        if (!creditsClosing && cursorY < -40)
+        {
+            CloseHomeCredits();
+        }
+
+        float skipFadeIn = SmoothStep01((creditsElapsed - 0.55f) / 0.75f);
+        float skipAlpha = skipFadeIn * contentAlpha;
+
+        if (skipAlpha > 0.01f)
+        {
+            const float skipW = 148f;
+            const float skipH = 42f;
+            float skipX = W - skipW - W * 0.052f;
+            float skipY = H - skipH - 38f;
+            Rectangle skipRect = new(skipX, skipY, skipW, skipH);
+
+            bool hovered = !creditsClosing && Raylib.CheckCollisionPointRec(mousePos, skipRect);
+            creditsSkipHover = Math.Clamp(creditsSkipHover + (hovered ? dt * 7f : -dt * 7f), 0f, 1f);
+            float hEase = SmoothStep01(creditsSkipHover);
+
+            Color boxBg = LerpCol(HC(8, 12, 30, 175f * skipAlpha), HC(255, 52, 128, 220f * skipAlpha), hEase);
+            Color boxBorder = LerpCol(HC(196, 214, 255, 200f * skipAlpha), HC(255, 238, 64, 255f * skipAlpha), hEase);
+
+            Raylib.DrawRectangleRec(skipRect, boxBg);
+            Raylib.DrawRectangleLinesEx(skipRect, 1.8f, boxBorder);
+
+            string skipText = "SKIP >>";
+            float txtW = Raylib.MeasureTextEx(homeHeadingFont, skipText, 18f, 1.6f).X;
+            DrawVhsText(homeHeadingFont, skipText, skipX + (skipW - txtW) * 0.5f, skipY + (skipH - 18f) * 0.5f, 18f, 1.6f,
+                HC(255, 255, 255, 255f * skipAlpha), 1.3f);
+
+            if (!creditsClosing && hovered && Raylib.IsMouseButtonPressed(MouseButton.Left))
+            {
+                CloseHomeCredits();
+            }
+        }
+    }
+
     static bool autoBootJumpscareDone = false;
-    //============================================
 
     static bool DrawHomeScreen(float dt)
     {
-        //=======================================================
-        //Đổi thành False nếu muốn mở Home bth
         const bool BootStraightToJumpscare = false;
 
         if (BootStraightToJumpscare && !autoBootJumpscareDone)
         {
             autoBootJumpscareDone = true;
-            EnterJumpscareDevMode();
         }
-
-        if (Raylib.IsKeyPressed(KeyboardKey.F9))
-        {
-            EnterJumpscareDevMode();
-        }
-
-        if (jumpscareDevSandbox)
-        {
-            UpdateAndDrawJumpscareSandbox(dt);
-            return false;
-        }
-
-        //=========================================
 
         EnsureHomeFonts();
         EnsureHomeTarget();
@@ -526,7 +686,6 @@ partial class Program
         homeIntro = MathF.Min(1f, homeIntro + clampedDt * 0.9f);
         float uiIntro = SmoothStep01((homeIntro - 0.15f) / 0.85f);
 
-        // ---------- Camera 3D lơ lửng ----------
         homeOrbitAngle += clampedDt * 0.20f;
         Vector2 mousePos = Raylib.GetMousePosition();
         bool mouseMoved = Vector2.DistanceSquared(mousePos, homeLastMouse) > 0.25f;
@@ -547,7 +706,35 @@ partial class Program
         homeSubMenuAnim += (1f - homeSubMenuAnim) * (1f - MathF.Exp(-10f * clampedDt));
         homeLangOpenAnim += ((homeLangOpen ? 1f : 0f) - homeLangOpenAnim) * (1f - MathF.Exp(-14f * clampedDt));
 
-        // ---------- Giật hình ngẫu nhiên ----------
+        if (homeSubMenu == 2)
+        {
+            if (!creditsClosing)
+            {
+                creditsBlend = MathF.Min(1f, creditsBlend + clampedDt * 2.4f);
+                creditsElapsed += clampedDt;
+                float scrollSpeed = Raylib.IsMouseButtonDown(MouseButton.Left) ? 125f : 52f;
+                creditsScrollY -= scrollSpeed * clampedDt;
+            }
+            else
+            {
+                creditsBlend = MathF.Max(0f, creditsBlend - clampedDt * 2.8f);
+                if (creditsBlend <= 0.001f)
+                {
+                    creditsBlend = 0f;
+                    creditsClosing = false;
+                    homeSubMenu = 0;
+                    homeSelection = 2;
+                    homeSubMenuAnim = 0f;
+                }
+            }
+        }
+        else
+        {
+            creditsBlend = MathF.Max(0f, creditsBlend - clampedDt * 2.8f);
+        }
+
+        float blurEase = SmoothStep01(creditsBlend);
+
         if (homeGlitchTimer > 0f)
         {
             homeGlitchTimer -= clampedDt;
@@ -564,8 +751,7 @@ partial class Program
         }
         int gseed = (int)(time * 28f);
 
-        // ---------- Bố cục ----------
-        string mainTitle = "NIGHT SHIFT HORROR";
+        string mainTitle = HT("DREAD TO DWELL", "ÁM ẢNH ĐỜI THƯỜNG");
         const float titleSpacing = 1.0f;
         float w100 = Raylib.MeasureTextEx(homeTitleFont, mainTitle, 100f, titleSpacing).X;
         float titleSize = Math.Clamp(100f * (W * 0.43f) / Math.Max(1f, w100), 40f, 78f);
@@ -592,7 +778,6 @@ partial class Program
         float hoverRate = 1f - MathF.Exp(-13.5f * clampedDt);
         float pressRate = 1f - MathF.Exp(-18.0f * clampedDt);
 
-        // ---------- Input: ô ngôn ngữ ----------
         bool leftClick = Raylib.IsMouseButtonPressed(MouseButton.Left);
         bool leftDown = Raylib.IsMouseButtonDown(MouseButton.Left);
         bool rightClick = Raylib.IsMouseButtonPressed(MouseButton.Right);
@@ -602,43 +787,45 @@ partial class Program
 
         if (!leftDown) draggingSlider = -1;
 
-        if (leftClick)
+        if (homeSubMenu != 2)
         {
-            if (overDd)
+            if (leftClick)
             {
-                homeLangOpen = !homeLangOpen;
-                clickConsumed = true;
-                HomeBlip(1.2f);
-            }
-            else if (homeLangOpen)
-            {
-                for (int i = 0; i < langNames.Length; i++)
+                if (overDd)
                 {
-                    if (Raylib.CheckCollisionPointRec(mousePos, HomeLangRow(ddRect, i)))
-                    {
-                        homeLang = i;
-                        HomeBlip(1.5f);
-                    }
+                    homeLangOpen = !homeLangOpen;
+                    clickConsumed = true;
+                    HomeBlip(1.2f);
                 }
-                homeLangOpen = false;
-                clickConsumed = true;
+                else if (homeLangOpen)
+                {
+                    for (int i = 0; i < langNames.Length; i++)
+                    {
+                        if (Raylib.CheckCollisionPointRec(mousePos, HomeLangRow(ddRect, i)))
+                        {
+                            homeLang = i;
+                            HomeBlip(1.5f);
+                        }
+                    }
+                    homeLangOpen = false;
+                    clickConsumed = true;
+                }
             }
-        }
-        if (homeLangOpen && escPressed)
-        {
-            homeLangOpen = false;
-            escPressed = false;
-        }
-        if (Raylib.IsKeyPressed(KeyboardKey.L))
-        {
-            homeLang = 1 - homeLang;
-            HomeBlip(1.5f);
+            if (homeLangOpen && escPressed)
+            {
+                homeLangOpen = false;
+                escPressed = false;
+            }
+            if (Raylib.IsKeyPressed(KeyboardKey.L))
+            {
+                homeLang = 1 - homeLang;
+                HomeBlip(1.5f);
+            }
         }
         if (clickConsumed) leftClick = false;
 
-        bool hoverEnabled = !homeLangOpen && !overDd;
+        bool hoverEnabled = !homeLangOpen && !overDd && homeSubMenu != 2;
 
-        // ---------- Input: menu ----------
         string[] mainItems =
         [
             HT("Play", "Chơi"),
@@ -648,9 +835,9 @@ partial class Program
         ];
         (string Title, string Sub, bool Unlocked)[] chapters =
         [
-            (HT("Chapter 1", "Tập 1"), "Ca Trực Đêm", true),
-            (HT("Chapter 2", "Tập 2"), "Chuyến Xe Cuối", false),
-            (HT("Chapter 3", "Tập 3"), "Khu Trọ Vắng", false),
+            (HT("Chapter 1", "Tập 1"), HT("Night Shift", "Ca Trực Đêm"), true),
+            (HT("Chapter 2", "Tập 2"), HT("The Last Bus", "Chuyến Xe Cuối"), false),
+            (HT("Chapter 3", "Tập 3"), HT("Empty Boarding House", "Khu Trọ Vắng"), false),
             (HT("Back", "Quay lại"), "", true)
         ];
 
@@ -687,8 +874,7 @@ partial class Program
                         }
                         else if (i == 2)
                         {
-                            homeSubMenu = 2;
-                            homeSubMenuAnim = 0f;
+                            OpenHomeCredits();
                         }
                         else return true;
                         break;
@@ -724,8 +910,7 @@ partial class Program
                     }
                     else if (homeSelection == 2)
                     {
-                        homeSubMenu = 2;
-                        homeSubMenuAnim = 0f;
+                        OpenHomeCredits();
                     }
                     else return true;
                 }
@@ -797,11 +982,9 @@ partial class Program
         }
         else if (homeSubMenu == 2)
         {
-            if (escPressed || Raylib.IsKeyPressed(KeyboardKey.Enter) || leftClick || rightClick)
+            if (!creditsClosing && (escPressed || rightClick || Raylib.IsKeyPressed(KeyboardKey.Space)))
             {
-                homeSubMenu = 0;
-                homeSelection = 2;
-                homeSubMenuAnim = 0f;
+                CloseHomeCredits();
             }
         }
         else if (homeSubMenu == 3)
@@ -898,7 +1081,6 @@ partial class Program
             }
         }
 
-        // Cập nhật animation hover / nhấn
         for (int i = 0; i < menuHoverAnim.Length; i++)
         {
             bool active = (homeSubMenu == 0 && i < mainItems.Length && homeSelection == i) ||
@@ -908,7 +1090,6 @@ partial class Program
             menuPressAnim[i] += (0f - menuPressAnim[i]) * pressRate;
         }
 
-        // ---------- Vẽ cảnh 3D vào render texture ----------
         Raylib.BeginTextureMode(homeSceneTarget);
         Raylib.ClearBackground(HC(8, 12, 30));
         Raylib.BeginMode3D(camera);
@@ -918,12 +1099,11 @@ partial class Program
         Raylib.EndMode3D();
         Raylib.EndTextureMode();
 
-        // ---------- Ghép khung hình ----------
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.Black);
 
         float aberration = 1.8f + (homeGlitchTimer > 0f ? 3.2f : 0f) + MathF.Sin(time * 1.7f) * 0.35f;
-        DrawHomeSceneComposite(time, aberration);
+        DrawHomeSceneComposite(time, aberration, blurEase);
 
         Raylib.DrawRectangle(0, 0, W, H, HC(8, 20, 66, 62));
         Raylib.DrawRectangle(0, 0, W, H, HC(5, 7, 13, 70));
@@ -933,121 +1113,110 @@ partial class Program
         Raylib.DrawRectangleGradientH(W - rightGradW, 0, rightGradW, H, HC(4, 6, 16, 0), HC(4, 6, 16, 205));
         DrawVignette(70);
 
-        // ---------- Khối tiêu đề (trái) ----------
-        float flick = 0.94f + 0.06f * MathF.Sin(time * 31f);
-        Color white = HC(255, 255, 255, 245 * uiIntro);
-        Color pink = HC(255, 52, 128, 255 * uiIntro * flick);
-        Color yellow = HC(255, 238, 64, 255 * uiIntro);
-
-        DrawVhsText(homeHeadingFont, HT("AN EPISODIC HORROR", "KINH DỊ NHIỀU TẬP"),
-            titleX + 2f, titleY - 15f, 17f, 1.2f, white, 1.4f);
-
-        for (int k = 0; k < 4; k++)
+        float homeUiAlpha = uiIntro * (1f - blurEase);
+        if (homeUiAlpha > 0.01f)
         {
-            float gx = (k == 0 ? -3.5f : (k == 1 ? 3.5f : 0f));
-            float gy = (k == 2 ? -3.5f : (k == 3 ? 3.5f : 0f));
-            Raylib.DrawTextEx(homeTitleFont, mainTitle, new Vector2(titleX + gx, titleY + gy), titleSize, titleSpacing,
-                HC(255, 52, 128, 30 * uiIntro));
-        }
-        DrawVhsText(homeTitleFont, mainTitle, titleX, titleY, titleSize, titleSpacing, pink, 2.6f, HomeGlitchFor(0), gseed);
+            float flick = 0.94f + 0.06f * MathF.Sin(time * 31f);
+            Color white = HC(255, 255, 255, 245 * homeUiAlpha);
+            Color pink = HC(255, 52, 128, 255 * homeUiAlpha * flick);
+            Color yellow = HC(255, 238, 64, 255 * homeUiAlpha);
 
-        string subTitle = "CA TRỰC ĐÊM";
-        float subSize = titleSize * 0.40f;
-        const float subSpacing = 1.0f;
-        float subW = Raylib.MeasureTextEx(homeHeadingFont, subTitle, subSize, subSpacing).X;
-        DrawVhsText(homeHeadingFont, subTitle, titleRight - subW, titleY + titleSize + 1f, subSize, subSpacing,
-            yellow, 2.0f, HomeGlitchFor(1), gseed + 5);
+            DrawVhsText(homeHeadingFont, HT("AN EPISODIC HORROR", "KINH DỊ NHIỀU TẬP"),
+                titleX + 2f, titleY - 15f, 17f, 1.2f, white, 1.4f);
 
-        DrawVhsText(homeBodyFont, HomeVersion, titleX + 2f, H * 0.775f, 17f, 0.8f, HC(235, 238, 245, 215 * uiIntro), 1.2f);
-
-        DrawVhsText(homeBodyFont,
-            HT("A night shift at the store at the end of Street 9.", "Một ca trực đêm tại cửa hàng cuối đường Số 9."),
-            titleX + 2f, H - 82f, 16f, 0.6f, HC(205, 212, 224, 175 * uiIntro), 1.0f);
-        DrawVhsText(homeBodyFont,
-            HT("Do not open the door after 3:00 AM.", "Đừng mở cửa sau 03:00 sáng."),
-            titleX + 2f, H - 58f, 17f, 0.6f, HC(245, 246, 250, 225 * uiIntro), 1.0f);
-
-        // ---------- Khối menu (phải) ----------
-        float panelSlide = (1f - EaseOutCubic(homeSubMenuAnim)) * 22f;
-        float panelAlpha = SmoothStep01(homeSubMenuAnim) * uiIntro;
-
-        if (homeSubMenu == 0)
-        {
-            for (int i = 0; i < mainItems.Length; i++)
+            for (int k = 0; k < 4; k++)
             {
-                DrawHomeMenuItem(mainItems[i], menuTextX + panelSlide, menuY0 + i * menuStep, menuSize,
-                    SmoothStep01(menuHoverAnim[i]), menuPressAnim[i], panelAlpha, HomeGlitchFor(2 + i), gseed + i * 7);
+                float gx = (k == 0 ? -3.5f : (k == 1 ? 3.5f : 0f));
+                float gy = (k == 2 ? -3.5f : (k == 3 ? 3.5f : 0f));
+                Raylib.DrawTextEx(homeTitleFont, mainTitle, new Vector2(titleX + gx, titleY + gy), titleSize, titleSpacing,
+                    HC(255, 52, 128, 30 * homeUiAlpha));
             }
-        }
-        else if (homeSubMenu == 1)
-        {
-            DrawVhsText(homeHeadingFont, HT("SELECT EPISODE", "CHỌN TẬP"), menuTextX + panelSlide, menuY0 - 52f, 16f, 2.4f,
-                HC(255, 238, 64, 240 * panelAlpha), 1.4f);
+            DrawVhsText(homeTitleFont, mainTitle, titleX, titleY, titleSize, titleSpacing, pink, 2.6f, HomeGlitchFor(0), gseed);
 
-            for (int i = 0; i < chapters.Length; i++)
+            string subTitle = HT("NIGHT SHIFT", "CA TRỰC ĐÊM");
+            float subSize = titleSize * 0.40f;
+            const float subSpacing = 1.0f;
+            float subW = Raylib.MeasureTextEx(homeHeadingFont, subTitle, subSize, subSpacing).X;
+            DrawVhsText(homeHeadingFont, subTitle, titleRight - subW, titleY + titleSize + 1f, subSize, subSpacing,
+                yellow, 2.0f, HomeGlitchFor(1), gseed + 5);
+
+            DrawVhsText(homeBodyFont, HomeVersion, titleX + 2f, H * 0.775f, 17f, 0.8f, HC(235, 238, 245, 215 * homeUiAlpha), 1.2f);
+
+            DrawVhsText(homeBodyFont,
+                HT("A night shift at the store at the end of Street 9.", "Một ca trực đêm tại cửa hàng cuối đường Số 9."),
+                titleX + 2f, H - 82f, 16f, 0.6f, HC(205, 212, 224, 175 * homeUiAlpha), 1.0f);
+            DrawVhsText(homeBodyFont,
+                HT("Do not open the door after 3:00 AM.", "Đừng mở cửa sau 03:00 sáng."),
+                titleX + 2f, H - 58f, 17f, 0.6f, HC(245, 246, 250, 225 * homeUiAlpha), 1.0f);
+
+            float panelSlide = (1f - EaseOutCubic(homeSubMenuAnim)) * 22f;
+            float panelAlpha = SmoothStep01(homeSubMenuAnim) * homeUiAlpha;
+
+            if (homeSubMenu == 0)
             {
-                float y = ChapterY(i);
-                var ch = chapters[i];
-
-                if (!ch.Unlocked)
+                for (int i = 0; i < mainItems.Length; i++)
                 {
-                    DrawVhsText(homeMenuFont, ch.Title, menuTextX + panelSlide, y, menuSize * 0.92f, 0.6f,
-                        HC(165, 172, 186, 140 * panelAlpha), 1.0f);
-                    DrawVhsText(homeBodyFont, $"{ch.Sub}  •  {HT("Locked", "Chưa mở")}", menuTextX + panelSlide, y + menuSize + 2f, 16f, 0.6f,
-                        HC(145, 152, 166, 120 * panelAlpha), 0.8f);
+                    DrawHomeMenuItem(mainItems[i], menuTextX + panelSlide, menuY0 + i * menuStep, menuSize,
+                        SmoothStep01(menuHoverAnim[i]), menuPressAnim[i], panelAlpha, HomeGlitchFor(2 + i), gseed + i * 7);
                 }
-                else
-                {
-                    float ease = SmoothStep01(menuHoverAnim[i]);
-                    DrawHomeMenuItem(ch.Title, menuTextX + panelSlide, y, menuSize, ease, menuPressAnim[i], panelAlpha, 0f, gseed);
+            }
+            else if (homeSubMenu == 1)
+            {
+                DrawVhsText(homeHeadingFont, HT("SELECT EPISODE", "CHỌN TẬP"), menuTextX + panelSlide, menuY0 - 52f, 16f, 2.4f,
+                    HC(255, 238, 64, 240 * panelAlpha), 1.4f);
 
-                    if (!string.IsNullOrEmpty(ch.Sub))
+                for (int i = 0; i < chapters.Length; i++)
+                {
+                    float y = ChapterY(i);
+                    var ch = chapters[i];
+
+                    if (!ch.Unlocked)
                     {
-                        float shift = ease * 5f;
-                        Color subCol = LerpCol(HC(225, 195, 70, 215 * panelAlpha), HC(255, 238, 64, 255 * panelAlpha), ease);
-                        DrawVhsText(homeBodyFont, ch.Sub, menuTextX + panelSlide + shift, y + menuSize + 2f, 18f, 0.6f, subCol, 1.2f);
+                        DrawVhsText(homeMenuFont, ch.Title, menuTextX + panelSlide, y, menuSize * 0.92f, 0.6f,
+                            HC(165, 172, 186, 140 * panelAlpha), 1.0f);
+                        DrawVhsText(homeBodyFont, $"{ch.Sub}  •  {HT("Locked", "Chưa mở")}", menuTextX + panelSlide, y + menuSize + 2f, 16f, 0.6f,
+                            HC(145, 152, 166, 120 * panelAlpha), 0.8f);
+                    }
+                    else
+                    {
+                        float ease = SmoothStep01(menuHoverAnim[i]);
+                        DrawHomeMenuItem(ch.Title, menuTextX + panelSlide, y, menuSize, ease, menuPressAnim[i], panelAlpha, 0f, gseed);
+
+                        if (!string.IsNullOrEmpty(ch.Sub))
+                        {
+                            float shift = ease * 5f;
+                            Color subCol = LerpCol(HC(225, 195, 70, 215 * panelAlpha), HC(255, 238, 64, 255 * panelAlpha), ease);
+                            DrawVhsText(homeBodyFont, ch.Sub, menuTextX + panelSlide + shift, y + menuSize + 2f, 18f, 0.6f, subCol, 1.2f);
+                        }
                     }
                 }
             }
+            else if (homeSubMenu == 3)
+            {
+                float ox = menuTextX + panelSlide;
+                float oy = menuY0 - 20f;
+                float barW = Math.Max(220f, W * 0.21f);
+                float rowStep = 64f;
+
+                DrawVhsText(homeMenuFont, HT("OPTIONS", "CÀI ĐẶT"), ox, oy, 30f, 2.0f, HC(255, 52, 128, 255 * panelAlpha), 1.8f);
+
+                DrawHomeVolumeSlider(HT("MASTER VOLUME", "ÂM LƯỢNG TỔNG"), masterVolume, ox, oy + 52f, barW, homeOptionRow == 0, panelAlpha);
+                DrawHomeVolumeSlider(HT("MUSIC VOLUME", "NHẠC NỀN"), homeMusicVolume, ox, oy + 52f + rowStep, barW, homeOptionRow == 1, panelAlpha);
+                DrawHomeVolumeSlider(HT("SFX VOLUME", "HIỆU ỨNG"), homeSfxVolume, ox, oy + 52f + rowStep * 2f, barW, homeOptionRow == 2, panelAlpha);
+
+                float backY = oy + 52f + 3f * rowStep + 10f;
+                DrawHomeMenuItem(HT("Back", "Quay lại"), ox, backY, menuSize * 0.92f,
+                    SmoothStep01(menuHoverAnim[3]), menuPressAnim[3], panelAlpha, 0f, gseed);
+            }
+
+            DrawHomeLanguageDropdown(ddRect, langNames, mousePos, homeUiAlpha);
         }
-        else if (homeSubMenu == 2)
+
+        if (blurEase > 0.005f)
         {
-            float cx = menuTextX + panelSlide;
-            float cy = menuY0 - 30f;
-
-            DrawVhsText(homeMenuFont, HT("CREDITS", "TÁC GIẢ"), cx, cy, 30f, 2.0f, HC(255, 52, 128, 255 * panelAlpha), 1.8f);
-
-            DrawVhsText(homeHeadingFont, HT("GAME DESIGN & CODE", "THIẾT KẾ & LẬP TRÌNH"), cx, cy + 56f, 15f, 1.6f, HC(255, 238, 64, 235 * panelAlpha), 1.2f);
-            DrawVhsText(homeBodyFont, "Minh Hưng & Tiến Dũng", cx, cy + 78f, 20f, 0.6f, HC(246, 248, 252, 250 * panelAlpha), 1.2f);
-
-            DrawVhsText(homeHeadingFont, HT("ENGINE & AUDIO", "ENGINE & ÂM THANH"), cx, cy + 124f, 15f, 1.6f, HC(255, 238, 64, 235 * panelAlpha), 1.2f);
-            DrawVhsText(homeBodyFont, "C# (.NET 9.0) • Raylib-cs", cx, cy + 146f, 20f, 0.6f, HC(246, 248, 252, 250 * panelAlpha), 1.2f);
-
-            DrawVhsText(homeHeadingFont, HT("3D ASSETS", "TÀI NGUYÊN 3D"), cx, cy + 192f, 15f, 1.6f, HC(255, 238, 64, 235 * panelAlpha), 1.2f);
-            DrawVhsText(homeBodyFont, "Grocery Shelf by Palmart Productions", cx, cy + 214f, 18f, 0.5f, HC(214, 220, 228, 235 * panelAlpha), 1.0f);
-
-            DrawVhsText(homeBodyFont, HT("[Click or ESC to go back]", "[Click hoặc ESC để quay lại]"), cx, cy + 270f, 16f, 0.6f,
-                HC(175, 182, 196, 220 * panelAlpha), 0.8f);
-        }
-        else if (homeSubMenu == 3)
-        {
-            float ox = menuTextX + panelSlide;
-            float oy = menuY0 - 20f;
-            float barW = Math.Max(220f, W * 0.21f);
-            float rowStep = 64f;
-
-            DrawVhsText(homeMenuFont, HT("OPTIONS", "CÀI ĐẶT"), ox, oy, 30f, 2.0f, HC(255, 52, 128, 255 * panelAlpha), 1.8f);
-
-            DrawHomeVolumeSlider(HT("MASTER VOLUME", "ÂM LƯỢNG TỔNG"), masterVolume, ox, oy + 52f, barW, homeOptionRow == 0, panelAlpha);
-            DrawHomeVolumeSlider(HT("MUSIC VOLUME", "NHẠC NỀN"), homeMusicVolume, ox, oy + 52f + rowStep, barW, homeOptionRow == 1, panelAlpha);
-            DrawHomeVolumeSlider(HT("SFX VOLUME", "HIỆU ỨNG"), homeSfxVolume, ox, oy + 52f + rowStep * 2f, barW, homeOptionRow == 2, panelAlpha);
-
-            float backY = oy + 52f + 3f * rowStep + 10f;
-            DrawHomeMenuItem(HT("Back", "Quay lại"), ox, backY, menuSize * 0.92f,
-                SmoothStep01(menuHoverAnim[3]), menuPressAnim[3], panelAlpha, 0f, gseed);
+            DrawHomeCreditsOverlay(clampedDt, mousePos, blurEase);
         }
 
-        DrawHomeLanguageDropdown(ddRect, langNames, mousePos, uiIntro);
         DrawHomeVhsOverlay(time);
 
         if (homeIntro < 1f)
@@ -1093,6 +1262,8 @@ partial class Program
         homeIntro = 0f;
         homeLangOpen = false;
         draggingSlider = -1;
+        creditsClosing = false;
+        creditsBlend = 0f;
         if (homeBgmLoaded)
         {
             Raylib.PlayMusicStream(homeBgm);

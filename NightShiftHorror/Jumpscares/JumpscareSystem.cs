@@ -1,42 +1,26 @@
 ﻿using System.Numerics;
-using System.Text;
 using Raylib_cs;
 
 partial class Program
 {
     public enum JumpscarePreset
     {
-        CounterLunge = 0,    // Lao thẳng từ sau quầy thu ngân
-        WashroomMirror = 1,  // Xuất hiện sau lưng ở bồn rửa nhà vệ sinh
-        FrontDoorRush = 2,   // Xông thẳng qua cửa kính chính
-        AisleAmbush = 3      // Lao dọc hành lang giữa cửa hàng
+        CounterLunge = 0,
+        WashroomMirror = 1,
+        FrontDoorRush = 2,
+        AisleAmbush = 3
     }
 
-    // ----- Âm thanh -----
-    static Sound jumpscareSound;                 // file ngoài (nếu có)
+    static Sound jumpscareSound;
     static bool jumpscareSoundLoaded = false;
     static bool jumpscareSoundChecked = false;
-    static Sound jumpscareProcSound;             // tiếng hù tự tổng hợp (khi không có file ngoài)
-    static bool jumpscareProcLoaded = false;
-    const float JsProcImpact = 0.16f;            // rút ngắn pha chờ để ma lao vào nhanh hơn
 
-    // ----- Trạng thái jumpscare -----
     static bool jumpscareActive = false;
     static JumpscarePreset activeJumpscarePreset = JumpscarePreset.CounterLunge;
     static float jumpscareTimer = 0f;
     static float jumpscareDuration = 2.0f;
     static bool jumpscareAudioTriggered = false;
 
-    // ----- Dev Sandbox -----
-    static bool jumpscareDevSandbox = false;
-    static int devSelectedPreset = 0;
-    static float devStopDistance = 0.35f;   // khoảng cách sát ống kính để mặt ma ghé sát màn hình
-    static bool devLightsOn = false;        // false = bản hù thật (tối đen, chớp đèn). Bật (L) để soi chi tiết model
-    static bool devVhsGlitch = true;
-    static bool jsSlowMo = false;
-    static bool devShowHud = true;
-
-    // ----- Kênh phụ: ComputeJumpscarePose cập nhật mỗi khung, nơi vẽ đọc lại -----
     static bool jsLit = true;
     static float jsGhostBright = 1f;
     static float jsScream = 0f;
@@ -49,9 +33,6 @@ partial class Program
     static bool jsTargetLoaded = false;
     static readonly Random jsRng = new(99);
 
-    // =====================================================================
-    //  TIỆN ÍCH
-    // =====================================================================
     static float JsSm(float x)
     {
         x = Math.Clamp(x, 0f, 1f);
@@ -76,19 +57,19 @@ partial class Program
                      (byte)Math.Clamp((int)a, 0, 255));
 
     static float JsImpactTime(float dur)
-        => MathF.Min(jumpscareSoundLoaded ? 0.05f : JsProcImpact, dur * 0.35f);
+        => MathF.Min(jumpscareSoundLoaded ? 0.05f : 0.16f, dur * 0.35f);
 
     static void EnsureJumpscareTarget()
     {
-        if (jsTargetLoaded) return;
+        if (jsTargetLoaded && jsTarget.Id > 0) return;
         jsTarget = Raylib.LoadRenderTexture(ScreenWidth, ScreenHeight);
-        Raylib.SetTextureFilter(jsTarget.Texture, TextureFilter.Bilinear);
-        jsTargetLoaded = true;
+        if (jsTarget.Id > 0)
+        {
+            Raylib.SetTextureFilter(jsTarget.Texture, TextureFilter.Bilinear);
+            jsTargetLoaded = true;
+        }
     }
 
-    // =====================================================================
-    //  ÂM THANH
-    // =====================================================================
     static void EnsureJumpscareAudio()
     {
         if (jumpscareSoundChecked) return;
@@ -111,12 +92,6 @@ partial class Program
             jumpscareSound = Raylib.LoadSound(found);
             jumpscareSoundLoaded = jumpscareSound.FrameCount > 0;
         }
-
-        if (!jumpscareSoundLoaded)
-        {
-            jumpscareProcSound = JsBuildScareSound();
-            jumpscareProcLoaded = jumpscareProcSound.FrameCount > 0;
-        }
     }
 
     public static void UnloadJumpscareAudio()
@@ -126,129 +101,12 @@ partial class Program
             Raylib.UnloadSound(jumpscareSound);
             jumpscareSoundLoaded = false;
         }
-        if (jumpscareProcLoaded)
-        {
-            Raylib.UnloadSound(jumpscareProcSound);
-            jumpscareProcLoaded = false;
-        }
         if (jsTargetLoaded)
         {
             Raylib.UnloadRenderTexture(jsTarget);
             jsTargetLoaded = false;
         }
         jumpscareSoundChecked = false;
-    }
-
-    static float JsThump(float t, float t0)
-        => t < t0 ? 0f : MathF.Sin(2f * MathF.PI * 58f * (t - t0)) * MathF.Exp(-(t - t0) * 30f) * 0.5f;
-
-    static Sound JsBuildScareSound()
-    {
-        const int sr = 22050;
-        const float total = 3.0f;
-        int n = (int)(sr * total);
-        float[] buf = new float[n];
-        Random rnd = new(1313);
-
-        float ti = JsProcImpact;
-        float dt = 1f / sr;
-        float phRise = 0f, phBoom = 0f, phA = 0f, phB = 0f, phC = 0f, phG = 0f;
-        float lpA = 0f, lpB = 0f;
-
-        for (int i = 0; i < n; i++)
-        {
-            float t = i * dt;
-            float s = 0f;
-            float white = (float)(rnd.NextDouble() * 2.0 - 1.0);
-            lpA += (white - lpA) * 0.08f;
-            lpB += (white - lpB) * 0.35f;
-
-            if (t < ti)
-            {
-                float p = Math.Clamp(t / Math.Max(0.01f, ti - 0.03f), 0f, 1f);
-                float gate = t < ti - 0.04f ? 1f : MathF.Max(0f, 1f - (t - (ti - 0.04f)) / 0.012f);
-                float f = 70f + 520f * p * p;
-                phRise += 2f * MathF.PI * f * dt;
-                s += MathF.Sin(phRise) * 0.12f * p * p;
-                s += lpA * 0.45f * p * p;
-                s += JsThump(t, 0.025f) + JsThump(t, 0.095f);
-                s *= gate;
-            }
-            else
-            {
-                float u = t - ti;
-
-                float fb = 30f + 70f * MathF.Exp(-u * 9f);
-                phBoom += 2f * MathF.PI * fb * dt;
-                s += MathF.Sin(phBoom) * MathF.Exp(-u * 2.4f) * 1.05f;
-
-                s += white * MathF.Exp(-u * 24f) * 0.55f + lpA * MathF.Exp(-u * 4.5f) * 0.9f;
-
-                float rise = JsSm(u / 0.35f);
-                float fall = JsSm((u - 0.9f) / 1.3f);
-                float f0 = 780f + 560f * rise - 220f * fall + MathF.Sin(u * 2f * MathF.PI * 6.5f) * 26f;
-                phA += 2f * MathF.PI * f0 * dt;
-                phB += 2f * MathF.PI * f0 * 1.4142f * dt;
-                phC += 2f * MathF.PI * f0 * 1.0595f * dt;
-                float wave = MathF.Sin(phA + 2.2f * MathF.Sin(phA * 0.5f)) + 0.7f * MathF.Sin(phB)
-                           + 0.8f * MathF.Sin(phC) + 0.25f * MathF.Sin(phA * 2f);
-                float env = (1f - MathF.Exp(-u * 350f)) * (u < 1.1f ? 1f : MathF.Exp(-(u - 1.1f) * 3.0f));
-                s += wave * 0.20f * env;
-                s += lpB * (0.5f + 0.5f * MathF.Sin(phA)) * 0.22f * env;
-
-                phG += 2f * MathF.PI * 62f * dt;
-                float growlAm = 0.55f + 0.45f * MathF.Sin(u * 2f * MathF.PI * 24f);
-                float saw = MathF.Sin(phG) + 0.5f * MathF.Sin(phG * 2f) + 0.33f * MathF.Sin(phG * 3f) + 0.25f * MathF.Sin(phG * 4f);
-                s += saw * growlAm * 0.22f * (u < 1.6f ? 1f : MathF.Exp(-(u - 1.6f) * 3f)) * (1f - MathF.Exp(-u * 60f));
-
-                if (u > 0.55f)
-                {
-                    float te = MathF.Exp(-(u - 0.55f) * 0.9f) * JsSm((u - 0.55f) / 0.05f);
-                    s += MathF.Sin(2f * MathF.PI * 4200f * t) * 0.04f * te;
-                    s += MathF.Sin(2f * MathF.PI * 5600f * t) * 0.02f * te;
-                }
-            }
-
-            buf[i] = s;
-        }
-
-        short[] pcm = new short[n];
-        int fadeN = (int)(sr * 0.15f);
-        for (int i = 0; i < n; i++)
-        {
-            float v = MathF.Tanh(buf[i] * 1.4f) * 0.92f;
-            if (i > n - fadeN) v *= (n - i) / (float)fadeN;
-            pcm[i] = (short)(v * short.MaxValue);
-        }
-
-        return JsBuildSound(pcm, sr);
-    }
-
-    static Sound JsBuildSound(short[] samples, int sampleRate)
-    {
-        using MemoryStream ms = new();
-        using BinaryWriter writer = new(ms);
-
-        int dataBytes = samples.Length * 2;
-        writer.Write(Encoding.ASCII.GetBytes("RIFF"));
-        writer.Write(36 + dataBytes);
-        writer.Write(Encoding.ASCII.GetBytes("WAVE"));
-        writer.Write(Encoding.ASCII.GetBytes("fmt "));
-        writer.Write(16);
-        writer.Write((short)1);
-        writer.Write((short)1);
-        writer.Write(sampleRate);
-        writer.Write(sampleRate * 2);
-        writer.Write((short)2);
-        writer.Write((short)16);
-        writer.Write(Encoding.ASCII.GetBytes("data"));
-        writer.Write(dataBytes);
-        foreach (short s in samples) writer.Write(s);
-
-        Wave wave = Raylib.LoadWaveFromMemory(".wav", ms.ToArray());
-        Sound sound = Raylib.LoadSoundFromWave(wave);
-        Raylib.UnloadWave(wave);
-        return sound;
     }
 
     static void PlayJumpscareAudioBurst()
@@ -265,30 +123,14 @@ partial class Program
             Raylib.SetSoundPitch(jumpscareSound, 1.0f);
             Raylib.PlaySound(jumpscareSound);
         }
-        else if (jumpscareProcLoaded)
-        {
-            if (Raylib.IsSoundPlaying(jumpscareProcSound))
-                Raylib.StopSound(jumpscareProcSound);
-
-            Raylib.SetSoundVolume(jumpscareProcSound, sfxVol);
-            Raylib.SetSoundPitch(jumpscareProcSound, 1.0f);
-            Raylib.PlaySound(jumpscareProcSound);
-        }
         else
         {
-            Raylib.SetSoundVolume(voiceStaticSound, sfxVol);
-            Raylib.SetSoundPitch(voiceStaticSound, 2.35f);
-            Raylib.PlaySound(voiceStaticSound);
-
-            Raylib.SetSoundVolume(footstepSound, sfxVol);
-            Raylib.SetSoundPitch(footstepSound, 0.42f);
-            Raylib.PlaySound(footstepSound);
+            Raylib.SetSoundVolume(knockSound, sfxVol);
+            Raylib.SetSoundPitch(knockSound, 0.6f);
+            Raylib.PlaySound(knockSound);
         }
     }
 
-    // =====================================================================
-    //  ĐIỀU KHIỂN
-    // =====================================================================
     public static void TriggerJumpscare(JumpscarePreset preset, float duration = 2.0f)
     {
         EnsureJumpscareAudio();
@@ -299,19 +141,6 @@ partial class Program
         jumpscareAudioTriggered = false;
     }
 
-    public static void EnterJumpscareDevMode()
-    {
-        EnsureJumpscareAudio();
-        EnsureJumpscareTarget();
-        jumpscareDevSandbox = true;
-        devSelectedPreset = 0;
-        Raylib.EnableCursor();
-        TriggerJumpscare((JumpscarePreset)devSelectedPreset);
-    }
-
-    // =====================================================================
-    //  DÀN CẢNH (Face-Lock Framing: Lao nhanh áp sát ống kính, mặt luôn chính diện)
-    // =====================================================================
     static void ComputeJumpscarePose(JumpscarePreset preset, float tNorm, bool isActing,
                                      out Vector3 camPos, out Vector3 camTarget, out Vector3 camUp, out float fov,
                                      out Vector3 ghostPos, out float ghostYaw, out float lunge)
@@ -354,23 +183,20 @@ partial class Program
                 break;
         }
 
-        // Tự động tính góc để mặt ma luôn quay chính diện về phía camera ở tất cả các spot
         Vector3 toCam = camBase - ghostStart;
         ghostYaw = MathF.Atan2(toCam.X, toCam.Z) * (180f / MathF.PI);
 
         Vector3 dir = Vector3.Normalize(new Vector3(ghostStart.X - camBase.X, 0f, ghostStart.Z - camBase.Z));
         float yawRad = ghostYaw * MathF.PI / 180f;
 
-        // Cho phép áp sát ống kính tới 0.42m và nhích thêm vào sát màn hình trong lúc hù
         float creep = Math.Clamp((u - 0.15f) / 1.2f, 0f, 1f);
-        float stop = MathF.Max(0.32f, devStopDistance * (1f - 0.16f * JsSm(creep)));
+        float stop = MathF.Max(0.32f, 0.35f * (1f - 0.16f * JsSm(creep)));
 
         Vector3 faceFull = GhostModel.GetFaceLocal(1f, 1f);
         float fx = faceFull.X * MathF.Cos(yawRad) + faceFull.Z * MathF.Sin(yawRad);
         float fz = -faceFull.X * MathF.Sin(yawRad) + faceFull.Z * MathF.Cos(yawRad);
         Vector3 ghostEnd = new(camBase.X + dir.X * stop - fx, 0f, camBase.Z + dir.Z * stop - fz);
 
-        // ---- Tiến trình lao tới cực nhanh ----
         float s;
         if (u < 0f)
         {
@@ -379,7 +205,6 @@ partial class Program
         }
         else
         {
-            // Phóng vọt từ giữa phòng vào sát màn hình chỉ trong 0.09 giây
             float r = Math.Clamp(u / 0.09f, 0f, 1f);
             float e = 1f - MathF.Pow(1f - r, 4.0f);
             s = 0.48f + (1f - 0.48f) * e;
@@ -390,15 +215,9 @@ partial class Program
 
         lunge = u < 0f ? 0f : JsSm(u / 0.12f);
 
-        // ---- Ánh sáng & độ sáng của ma ----
         bool lit;
         float gb;
-        if (devLightsOn)
-        {
-            lit = true;
-            gb = 1f;
-        }
-        else if (u < 0f)
+        if (u < 0f)
         {
             bool flick1 = t >= 0.045f && t < 0.085f;
             bool flick2 = t >= 0.105f && t < 0.145f;
@@ -419,12 +238,11 @@ partial class Program
         jsLit = lit;
         jsGhostBright = gb;
         jsFlash = u >= 0f ? 0.72f * MathF.Exp(-u * 26f) : 0f;
-        jsAber = u >= 0f ? 2.2f + 12f * MathF.Exp(-u * 5.5f) : (lit && !devLightsOn ? 2.5f : 0.3f);
+        jsAber = u >= 0f ? 2.2f + 12f * MathF.Exp(-u * 5.5f) : (lit ? 2.5f : 0.3f);
         jsZoom = u >= 0f ? 0.85f * MathF.Exp(-u * 9f) : 0f;
         jsScream = u >= 0f ? JsSm((u - 0.01f) / 0.08f) : 0f;
         jsTwitch = u >= 0f ? 0.30f + 0.65f * MathF.Exp(-u * 1.1f) : 0.25f;
 
-        // ---- Camera: Khóa tâm nhìn vào khuôn mặt ma ----
         Vector3 shake = Vector3.Zero;
         float roll = 0f;
         if (isActing)
@@ -454,9 +272,6 @@ partial class Program
             : baseFov - 4f + 14f * MathF.Exp(-u * 14f) - 6f * JsSm((u - 0.1f) / 1.8f);
     }
 
-    // =====================================================================
-    //  HIỆU ỨNG MÀN HÌNH
-    // =====================================================================
     static void DrawJsGrain(int count, int maxAlpha)
     {
         int W = ScreenWidth, H = ScreenHeight;
@@ -539,7 +354,7 @@ partial class Program
 
             DrawJsLensSplatter(u);
 
-            if (devVhsGlitch && isActing)
+            if (isActing)
             {
                 float tailFade = JsSm((dur - t) / MathF.Max(0.01f, dur * 0.12f));
                 int sliceCount = (int)MathF.Ceiling(7f * tailFade * MathF.Exp(-u * 0.9f));
@@ -618,156 +433,5 @@ partial class Program
             Raylib.DrawTriangle3D(p + a, p + b, p + c, col);
             Raylib.DrawTriangle3D(p + c, p + b, p + a, col);
         }
-    }
-
-    // =====================================================================
-    //  DEV SANDBOX
-    // =====================================================================
-    static void UpdateAndDrawJumpscareSandbox(float dt)
-    {
-        float time = (float)Raylib.GetTime();
-        EnsureJumpscareTarget();
-
-        if (Raylib.IsKeyPressed(KeyboardKey.One)) { devSelectedPreset = 0; TriggerJumpscare((JumpscarePreset)0); }
-        if (Raylib.IsKeyPressed(KeyboardKey.Two)) { devSelectedPreset = 1; TriggerJumpscare((JumpscarePreset)1); }
-        if (Raylib.IsKeyPressed(KeyboardKey.Three)) { devSelectedPreset = 2; TriggerJumpscare((JumpscarePreset)2); }
-        if (Raylib.IsKeyPressed(KeyboardKey.Four)) { devSelectedPreset = 3; TriggerJumpscare((JumpscarePreset)3); }
-
-        if (Raylib.IsKeyPressed(KeyboardKey.Space) || Raylib.IsKeyPressed(KeyboardKey.R))
-            TriggerJumpscare((JumpscarePreset)devSelectedPreset);
-
-        if (Raylib.IsKeyPressed(KeyboardKey.T))
-            PlayJumpscareAudioBurst();
-
-        if (Raylib.IsKeyPressed(KeyboardKey.L))
-            devLightsOn = !devLightsOn;
-
-        if (Raylib.IsKeyPressed(KeyboardKey.V))
-            devVhsGlitch = !devVhsGlitch;
-
-        if (Raylib.IsKeyPressed(KeyboardKey.X))
-            jsSlowMo = !jsSlowMo;
-
-        if (Raylib.IsKeyPressed(KeyboardKey.H))
-            devShowHud = !devShowHud;
-
-        if (Raylib.IsKeyPressed(KeyboardKey.Y))
-            GhostModel.ExternalYawOffset = (GhostModel.ExternalYawOffset + 90f) % 360f;
-        if (Raylib.IsKeyPressed(KeyboardKey.G))
-            GhostModel.ExternalEyeGlow = !GhostModel.ExternalEyeGlow;
-        if (Raylib.IsKeyDown(KeyboardKey.LeftBracket))
-            GhostModel.ExternalFaceHeightRatio = Math.Clamp(GhostModel.ExternalFaceHeightRatio - dt * 0.15f, 0.50f, 0.98f);
-        if (Raylib.IsKeyDown(KeyboardKey.RightBracket))
-            GhostModel.ExternalFaceHeightRatio = Math.Clamp(GhostModel.ExternalFaceHeightRatio + dt * 0.15f, 0.50f, 0.98f);
-
-        if (Raylib.IsKeyDown(KeyboardKey.Up))
-            devStopDistance = Math.Clamp(devStopDistance - dt * 0.50f, 0.42f, 2.00f);
-        if (Raylib.IsKeyDown(KeyboardKey.Down))
-            devStopDistance = Math.Clamp(devStopDistance + dt * 0.50f, 0.42f, 2.00f);
-
-        if (Raylib.IsKeyPressed(KeyboardKey.Escape))
-        {
-            if (jumpscareSoundLoaded && Raylib.IsSoundPlaying(jumpscareSound))
-                Raylib.StopSound(jumpscareSound);
-            if (jumpscareProcLoaded && Raylib.IsSoundPlaying(jumpscareProcSound))
-                Raylib.StopSound(jumpscareProcSound);
-            jumpscareDevSandbox = false;
-            jumpscareActive = false;
-            ReturnToHome();
-            return;
-        }
-
-        if (jumpscareActive)
-        {
-            if (!jumpscareAudioTriggered)
-            {
-                PlayJumpscareAudioBurst();
-                jumpscareAudioTriggered = true;
-            }
-            jumpscareTimer += jsSlowMo ? dt * 0.25f : dt;
-            if (jumpscareTimer >= jumpscareDuration)
-            {
-                jumpscareTimer = jumpscareDuration;
-                jumpscareActive = false;
-            }
-        }
-
-        float dur = MathF.Max(0.5f, jumpscareDuration);
-        float tNorm = Math.Clamp(jumpscareTimer / dur, 0f, 1f);
-        float u = tNorm * dur - JsImpactTime(dur);
-
-        ComputeJumpscarePose((JumpscarePreset)devSelectedPreset, tNorm, jumpscareActive,
-            out Vector3 camPos, out Vector3 camTarget, out Vector3 camUp, out float fov,
-            out Vector3 ghostPos, out float ghostYaw, out float lunge);
-
-        camera.Position = camPos;
-        camera.Target = camTarget;
-        camera.Up = camUp;
-        camera.FovY = fov;
-
-        bool strobeLit = jsLit;
-
-        // ---- Cảnh 3D vào render texture ----
-        Raylib.BeginTextureMode(jsTarget);
-        Raylib.ClearBackground(strobeLit ? JsColor(24, 27, 34) : JsColor(6, 7, 11));
-
-        Raylib.BeginMode3D(camera);
-        Props.DrawStore(lit: strobeLit, doorLocked: true, time, "03:17", phoneRinging: false, daylight: 0f);
-        DrawStoreShelves(lit: strobeLit);
-        Props.DrawWashroom(strobeLit, time, true, [true, false, false], -1, 0f, false, 0, 0f);
-        Props.DrawStoreGlass(doorLocked: true, daylight: 0f);
-
-        DrawJumpscareDebris((JumpscarePreset)devSelectedPreset, u);
-        GhostModel.Draw(ghostPos, ghostYaw, time, lunge,
-            twitchIntensity: jsTwitch, screamAmount: jsScream, brightness: jsGhostBright);
-        Raylib.EndMode3D();
-        Raylib.EndTextureMode();
-
-        // ---- Ghép + hiệu ứng ----
-        Raylib.BeginDrawing();
-        Raylib.ClearBackground(Color.Black);
-
-        DrawJumpscareComposite(jsAber, jsZoom);
-        DrawJumpscareScreenEffects(tNorm, time, jumpscareActive);
-
-        // --- BẢNG HUD DEV (Bấm H để ẩn/hiện khi muốn ngắm toàn màn hình) ---
-        if (devShowHud)
-        {
-            Raylib.DrawRectangle(16, 16, 560, 246, new Color((byte)8, (byte)10, (byte)16, (byte)215));
-            Raylib.DrawRectangleLines(16, 16, 560, 246, new Color((byte)255, (byte)65, (byte)110, (byte)255));
-
-            string[] presetNames =
-            [
-                "1: Quầy thu ngân (Counter Lunge)",
-                "2: Nhà vệ sinh (Washroom Behind)",
-                "3: Cửa kính chính (Front Door Rush)",
-                "4: Hành lang giữa tiệm (Main Corridor)"
-            ];
-
-            string stateTag = jumpscareActive
-                ? $"ĐANG HÙ ({jumpscareTimer:0.00}s / {jumpscareDuration:0.0}s)"
-                : "ĐÃ NGẮT RUNG";
-            Color stateCol = jumpscareActive
-                ? new Color((byte)255, (byte)95, (byte)120, (byte)255)
-                : new Color((byte)120, (byte)235, (byte)255, (byte)255);
-
-            string phase = u < 0f ? "RÌNH RẬP (tối, chỉ thấy đôi mắt)" : (u < 0.5f ? "VA CHẠM" : "ÁM ẢNH");
-
-            DrawViText($"JUMPSCARE DEV (F9) - {stateTag}", 28, 24, 19, stateCol);
-            DrawViText($"Kịch bản: {presetNames[devSelectedPreset]}", 28, 52, 18, Color.White);
-            DrawViText($"Giai đoạn: {phase}{(jsSlowMo ? "   [CHẬM 4x]" : "")}", 28, 78, 17, new Color((byte)255, (byte)210, (byte)120, (byte)255));
-            DrawViText($"Mặt-ống kính (Up/Down): {devStopDistance:0.00}m | Đèn (L): {(devLightsOn ? "BẬT" : "TẮT")} | VHS (V): {(devVhsGlitch ? "BẬT" : "TẮT")}", 28, 104, 16, new Color((byte)190, (byte)220, (byte)255, (byte)255));
-            DrawViText($"GLB Góc (Y): {GhostModel.ExternalYawOffset:0}° | Tầm mặt ([ / ]): {GhostModel.ExternalFaceHeightRatio:0.00} | Mắt đỏ (G): {(GhostModel.ExternalEyeGlow ? "BẬT" : "TẮT")}", 28, 130, 16, new Color((byte)255, (byte)170, (byte)190, (byte)255));
-
-            DrawViText("[1..4] Đổi góc | [SPACE] Phát lại | [X] Chậm 4x | [H] Ẩn HUD", 28, 158, 17, new Color((byte)130, (byte)245, (byte)165, (byte)255));
-            DrawViText("[T] Tiếng hù | [ESC] Quay về Home", 28, 184, 16, new Color((byte)200, (byte)205, (byte)215, (byte)255));
-
-            float barW = 532f;
-            Raylib.DrawRectangle(28, 224, (int)barW, 14, new Color((byte)30, (byte)34, (byte)44, (byte)255));
-            Raylib.DrawRectangle(28, 224, (int)(barW * tNorm), 14,
-                jumpscareActive ? new Color((byte)255, (byte)52, (byte)128, (byte)255) : new Color((byte)90, (byte)210, (byte)255, (byte)255));
-        }
-
-        Raylib.EndDrawing();
     }
 }

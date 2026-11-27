@@ -77,6 +77,19 @@ partial class Program
         return lines;
     }
 
+    static string FitViTextSingleLine(string text, float maxWidth, float fontSize)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        if (Raylib.MeasureTextEx(viFont, text, fontSize, 1.0f).X <= maxWidth) return text;
+
+        string trimmed = text;
+        while (trimmed.Length > 1 && Raylib.MeasureTextEx(viFont, trimmed + "...", fontSize, 1.0f).X > maxWidth)
+        {
+            trimmed = trimmed[..^1];
+        }
+        return trimmed + "...";
+    }
+
     static void DrawVignette(int extraDarkness = 0)
     {
         int alpha = Math.Clamp(120 + extraDarkness, 0, 215);
@@ -121,6 +134,7 @@ partial class Program
                 "Đen" => new Color(130, 220, 155, 255),
                 "Hưng" => new Color(95, 225, 210, 255),
                 "Cô gái (Áo mưa vàng)" => Color.Gold,
+                "Bóng ma ngoài kính" => new Color(248, 113, 113, 255),
                 "Sổ giao ca" or "Áp phích ngã tư" => new Color(240, 205, 115, 255),
                 _ => Color.RayWhite
             };
@@ -168,51 +182,256 @@ partial class Program
         }
     }
 
+    static float pauseFadeAnim = 0f;
+    static float masterVolumeLevel = 0.85f;
+    static bool pauseJustOpened = false;
+
+    static void TogglePauseMenu(bool pause)
+    {
+        isPaused = pause;
+        pauseSelection = 0;
+
+        if (isPaused)
+        {
+            pauseFadeAnim = 0f;
+            pauseJustOpened = true;
+            Raylib.EnableCursor();
+            Raylib.PauseSound(cafeAmbience);
+            Raylib.PauseSound(motorbikeEngineSound);
+            Raylib.PauseSound(ambientHumSound);
+            Raylib.SetSoundPitch(voiceStaticSound, 0.85f);
+            Raylib.PlaySound(voiceStaticSound);
+        }
+        else
+        {
+            pauseJustOpened = false;
+            if (gameScene >= 0)
+            {
+                Raylib.DisableCursor();
+                Raylib.GetMouseDelta();
+            }
+            if (gameScene == 0 && cafeSubStep < 2) Raylib.ResumeSound(cafeAmbience);
+            if (gameScene == 1) Raylib.ResumeSound(motorbikeEngineSound);
+            if (gameScene == -1 || gameScene == 2) Raylib.ResumeSound(ambientHumSound);
+
+            Raylib.SetSoundPitch(voiceStaticSound, 1.15f);
+            Raylib.PlaySound(voiceStaticSound);
+        }
+    }
+
     static bool UpdateAndDrawPauseMenu()
     {
+        float dt = Math.Min(Raylib.GetFrameTime(), 0.05f);
+        pauseFadeAnim = Math.Min(1f, pauseFadeAnim + dt * 8.0f);
+
+        if (!pauseJustOpened && Raylib.IsKeyPressed(KeyboardKey.Escape))
+        {
+            TogglePauseMenu(false);
+            return false;
+        }
+        pauseJustOpened = false;
+
+        string[] menuItems =
+        [
+            "TIẾP TỤC CA TRỰC",
+            "CHƠI LẠI TỪ ĐẦU",
+            "VỀ MÀN HÌNH CHÍNH",
+            "THOÁT GAME"
+        ];
+
+        int panelW = Math.Min(560, ScreenWidth - 80);
+        int panelH = 540;
+        int panelX = (ScreenWidth - panelW) / 2;
+        int panelY = (ScreenHeight - panelH) / 2;
+        Vector2 mouse = Raylib.GetMousePosition();
+
+        // Điều hướng bàn phím
         if (Raylib.IsKeyPressed(KeyboardKey.Down) || Raylib.IsKeyPressed(KeyboardKey.S))
         {
-            pauseSelection = (pauseSelection + 1) % pauseOptions.Length;
-            Raylib.SetSoundPitch(voiceStaticSound, 1.3f);
+            pauseSelection = (pauseSelection + 1) % menuItems.Length;
+            Raylib.SetSoundPitch(voiceStaticSound, 1.25f);
             Raylib.PlaySound(voiceStaticSound);
         }
         else if (Raylib.IsKeyPressed(KeyboardKey.Up) || Raylib.IsKeyPressed(KeyboardKey.W))
         {
-            pauseSelection = (pauseSelection - 1 + pauseOptions.Length) % pauseOptions.Length;
-            Raylib.SetSoundPitch(voiceStaticSound, 1.3f);
+            pauseSelection = (pauseSelection - 1 + menuItems.Length) % menuItems.Length;
+            Raylib.SetSoundPitch(voiceStaticSound, 1.25f);
             Raylib.PlaySound(voiceStaticSound);
         }
-        else if (Raylib.IsKeyPressed(KeyboardKey.Enter))
+
+        // Chỉnh âm lượng nhanh bằng A/D hoặc Trái/Phải
+        if (Raylib.IsKeyPressed(KeyboardKey.Left) || Raylib.IsKeyPressed(KeyboardKey.A))
+        {
+            masterVolumeLevel = Math.Max(0f, MathF.Round((masterVolumeLevel - 0.1f) * 10f) / 10f);
+            Raylib.SetMasterVolume(masterVolumeLevel);
+        }
+        else if (Raylib.IsKeyPressed(KeyboardKey.Right) || Raylib.IsKeyPressed(KeyboardKey.D))
+        {
+            masterVolumeLevel = Math.Min(1f, MathF.Round((masterVolumeLevel + 0.1f) * 10f) / 10f);
+            Raylib.SetMasterVolume(masterVolumeLevel);
+        }
+
+        int btnStartY = panelY + 215;
+        int btnH = 48;
+        int btnGap = 12;
+        int btnX = panelX + 36;
+        int btnW = panelW - 72;
+
+        bool triggerAction = Raylib.IsKeyPressed(KeyboardKey.Enter) || Raylib.IsKeyPressed(KeyboardKey.Space);
+
+        for (int i = 0; i < menuItems.Length; i++)
+        {
+            Rectangle btnRect = new(btnX, btnStartY + i * (btnH + btnGap), btnW, btnH);
+            if (Raylib.CheckCollisionPointRec(mouse, btnRect))
+            {
+                if (pauseSelection != i)
+                {
+                    pauseSelection = i;
+                    Raylib.SetSoundPitch(voiceStaticSound, 1.25f);
+                    Raylib.PlaySound(voiceStaticSound);
+                }
+                if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+                {
+                    triggerAction = true;
+                }
+            }
+        }
+
+        // Kéo thanh trượt âm lượng bằng chuột
+        int sliderY = btnStartY + menuItems.Length * (btnH + btnGap) + 22;
+        Rectangle sliderHitRect = new(btnX + 150, sliderY - 8, btnW - 210, 26);
+        if (Raylib.IsMouseButtonDown(MouseButton.Left) && Raylib.CheckCollisionPointRec(mouse, sliderHitRect))
+        {
+            masterVolumeLevel = Math.Clamp((mouse.X - sliderHitRect.X) / sliderHitRect.Width, 0f, 1f);
+            Raylib.SetMasterVolume(masterVolumeLevel);
+        }
+
+        if (triggerAction)
         {
             if (pauseSelection == 0)
             {
-                isPaused = false;
-                Raylib.DisableCursor();
-                Raylib.GetMouseDelta();
-                if (gameScene == 0 && cafeSubStep < 2) Raylib.ResumeSound(cafeAmbience);
+                TogglePauseMenu(false);
+                return false;
             }
             else if (pauseSelection == 1)
             {
+                isPaused = false;
                 ResetGame();
+                Raylib.EnableCursor();
+                return false;
             }
-            else
+            else if (pauseSelection == 2)
+            {
+                isPaused = false;
+                ReturnToHome();
+                return false;
+            }
+            else if (pauseSelection == 3)
             {
                 return true;
             }
         }
 
+        // ================= VẼ GIAO DIỆN PAUSE =================
         Raylib.BeginDrawing();
-        Raylib.ClearBackground(new Color(10, 10, 14, 255));
-        DrawVignette(40);
-        DrawViText("TẠM DỪNG", ScreenWidth / 2 - 90, 190, 36, Color.Yellow);
+        Raylib.ClearBackground(new Color(8, 9, 13, 255));
 
-        for (int i = 0; i < pauseOptions.Length; i++)
+        byte bgAlpha = (byte)(215 * pauseFadeAnim);
+        Raylib.DrawRectangle(0, 0, ScreenWidth, ScreenHeight, new Color((byte)6, (byte)7, (byte)11, bgAlpha));
+
+        for (int y = 0; y < ScreenHeight; y += 4)
         {
-            bool sel = i == pauseSelection;
-            DrawViText((sel ? "> " : "   ") + pauseOptions[i], ScreenWidth / 2 - 125, 280 + i * 44, 24, sel ? Color.Yellow : Color.RayWhite);
+            Raylib.DrawLine(0, y, ScreenWidth, y, new Color(255, 255, 255, 6));
         }
 
-        DrawViText("[Esc] Quay lại   |   [Lên/Xuống] Chọn   |   [Enter] Xác nhận", ScreenWidth / 2 - 265, ScreenHeight - 90, 18, Color.Gray);
+        Rectangle shadowRect = new(panelX + 6, panelY + 10, panelW, panelH);
+        Raylib.DrawRectangleRounded(shadowRect, 0.03f, 12, new Color(0, 0, 0, 180));
+
+        Rectangle cardRect = new(panelX, panelY, panelW, panelH);
+        Raylib.DrawRectangleRounded(cardRect, 0.03f, 12, new Color(18, 20, 27, 248));
+        Raylib.DrawRectangleRoundedLinesEx(cardRect, 0.03f, 12, 1.5f, new Color(75, 82, 98, 220));
+
+        bool blink = MathF.Sin((float)Raylib.GetTime() * 4.5f) > 0f;
+        Raylib.DrawCircle(panelX + 36, panelY + 34, 5.5f, blink ? new Color(235, 52, 52, 255) : new Color(110, 25, 25, 255));
+        DrawViText("PAUSED  //  THUẬN PHÁT 24H", panelX + 50, panelY + 25, 16, new Color(155, 162, 178, 230));
+
+        string title = "TẠM DỪNG CA TRỰC";
+        int titleW = (int)Raylib.MeasureTextEx(viFont, title, 30, 1.2f).X;
+        DrawViText(title, panelX + (panelW - titleW) / 2, panelY + 54, 30, Color.RayWhite);
+
+        // Bảng trạng thái ca trực hiện tại
+        Rectangle infoRect = new(btnX, panelY + 98, btnW, 96);
+        Raylib.DrawRectangleRounded(infoRect, 0.08f, 8, new Color(26, 29, 38, 255));
+        Raylib.DrawRectangleRoundedLinesEx(infoRect, 0.08f, 8, 1f, new Color(55, 60, 74, 200));
+
+        string sceneLabel = gameScene switch
+        {
+            -1 => "17:15  •  Tin nhắn trên điện thoại",
+            0 => "17:40  •  Quán cà phê chiều thứ Sáu",
+            1 => "18:20  •  Trên đường tới cuối đường Số 9",
+            3 => "18:45  •  Trước cửa tiệm Thuận Phát 24H",
+            _ => $"{currentTime}  •  Cửa hàng tiện lợi Thuận Phát 24H"
+        };
+        DrawViText(sceneLabel, btnX + 16, panelY + 108, 17, new Color(234, 179, 8, 255));
+
+        string rawObjText = gameScene == 2 ? $"Mục tiêu: {currentObjective}" : "Chương 1: Ca Đêm Đường Số 9";
+        string objText = FitViTextSingleLine(rawObjText, btnW - 32, 16);
+        DrawViText(objText, btnX + 16, panelY + 134, 16, new Color(210, 215, 226, 235));
+
+        string recStatus = recordingOn ? "BẬT" : "TẮT";
+        Color recColor = recordingOn ? new Color(74, 222, 128, 255) : new Color(248, 113, 113, 255);
+        DrawViText($"Ghi âm: {recStatus}", btnX + 16, panelY + 162, 16, recColor);
+
+        string clueStatus = $"Manh mối: {GetClueCount()}/5   •   Cửa chính: {(isDoorLocked ? "ĐÃ KHÓA" : "MỞ")}";
+        int clueW = (int)Raylib.MeasureTextEx(viFont, clueStatus, 16, 1f).X;
+        DrawViText(clueStatus, btnX + btnW - clueW - 16, panelY + 162, 16, new Color(165, 174, 192, 235));
+
+        for (int i = 0; i < menuItems.Length; i++)
+        {
+            bool selected = (i == pauseSelection);
+            bool isQuitBtn = (i == menuItems.Length - 1);
+            Rectangle r = new(btnX, btnStartY + i * (btnH + btnGap), btnW, btnH);
+
+            Color fillCol = selected
+                ? (isQuitBtn ? new Color(185, 38, 38, 255) : new Color(235, 238, 245, 255))
+                : new Color(28, 31, 41, 245);
+
+            Color borderCol = selected
+                ? (isQuitBtn ? new Color(248, 113, 113, 255) : Color.White)
+                : new Color(62, 68, 84, 210);
+
+            Color textCol = selected
+                ? (isQuitBtn ? Color.White : new Color(15, 17, 22, 255))
+                : new Color(220, 225, 235, 240);
+
+            Raylib.DrawRectangleRounded(r, 0.16f, 8, fillCol);
+            Raylib.DrawRectangleRoundedLinesEx(r, 0.16f, 8, 1.4f, borderCol);
+
+            if (selected)
+            {
+                DrawViText("▸", btnX + 18, (int)r.Y + 13, 20, textCol);
+            }
+
+            int itemW = (int)Raylib.MeasureTextEx(viFont, menuItems[i], 20, 1.1f).X;
+            DrawViText(menuItems[i], btnX + (btnW - itemW) / 2, (int)r.Y + 13, 20, textCol);
+        }
+
+        // Thanh trượt âm lượng tổng
+        DrawViText("Âm lượng tổng:", btnX + 4, sliderY - 3, 17, new Color(185, 192, 208, 240));
+        int trackX = btnX + 150;
+        int trackW = btnW - 210;
+        Raylib.DrawRectangleRounded(new Rectangle(trackX, sliderY + 3, trackW, 6), 0.5f, 4, new Color(48, 53, 66, 255));
+        Raylib.DrawRectangleRounded(new Rectangle(trackX, sliderY + 3, (int)(trackW * masterVolumeLevel), 6), 0.5f, 4, new Color(234, 179, 8, 255));
+        Raylib.DrawCircle((int)(trackX + trackW * masterVolumeLevel), sliderY + 6, 7.5f, Color.RayWhite);
+
+        string volPct = $"{(int)MathF.Round(masterVolumeLevel * 100f)}%";
+        DrawViText(volPct, trackX + trackW + 14, sliderY - 3, 17, Color.RayWhite);
+
+        string hint = "[W/S] Di chuyển  •  [A/D] Âm lượng  •  [Enter / Click] Chọn  •  [Esc] Tiếp tục";
+        int hintW = (int)Raylib.MeasureTextEx(viFont, hint, 14, 1f).X;
+        DrawViText(hint, panelX + (panelW - hintW) / 2, panelY + panelH - 28, 14, new Color(130, 138, 155, 220));
+
+        DrawVignette(65);
         Raylib.EndDrawing();
         return false;
     }

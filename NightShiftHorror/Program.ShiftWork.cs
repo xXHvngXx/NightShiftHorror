@@ -1443,7 +1443,7 @@ partial class Program
         if (shopperState == ShopperState.Inactive)
         {
             bool canSpawn = !isDoorLocked && !npcActive && !isTalking &&
-                            ((storyStep == 0 && clockMinutes < 1438f) || (storyStep >= 1 && storyStep <= 2));
+                            storyStep == 0 && clockMinutes < 1435f;
             if (canSpawn)
             {
                 shopperSpawnCooldown -= dt;
@@ -1453,6 +1453,13 @@ partial class Program
                 }
             }
             return;
+        }
+
+        if (storyStep == 0 && clockMinutes >= 1438f &&
+            (shopperState == ShopperState.ToShelf || shopperState == ShopperState.PickingShelf))
+        {
+            EnqueueExitRoute();
+            shopperState = ShopperState.Leaving;
         }
 
         UpdateCompanionFollow(dt);

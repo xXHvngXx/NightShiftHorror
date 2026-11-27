@@ -17,8 +17,10 @@ partial class Program
         isReturnHomeCutscene = true;
         returnHomeCutsceneTimer = 0f;
         currentObjective = "Nổ máy xe chạy về nhà sau ca trực đêm";
-        Raylib.SetSoundPitch(footstepSound, 0.85f);
-        Raylib.PlaySound(footstepSound);
+
+        Raylib.StopSound(ambientHumSound);
+        Raylib.SetSoundPitch(motorbikeEngineSound, 0.95f);
+        Raylib.PlaySound(motorbikeEngineSound);
         Raylib.GetMouseDelta();
     }
 
@@ -26,7 +28,6 @@ partial class Program
     {
         returnHomeCutsceneTimer += dt;
 
-        // Di chuyển nhẹ camera theo hướng xe máy nổ máy lăn bánh rời sân sau ra đường lớn
         Vector3 bikeFocus = new(4.20f, 1.35f, -15.45f);
         Vector3 exitRoadFocus = new(6.50f, 1.55f, -18.80f);
         float t = Math.Clamp(returnHomeCutsceneTimer / 5.5f, 0f, 1f);
@@ -35,7 +36,7 @@ partial class Program
         Vector3 camStart = new(4.95f, 1.62f, -14.10f);
         Vector3 camEnd = new(5.40f, 1.68f, -17.60f);
         Vector3 camPos = Vector3.Lerp(camStart, camEnd, smoothT);
-        camPos.Y += MathF.Sin(returnHomeCutsceneTimer * 24f) * 0.012f; // Rung nhẹ tiếng động cơ
+        camPos.Y += MathF.Sin(returnHomeCutsceneTimer * 24f) * 0.012f;
 
         Vector3 targetPos = Vector3.Lerp(bikeFocus, exitRoadFocus, smoothT);
         camera.Position = camPos;
@@ -44,6 +45,7 @@ partial class Program
 
         if (returnHomeCutsceneTimer >= 5.5f)
         {
+            Raylib.StopSound(motorbikeEngineSound);
             isReturnHomeCutscene = false;
             returnHomeCutsceneTimer = 0f;
             TriggerEnding(2);
